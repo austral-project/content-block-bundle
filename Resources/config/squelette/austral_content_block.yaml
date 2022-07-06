@@ -1,0 +1,31 @@
+austral_content_block:
+  editor_component:
+    image_default:        ""
+    categories:
+      - default
+  type_values:
+    group:
+      entitled:           "choices.collections.blockType.group"
+      picto:              "austral-picto-layout"
+      allow_child:        true
+    list:
+      entitled:           "choices.collections.blockType.list"
+      picto:              "austral-picto-list-ul"
+      allow_child:        true
+    text:
+      entitled:           "choices.collections.blockType.text"
+      picto:              "austral-picto-text"
+      allow_child:        false
+    image:
+      entitled:           "choices.collections.blockType.image"
+      picto:              "austral-picto-image"
+      allow_child:        false
+
+  title_tag_values:
+    h2:                 "h2"
+    h3:                 "h3"
+    h4:                 "h4"
+    h5:                 "h5"
+    h6:                 "h6"
+    span:               "span"
+

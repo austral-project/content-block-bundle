@@ -1,0 +1,157 @@
+pages:
+  names:
+    contentBlock:
+      singular:                 Bloc de contenu
+      plural:                   Blocs de contenu
+    contentBlockEditor:
+      singular:                 Éditeur de composant
+      plural:                   Éditeur de Composant
+    contentBlockLibrary:
+      singular:                 Librarie
+      plural:                   Libraries
+    navigation:
+      singular:                  Navigation
+      plural:                    Navigations
+
+fieldset:
+  contentBlockTypeEditor:       Editeur de type de bloc de contenu
+  contentBlockTypeValue:        "Type : %value%"
+  contentBlock:                 Bloc de contenu
+  editorComponent:
+    themes:                     Themes
+    options:                    Options
+    layouts:                    Layouts
+    restrictions:               Restriction
+    usedBy:                     Utilisé par
+
+errors:
+  component:
+    loopDetected:               L'ajout de cet élément créera une erreur 500 sur votre site Web
+
+button:
+  edit:
+    library:                    Éditer la librairie
+  new:
+    block:                      Ajouter un nouveau bloc de contenu
+    theme:                      Ajouter un thème
+    option:                     Ajouter une option
+    layout:                     Ajouter une disposition
+    restriction:                Ajouter une restriction
+    contentBlock:
+      typeValue:                Ajouter une nouvelle valeur
+      typeValueChild:           Ajouter un nouvel enfant
+
+fields:
+  isContainer:
+    entitled:                   Est un container ?
+  canHasLink:
+    entitled:                   Possède un lien ?
+  isWysiwyg:
+    entitled:                   Est un Wysiwyg ?
+  isIframe:
+    entitled:                   Est une Iframe ?
+  isRequired:
+    entitled:                   Est requis ?
+  viewEntitled:
+    entitled:                   Label visible
+  themeId:
+    entitled:                   Thème
+  optionId:
+    entitled:                   Option
+  layoutId:
+    entitled:                   Disposition
+  restrictionValue:
+    entitled:                   Restrictions
+  restrictions:
+    entitled:                   Restrictions
+  condition:
+    entitled:                   Condition
+  component:
+    link_type:
+      entitled:                 Type de lien
+  accessibleInContent:
+    entitled:                   Accessible au contenu
+  css_class:
+    entitled:                   Class CSS
+  classCss:
+    entitled:                   Class CSS
+  tags:
+    entitled:                   Tags selectionnés
+  isGuidelineView:
+    entitled:                   Visible dans la guideline
+  addChoice:
+    entitled:                   Ajouter un choix
+  selectChoice:
+    entitled:                   Selectionner un choix
+  editorComponentType:
+    entitled:                   "%value%"
+  category:
+    entitled:                   Catégorie
+
+  componentLink:
+    url:
+      entitled:                 Url de la page
+    page:
+      entitled:                 Page
+    anchor:
+      entitled:                 Ancre
+    target:
+      entitled:                 Ouvrir dans un nouvel onglet
+    file:
+      entitled:                 Fichier
+    email:
+      entitled:                 Email
+    phone:
+      entitled:                 Phone
+
+component:
+  title:
+    link:
+      editor:                   Éditeur de lien
+      value:                    Valeur du lien
+
+choices:
+  editor_component:
+    category:
+      default: "Default"
+      custom:  "Custom"
+      library: "Library"
+  restriction:
+    all:                        "Tout les éléments : %element%"
+    include:                    Inclus
+    exclude:                    Exclu
+    containerName:
+      all:                      Tous les containers
+  choiceBlockHasLink:
+    no:                         Non
+    yes:                        Oui
+  blockDirection:
+    column:                     Colonne
+    row:                        Ligne
+  component:
+    link_type:
+      internal:                 Page interne
+      external:                 Page externe
+      file:                     Fichier
+      email:                    Email
+      phone:                    Téléphone
+  text:
+    type:
+      string:                   Texte
+      integer:                  Chiffre
+      number:                   Nombre
+      date:                     Date
+  collections:
+    title:                      Ajouter un bloc
+    blockType:
+      container:                Container
+      group:                    Groupe
+      list:                     Liste
+      title:                    Titre
+      text:                     Valeur
+      textarea:                 Texte
+      image:                    Image
+      file:                     Fichier
+      choice:                   Selecteur
+      button:                   Bouton
+      movie:                    Vidéo

@@ -1,0 +1,50 @@
+parameters:
+
+
+  austral_entity_file.uploads.content_block_bundle:
+    editor_component:
+      size:
+        max: "8M"
+      mimeTypes:
+        - 'image/jpg'
+        - 'image/jpeg'
+        - 'image/png'
+        - 'image/gif'
+        - 'image/svg'
+        - 'image/svg+xml'
+
+
+  #austral_entity_file.uploads.content_block_bundle:
+  #  component_value:
+  #    entityManager: "austral.entity_manager.component_value"
+  #    form:
+  #      image:
+  #        size:
+  #          max: "8M"
+  #        mimeTypes:
+  #          - 'image/jpg'
+  #          - 'image/jpeg'
+  #          - 'image/png'
+  #          - 'image/gif'
+  #          - 'image/svg'
+  #          - 'image/svg+xml'
+  #        errors:
+  #          maxSize:   "file.errors.maxSize"
+  #          mimeTypes: "file.errors.mimeTypes"
+  #        cropper:
+  #          - desktop
+  #          - tablet
+  #          - mobile
+  #        image:
+  #          width:
+  #            min:    1200
+  #          height:
+  #            min:    800
+  #      file:
+  #        size:
+  #          max: "10M"
+  #        mimeTypes:   []
+  #        errors:
+  #          maxSize:   "file.errors.maxSize"
+  #          mimeTypes: "file.errors.mimeTypes"
+

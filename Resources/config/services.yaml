@@ -1,0 +1,117 @@
+services:
+  _defaults:
+    public:       true
+
+
+##### Listener #####
+  austral.content_block.doctrine.listener:
+    class:        Austral\ContentBlockBundle\Listener\DoctrineListener
+    arguments:    [ "@austral.entity_manager.component" ]
+    tags:
+      - { name: doctrine.event_subscriber, connection: default }
+
+  austral.content_block.entity_manager.listener:
+    class:          Austral\ContentBlockBundle\Listener\EntityManagerListener
+    arguments:      ["@austral.entity_manager.component"]
+    tags:
+      - { name: kernel.event_listener, event: "austral.entity_manager.duplicate", method: duplicate }
+
+##### Event Subscriber
+  austral.content_block.event_subscriber:
+    class:        Austral\ContentBlockBundle\EventSubscriber\ContentBlockSubscriber
+    arguments:    [ "@austral.content_block.content_block_container", "@event_dispatcher","@?austral.entity_seo.pages" ]
+    tags:
+      - { name: kernel.event_subscriber }
+
+##### Services
+  austral.content_block.content_block_container:
+    class:        Austral\ContentBlockBundle\Services\ContentBlockContainer
+    arguments:    [ "@request_stack", "@doctrine.orm.entity_manager", "@austral.tools.debug" ]
+
+
+##### Entities Manager #####
+
+  ##### Library EntityManager
+  austral.entity_manager.library:
+    class:        Austral\ContentBlockBundle\EntityManager\LibraryEntityManager
+    arguments:    [ "@doctrine.orm.entity_manager",  "@event_dispatcher", "%austral.entity.library.class%" ]
+
+  ##### EditorComponent EntityManager
+  austral.entity_manager.editor_component:
+    class:        Austral\ContentBlockBundle\EntityManager\EditorComponentEntityManager
+    arguments:    [ "@doctrine.orm.entity_manager",  "@event_dispatcher", "%austral.entity.editor_component.class%" ]
+
+  ##### EditorComponentType EntityManager
+  austral.entity_manager.editor_component_type:
+    class:        Austral\ContentBlockBundle\EntityManager\EditorComponentTypeEntityManager
+    arguments:    [ "@doctrine.orm.entity_manager",  "@event_dispatcher", "%austral.entity.editor_component_type.class%" ]
+
+  ##### Component EntityManager
+  austral.entity_manager.component:
+    class:        Austral\ContentBlockBundle\EntityManager\ComponentEntityManager
+    arguments:    [ "@doctrine.orm.entity_manager",  "@event_dispatcher", "%austral.entity.component.class%" ]
+
+  ##### ComponentValue EntityManager
+  austral.entity_manager.component_value:
+    class:        Austral\ContentBlockBundle\EntityManager\ComponentValueEntityManager
+    arguments:    [ "@doctrine.orm.entity_manager",  "@event_dispatcher", "%austral.entity.component_value.class%" ]
+
+  ##### ComponentValues EntityManager
+  austral.entity_manager.component_values:
+    class:        Austral\ContentBlockBundle\EntityManager\ComponentValuesEntityManager
+    arguments:    [ "@doctrine.orm.entity_manager",  "@event_dispatcher", "%austral.entity.component_values.class%" ]
+
+
+##### Parameters #####
+  austral.content_block.config:
+    class:        Austral\ContentBlockBundle\Configuration\ContentBlockConfiguration
+    arguments:    ["%austral_content_block%"]
+
+##### Form Type
+  austral.content_block.theme_form_type:
+    class:        Austral\ContentBlockBundle\Form\Type\ThemeFormType
+    arguments:    [ "@security.authorization_checker" ]
+    tags:
+      - { name: form.type , alias: austral_theme_form_type}
+
+  austral.content_block.option_form_type:
+    class:        Austral\ContentBlockBundle\Form\Type\OptionFormType
+    arguments:    [ "@security.authorization_checker" ]
+    tags:
+      - { name: form.type , alias: austral_option_form_type}
+
+  austral.content_block.layout_form_type:
+    class:        Austral\ContentBlockBundle\Form\Type\LayoutFormType
+    arguments:    [ "@security.authorization_checker" ]
+    tags:
+      - { name: form.type , alias: austral_layout_form_type}
+
+  austral.content_block.restriction_form_type:
+    class:        Austral\ContentBlockBundle\Form\Type\RestrictionFormType
+    arguments:    [ "@security.authorization_checker" ]
+    tags:
+      - { name: form.type , alias: austral_restriction_form_type}
+
+  austral.content_block.editor_component_type_form_type:
+    class:        Austral\ContentBlockBundle\Form\Type\EditorComponentTypeFormType
+    arguments:    [ "@security.authorization_checker" ]
+    tags:
+      - { name: form.type , alias: austral_editor_component_type_form_type }
+
+  austral.content_block.component_form_type:
+    class:        Austral\ContentBlockBundle\Form\Type\ComponentFormType
+    arguments:    [ "@security.authorization_checker" ]
+    tags:
+      - { name: form.type , alias: austral_component_form_type }
+
+  austral.content_block.component_value_form_type:
+    class:        Austral\ContentBlockBundle\Form\Type\ComponentValueFormType
+    arguments:    [ "@security.authorization_checker" ]
+    tags:
+      - { name: form.type , alias: austral_component_value_form_type }
+
+  austral.content_block.component_values_form_type:
+    class:        Austral\ContentBlockBundle\Form\Type\ComponentValuesFormType
+    arguments:    [ "@security.authorization_checker" ]
+    tags:
+      - { name: form.type , alias: austral_component_values_form_type }

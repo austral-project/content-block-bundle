@@ -1,0 +1,38 @@
+{
+  "name":                                     "austral/content-block-bundle",
+  "type":                                     "symfony-bundle",
+  "description":                              "Create content blocks to add to the website",
+  "keywords":                                 ["Austral", "Editor content block", "Symfony"],
+  "license":                                  "MIT",
+  "homepage":                                 "https://austral.dev",
+  "version":                                  "3.0",
+  "authors": [
+    {
+      "name":                                 "Matthieu Beurel",
+      "email":                                "matthieu@austral.dev",
+      "role":                                 "Developer"
+    }
+  ],
+  "require": {
+    "php":                                    "^7.4 || ^8.0",
+    "symfony/string":                         "^5.3|^5.4",
+
+    "austral/tools-bundle":                   "^3.0",
+    "austral/entity-bundle":                  "^3.0",
+    "austral/form-bundle":                    "^3.0",
+
+    "gedmo/doctrine-extensions":              "^3.0",
+    "ramsey/uuid":                            "^3.0",
+    "adbario/php-dot-notation":               "^2.2",
+    "joshtronic/php-loremipsum":              "^1.0"
+  },
+  "require-dev": {
+  },
+  "config": {
+    "sort-packages":                          true
+  },
+  "autoload": {
+    "psr-4": { "Austral\\ContentBlockBundle\\": "" }
+  },
+  "minimum-stability":                        "dev"
+}

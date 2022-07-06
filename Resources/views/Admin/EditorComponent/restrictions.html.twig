@@ -1,0 +1,11 @@
+<div class="value-content">
+  <ul>
+    {% for restriction in object.restrictions %}
+      {% if listRestrictions[restriction.value] is defined %}
+        <li>
+          <span class="value">{{ listRestrictions[restriction.value] }} -> {{ restriction.condition }}</span>
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+</div>

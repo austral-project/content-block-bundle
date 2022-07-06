@@ -1,0 +1,162 @@
+pages:
+  names:
+    contentBlock:
+      singular:                  Content Block
+      plural:                    Contents Blocks
+    contentBlockEditor:
+      singular:                  Editor Component
+      plural:                    Editor Component
+    contentBlockLibrary:
+      singular:                  Library
+      plural:                    Library
+    navigation:
+      singular:                  Navigation
+      plural:                    Navigations
+
+fieldset:
+  contentBlockTypeEditor:       Content block Type Editor
+  contentBlockTypeValue:        "Type : %value%"
+  contentBlock:                 Content Block
+  editorComponent:
+    themes:                     Themes
+    options:                    Options
+    layouts:                    Layouts
+    restrictions:               Restrictions
+    usedBy:                     Used by
+
+errors:
+  component:
+    loopDetected:               Adding this element will create a 500 error on your web site
+
+button:
+  edit:
+    library:                    Edit library
+  new:
+    block:                      Add content block
+    theme:                      Add theme
+    option:                     Add option
+    layout:                     Add layout
+    restriction:                Add restriction
+    contentBlock:
+      typeValue:                Add new element
+      typeValueChild:           Add new child element
+
+fields:
+  isContainer:
+    entitled:                   Is container ?
+  canHasLink:
+    entitled:                   Can has link ?
+  isWysiwyg:
+    entitled:                   Wysiwyg ?
+  isIframe:
+    entitled:                   Iframe ?
+  isRequired:
+    entitled:                   Required ?
+  viewEntitled:
+    entitled:                   View entitled
+  themeId:
+    entitled:                   Theme
+  optionId:
+    entitled:                   Option
+  layoutId:
+    entitled:                   Layout
+  restrictionValue:
+    entitled:                   Restrictions
+  restrictions:
+    entitled:                   Restrictions
+  condition:
+    entitled:                   Condition
+  component:
+    link_type:
+      entitled:                 Link type
+  accessibleInContent:
+    entitled:                   Accessible in content
+  css_class:
+    entitled:                   CSS class
+  cssClass:
+    entitled:                   CSS Class
+  tags:
+    entitled:                   Tags selected
+  isGuidelineView:
+    entitled:                   View in guideline
+  addChoice:
+    entitled:                   Add choice
+  selectChoice:
+    entitled:                   Select a choice
+  editorComponentType:
+    entitled:                   "%value%"
+  category:
+    entitled:                   Category
+
+  componentLink:
+    url:
+      entitled:                 Page url
+    page:
+      entitled:                 Page
+    anchor:
+      entitled:                 Anchor
+    target:
+      entitled:                 Open in new tab
+    file:
+      entitled:                 File
+    email:
+      entitled:                 Email
+    phone:
+      entitled:                 Phone
+
+component:
+  title:
+    link:
+      editor:                   Link editor
+      value:                    Link value
+
+switch:
+  value:
+    0:                                          No
+    1:                                          Yes
+
+choices:
+  editor_component:
+    category:
+      default:                  "Default"
+      custom:                   "Custom"
+      library:                  "Library"
+  restriction:
+    all:                        "All elements : %element%"
+    include:                    Include
+    exclude:                    Exclude
+    containerName:
+      all:                      All container
+  choiceBlockHasLink:
+    no:                         No
+    yes:                        Yes
+  blockDirection:
+    column:                     Column
+    row:                        Row
+  component:
+    link_type:
+      internal:                 Page
+      external:                 Url
+      file:                     File
+      email:                    Email
+      phone:                    Phone
+  text:
+    type:
+      string:                   String
+      integer:                  Integer
+      number:                   Number
+      date:                     Date
+  collections:
+    title:                      Add block
+    blockType:
+      container:                Container
+      group:                    Group
+      list:                     List
+      title:                    Title
+      text:                     Text
+      textarea:                 Textarea
+      image:                    Picture
+      file:                     File
+      choice:                   Choice
+      button:                   Button
+      movie:                    Movie

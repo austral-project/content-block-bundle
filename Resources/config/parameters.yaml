@@ -1,0 +1,20 @@
+parameters:
+
+##### Entities Class
+  austral.entity.library.class:                                                 App\Entity\Austral\ContentBlockBundle\Library
+  austral.entity.library_translate.class:                                       App\Entity\Austral\ContentBlockBundle\LibraryTranslate
+  austral.entity.component.class:                                               App\Entity\Austral\ContentBlockBundle\Component
+  austral.entity.component_value.class:                                         App\Entity\Austral\ContentBlockBundle\ComponentValue
+  austral.entity.component_values.class:                                        App\Entity\Austral\ContentBlockBundle\ComponentValues
+  austral.entity.editor_component.class:                                        App\Entity\Austral\ContentBlockBundle\EditorComponent
+  austral.entity.editor_component_type.class:                                   App\Entity\Austral\ContentBlockBundle\EditorComponentType
+
+##### Doctrine Resolve target Entities
+  austral.resolve_target_entities.content_block:
+    Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface:              "%austral.entity.library.class%"
+    Austral\ContentBlockBundle\Entity\Interfaces\LibraryTranslateInterface:     "%austral.entity.library_translate.class%"
+    Austral\ContentBlockBundle\Entity\Interfaces\ComponentInterface:            "%austral.entity.component.class%"
+    Austral\ContentBlockBundle\Entity\Interfaces\ComponentValueInterface:       "%austral.entity.component_value.class%"
+    Austral\ContentBlockBundle\Entity\Interfaces\ComponentValuesInterface:      "%austral.entity.component_values.class%"
+    Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentInterface:      "%austral.entity.editor_component.class%"
+    Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentTypeInterface:  "%austral.entity.editor_component_type.class%"

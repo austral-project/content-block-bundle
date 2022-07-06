@@ -1,0 +1,22 @@
+<ul>
+  {% for component in field.vars.componentsUsed %}
+    <li class="pdt10 pdb20">
+      <div class="pdb10" >
+        <span class="h3-title">{{ component.objectClassname }} : {{ component.objectId }}</span>
+      </div>
+      {% if component.module and component.module.isGranted("edit") %}
+        {{ include("@AustralDesign/Components/Button/picto.html.twig",
+          {
+            url:          component.module.generateUrl("edit", {"id": component.objectId}),
+            picto:        "austral-picto-edit",
+            withEntitled: true,
+            title:        "Edit this element",
+            data: {
+              target:     "_blank"
+            }
+          }
+        )}}
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>

@@ -1,0 +1,20 @@
+<div class="button-content">
+  {{ include("@AustralDesign/Components/Button/link.html.twig",
+    {
+      title: "actions.deleteLink"|trans({}, "austral"),
+      data:   {
+        "data-popin-close": "",
+        "data-reinit-choice": ""
+      }
+    }
+  )}}
+  {{ include("@AustralDesign/Components/Button/action.html.twig",
+    {
+      class:  "button-action",
+      title:  "actions.save"|trans({}, "austral"),
+      data:   {
+        "data-popin-close": "",
+      }
+    }
+  )}}
+</div>

@@ -1,0 +1,16 @@
+<div class="field-content ">
+  <div class="buttons-content-flex center">
+    {{ include("@AustralDesign/Components/Button/picto.html.twig",
+      {
+        url:          field.vars.link,
+        picto:        "austral-picto-edit",
+        picto:        "austral-picto-corner-forward",
+        withEntitled: true,
+        title:        "Edit this element",
+        data: {
+          target:     "_blank"
+        }
+      }
+    ) }}
+  </div>
+</div>

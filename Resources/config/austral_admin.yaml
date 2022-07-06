@@ -1,0 +1,63 @@
+services:
+  _defaults:
+    autowire:      true
+    autoconfigure: true
+    public:        true
+
+  austral.content_block.dashboard.listener:
+    class: Austral\ContentBlockBundle\Listener\DashboardListener
+    arguments: [ "@service_container" ]
+    tags:
+      - { name: kernel.event_listener, event: "austral.event.admin.dashboard", method: dashboard }
+
+parameters:
+
+  austral.admin.class.editor_component.class:                             Austral\ContentBlockBundle\Admin\EditorComponentAdmin
+  austral.admin.class.library.class:                                      Austral\ContentBlockBundle\Admin\LibraryAdmin
+  austral.admin.class.navigation.class:                                   Austral\ContentBlockBundle\Admin\NavigationAdmin
+
+  austral.admin.modules.content_block_bundle.content-block.enabled:               true
+  austral.admin.modules.content_block_bundle.config.editor_component.enabled:     true
+  austral.admin.modules.content_block_bundle.config.library.enabled:              true
+  austral.admin.modules.content_block_bundle.config.navigation.enabled:           true
+
+  austral_admin.modules.content_block_bundle:
+
+    navigation:
+      enabled:                    "%austral.admin.modules.content_block_bundle.config.navigation.enabled%"
+      name:                       "Navigation"
+      entity_manager:             "austral.entity_manager.library"
+      picto:                      "austral-picto-menu"
+      route:                      "navigation"
+      class:                      "%austral.admin.class.navigation.class%"
+      translate:                  "female_c"
+      navigation:
+        position:                 50
+
+    content-block:
+      enabled:                    "%austral.admin.modules.content_block_bundle.content-block.enabled%"
+      navigation:
+        position:                 600
+      name:                       "Content Block"
+      picto:                      "austral-picto-layout"
+      route:                      "content-block"
+      translate:                  "female_c"
+      actions:
+        index:                    "listChildrenModules"
+      children:
+        editor-component:
+          enabled:                "%austral.admin.modules.content_block_bundle.config.editor_component.enabled%"
+          name:                   "Editor Component"
+          picto:                  "austral-picto-content-left"
+          pictoTile:              "blocs"
+          route:                  "editor"
+          class:                  "%austral.admin.class.editor_component.class%"
+          translate:              "male_c"
+        library:
+          enabled:                "%austral.admin.modules.content_block_bundle.config.library.enabled%"
+          name:                   "Library"
+          pictoTile:              "template"
+          picto:                  "austral-picto-content-left"
+          route:                  "library"
+          class:                  "%austral.admin.class.library.class%"
+          translate:              "male_c"
