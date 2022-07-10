@@ -284,14 +284,13 @@ class FormListener
    */
   protected function addFieldFileMapping(EditorComponentTypeInterface $editorComponentType, string $fieldname)
   {
-    $entityMapping = $this->mapping->getEntityMapping(ComponentValue::class);
-    $fieldFileMapping = clone $entityMapping->getFieldsMappingByFieldname(FieldFileMapping::class, $fieldname);
-    $fieldFileMappings = array(
-      FieldFileMapping::class => array(
-        $fieldname => $fieldFileMapping
-      )
-    );
-    $entityMapping = new EntityMapping(ComponentValue::class, $entityMapping->slugger, $fieldFileMappings);
+    $baseEntityMapping = $this->mapping->getEntityMapping(ComponentValue::class);
+    $fieldFileMapping = clone $baseEntityMapping->getFieldsMappingByFieldname(FieldFileMapping::class, $fieldname);
+    if(!$entityMapping = $this->mapping->getEntityMapping(ComponentValue::class."_".$editorComponentType->getEditorComponent()->getKeyname()))
+    {
+      $entityMapping = new EntityMapping(ComponentValue::class, $baseEntityMapping->slugger);
+    }
+    $entityMapping->addFieldMapping($fieldname, $fieldFileMapping);
     $this->mapping->addEntityMapping(ComponentValue::class."_".$editorComponentType->getEditorComponent()->getKeyname(), $entityMapping);
   }
 
@@ -360,14 +359,14 @@ class FormListener
         else
         {
           $editorComponentType = $object->getEditorComponentType();
-          if(($editorComponentType->getType() === "image" || $editorComponentType->getType() === "file"))
+          if(($editorComponentType->getType() === "image" || $editorComponentType->getType() === "file" || $editorComponentType->getCanHasLink()))
           {
             $fieldFileMappingName = $editorComponentType->getEditorComponent()->getKeyname() ?
               "{$object->getClassnameForMapping()}_{$editorComponentType->getEditorComponent()->getKeyname()}" :
               $object->getClassnameForMapping();
 
 
-            $fieldFileMapping = $this->mapping->getFieldsMappingByFieldname($fieldFileMappingName, FieldFileMapping::class, $editorComponentType->getType());
+            $fieldFileMapping = $this->mapping->getFieldsMappingByFieldname($fieldFileMappingName, FieldFileMapping::class, $editorComponentType->getCanHasLink() ? "file" : $editorComponentType->getType());
             foreach ($object->getUploadFiles() as $uploadedFile)
             {
               if($uploadedFile instanceof UploadedFile)
