@@ -882,9 +882,9 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
             ->add(Field\ChoiceField::create("tags", $choiceTags, array(
                   "entitled"        =>  false,
                   "choices_styles"  =>  array(
-                    "--element-choice-current-background:var(--color-blue-10)",
-                    "--element-choice-current-color:var(--color-blue-100)",
-                    "--element-choice-hover-color:var(--color-blue-100)"
+                    "--element-choice-current-background:var(color-main-20)",
+                    "--element-choice-current-color:var(--color-main-100)",
+                    "--element-choice-hover-color:var(--color-main-100)"
                   ),
                   "choice_style"    =>  "inline",
                   "multiple"        =>  true,
@@ -910,7 +910,6 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
           $choiceTags = $contentBlockConfiguration->getConfig("text_type_values", array());
           $formMapper->addGroup("choice-type")
             ->add(Field\SelectField::create("type", $choiceTags, array(
-
                 "container"   =>  array(
                   "class"       =>  "animate"
                 ),
