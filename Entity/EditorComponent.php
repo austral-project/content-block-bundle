@@ -161,7 +161,7 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
    */
   public function __toString()
   {
-    return $this->name;
+    return $this->name ? : "";
   }
 
   /**
