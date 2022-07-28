@@ -407,9 +407,9 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
   /**
    * @param string|null $themeId
    *
-   * @return array|mixed|string|null
+   * @return Theme|null
    */
-  public function getThemeById(?string $themeId)
+  public function getThemeById(?string $themeId): ?Theme
   {
     return AustralTools::getValueByKey($this->getThemes(), $themeId, null);
   }
@@ -453,9 +453,9 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
   /**
    * @param string|null $optionId
    *
-   * @return array|mixed|string|null
+   * @return Option|null
    */
-  public function getOptionById(?string $optionId)
+  public function getOptionById(?string $optionId): ?Option
   {
     return AustralTools::getValueByKey($this->getOptions(), $optionId, null);
   }

@@ -138,9 +138,9 @@ abstract class Component extends Entity implements ComponentInterface, EntityInt
   }
 
   /**
-   * @return string|null
+   * @return Theme|null
    */
-  public function getTheme(): ?string
+  public function getTheme(): ?Theme
   {
     return $this->editorComponent->getThemeById($this->themeId);
   }
@@ -167,9 +167,9 @@ abstract class Component extends Entity implements ComponentInterface, EntityInt
   }
 
   /**
-   * @return string|null
+   * @return Option|null
    */
-  public function getOption(): ?string
+  public function getOption(): ?Option
   {
     return $this->editorComponent->getOptionById($this->optionId);
   }
@@ -211,6 +211,7 @@ abstract class Component extends Entity implements ComponentInterface, EntityInt
   /**
    * @param string $id
    *
+   * @return Component
    * @return Component
    */
   public function setId(string $id): Component

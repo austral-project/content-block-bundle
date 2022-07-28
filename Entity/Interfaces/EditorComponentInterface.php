@@ -11,6 +11,8 @@
 namespace Austral\ContentBlockBundle\Entity\Interfaces;
 
 use Austral\ContentBlockBundle\Model\Editor\Layout;
+use Austral\ContentBlockBundle\Model\Editor\Option;
+use Austral\ContentBlockBundle\Model\Editor\Theme;
 use Doctrine\Common\Collections\Collection;
 
 /**
@@ -119,9 +121,9 @@ interface EditorComponentInterface
   /**
    * @param string|null $themeId
    *
-   * @return array|mixed|string|null
+   * @return Theme|null
    */
-  public function getThemeById(?string $themeId);
+  public function getThemeById(?string $themeId): ?Theme;
 
   /**
    * @param array $themes
@@ -138,9 +140,9 @@ interface EditorComponentInterface
   /**
    * @param string|null $optionId
    *
-   * @return array|mixed|string|null
+   * @return Option|null
    */
-  public function getOptionById(?string $optionId);
+  public function getOptionById(?string $optionId): ?Option;
 
   /**
    * @param array $options
