@@ -11,6 +11,7 @@
 namespace Austral\ContentBlockBundle\Field;
 
 use Austral\FormBundle\Field\CollectionEmbedField;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * Austral Field ContentBlock.
@@ -36,8 +37,44 @@ class ContentBlockField extends CollectionEmbedField
    */
   public function __construct(string $fieldname = "master", array $options = array())
   {
-    parent::__construct($fieldname, array("button"=>"button.new.block"));
-    $this->options['sortable']['editable'] = true;
+    if(!array_key_exists("button", $options))
+    {
+      $options["button"]  = "button.new.block";
+    }
+    if(array_key_exists("sortable", $options))
+    {
+      $options["sortable"] = array_merge(array(
+        "editable"  =>  true
+      ), $options["sortable"]);
+    }
+    else
+    {
+      $options["sortable"] = array(
+        "editable"  =>  true
+      );
+    }
+    parent::__construct($fieldname, $options);
   }
+
+  /**
+   * @param OptionsResolver $resolver
+   */
+  protected function configureOptions(OptionsResolver $resolver)
+  {
+    parent::configureOptions($resolver);
+    $resolver->setDefaults(array(
+      "hydrate_auto"  =>  array()
+    ));
+    $resolver->setAllowedTypes('hydrate_auto', array("array", "null"));
+  }
+
+  /**
+   * @return array|null
+   */
+  public function getHydrateAuto()
+  {
+    return $this->options['hydrate_auto'];
+  }
+
 
 }

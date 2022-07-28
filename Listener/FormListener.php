@@ -13,6 +13,7 @@ namespace Austral\ContentBlockBundle\Listener;
 use App\Entity\Austral\ContentBlockBundle\Component;
 use App\Entity\Austral\ContentBlockBundle\ComponentValue;
 use App\Entity\Austral\ContentBlockBundle\ComponentValues;
+use App\Entity\Austral\ContentBlockBundle\EditorComponentType;
 use Austral\AdminBundle\Module\Modules;
 use Austral\ContentBlockBundle\Configuration\ContentBlockConfiguration;
 use Austral\ContentBlockBundle\Entity\EditorComponent;
@@ -24,6 +25,7 @@ use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentTypeInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\EntityContentBlockInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\ContentBlockBundle\Entity\Traits\EntityComponentsTrait;
+use Austral\ContentBlockBundle\EntityManager\ComponentEntityManager;
 use Austral\ContentBlockBundle\EntityManager\EditorComponentEntityManager;
 use Austral\ContentBlockBundle\EntityManager\LibraryEntityManager;
 use Austral\ContentBlockBundle\Field\ContentBlockField;
@@ -38,6 +40,7 @@ use Austral\EntityBundle\Mapping\Mapping;
 use Austral\EntityFileBundle\File\Mapping\FieldFileMapping;
 use Austral\FormBundle\Mapper\Base\MapperElementInterface;
 use Austral\ToolsBundle\AustralTools;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Query\QueryException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -417,6 +420,56 @@ class FormListener
       $editorComponentManager = $this->container->get("austral.entity_manager.editor_component");
       $editorComponents = $editorComponentManager->selectAllEnabled("name");
 
+
+      if(($hydrates = $field->getHydrateAuto()))
+      {
+        if($formFieldEvent->getFormMapper()->getRequestMethod() !== "POST")
+        {
+          $componentsExist = array_values($object->getComponentsByContainerName($field->getFieldname()));
+          foreach ($hydrates as $hydrateKey => $hydrateKeyname)
+          {
+            /** @var Component $componentExist */
+            foreach($componentsExist as $componentkey => $componentExist)
+            {
+              if($hydrateKeyname == $componentExist->getEditorComponent()->getKeyname())
+              {
+                $hydrates[$hydrateKey] = $componentExist;
+                unset($componentsExist[$componentkey]);
+                break;
+              }
+            }
+          }
+
+          $componentManager = $this->container->get("austral.entity_manager.component");
+          $position = 1;
+          foreach($hydrates as $hydrate)
+          {
+            if($hydrate instanceof Component)
+            {
+              $hydrate->setPosition($position);
+            }
+            elseif(array_key_exists($hydrate, $editorComponents))
+            {
+              /** @var EditorComponent $editorComponent */
+              $editorComponent = $editorComponents[$hydrate];
+
+              $component = new Component();
+              $component->setPosition($position);
+              $component->setObjectClassname($object->getClassname());
+              $component->setEditorComponent($editorComponent);
+              if($object->getId())
+              {
+                $component->setObjectId($object->getId());
+              }
+              $this->generateAutoComponent($componentManager, $editorComponent->getEditorComponentTypes(), $component);
+              $componentManager->update($component, false);
+              $object->addComponents($field->getFieldname(), $component);
+            }
+            $position++;
+          }
+        }
+      }
+
       $componentFormMapperDefault = new FormMapper();
       $formFieldEvent->getFormMapper()->addSubFormMapper("{$field->getFieldname()}", $componentFormMapperDefault);
       $component = new Component();
@@ -666,7 +719,7 @@ class FormListener
         $options['sortable']['value'] = function($object) {
           return ($object->getPosition() < 10 ? "0{$object->getPosition()}" : $object->getPosition());
         };
-        $options['sortable']['editable'] = true;
+        //$options['sortable']['editable'] = true;
         $field->setOptions($options);
         $field->addCollectionsForms($collectionFormsChildren);
       }
@@ -677,6 +730,30 @@ class FormListener
     }
 
   }
+
+
+  /**
+   * @param ComponentEntityManager $componentManager
+   * @param Collection $editorComponentTypes
+   * @param Component $component
+   *
+   * @return $this
+   */
+  protected function generateAutoComponent(ComponentEntityManager $componentManager, Collection $editorComponentTypes, Component $component): FormListener
+  {
+    /** @var EditorComponentType $editorComponentType */
+    foreach ($editorComponentTypes as $editorComponentType)
+    {
+      $componentValue = new ComponentValue();
+      $componentValue->setComponent($component);
+      $componentValue->setEditorComponentType($editorComponentType);
+      $component->addComponentValues($componentValue);
+      $componentManager->update($componentValue, false);
+    }
+    return $this;
+  }
+
+
 
   /**
    * @param EditorComponent $editorComponent
