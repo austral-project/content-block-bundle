@@ -68,7 +68,8 @@ class EditorComponentRepository extends EntityRepository
     }
     $queryBuilder->where("root.isEnabled = :isEnabled")
       ->leftJoin("root.editorComponentTypes", "editorComponentTypes")->addSelect("editorComponentTypes")
-      ->setParameter("isEnabled", true);
+      ->setParameter("isEnabled", true)
+      ->indexBy("root", "root.keyname");
     $queryBuilder = $this->queryBuilderExtends("select-all-enabled", $queryBuilder);
     $queryBuilder->orderBy($orderByAttribute, $orderByType);
     $query = $queryBuilder->getQuery();
