@@ -425,7 +425,6 @@ abstract class ComponentValue extends Entity implements ComponentValueInterface,
    */
   public function getLinkType(): ?string
   {
-    dump($this->linkType);
     return AustralTools::getValueByKey($this->linksTypeAvailable, $this->linkType, null);
   }
 
