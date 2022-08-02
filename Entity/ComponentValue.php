@@ -52,7 +52,9 @@ abstract class ComponentValue extends Entity implements ComponentValueInterface,
     "interne"   =>  "internal",
     "external"  =>  "external",
     "externe"   =>  "external",
-    "file"      =>  "file"
+    "file"      =>  "file",
+    "phone"     =>  "phone",
+    "email"     =>  "email"
   );
 
   /**
@@ -423,6 +425,7 @@ abstract class ComponentValue extends Entity implements ComponentValueInterface,
    */
   public function getLinkType(): ?string
   {
+    dump($this->linkType);
     return AustralTools::getValueByKey($this->linksTypeAvailable, $this->linkType, null);
   }
 

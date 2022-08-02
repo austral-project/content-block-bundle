@@ -204,6 +204,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       {
         $values[$componentValueObject->getEditorComponentType()->getKeyname()]['isIframe'] = $editorComponent->getParameterByKey("isIframe");
       }
+      
       if($linkType = $componentValueObject->getLinkType())
       {
         $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"] = array(
@@ -231,6 +232,14 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         elseif($linkType == "file")
         {
           $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['file'] = $componentValueObject;
+        }
+        elseif($linkType == "phone")
+        {
+          $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['url'] = "tel:{$componentValueObject->getLinkPhone()}";
+        }
+        elseif($linkType == "email")
+        {
+          $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['url'] = "mailto:{$componentValueObject->getLinkemail()}";
         }
 
       }
