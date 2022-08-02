@@ -210,13 +210,13 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"] = array(
           "anchor"  =>  $componentValueObject->getOptionsByKey("anchor", null),
           "target"  =>  $componentValueObject->getOptionsByKey("target", null),
-          "url"     =>  $linkType == "internal" ? : $componentValueObject->getLinkUrl(),
+          "url"     =>  $linkType == "internal" ? "" : $componentValueObject->getLinkUrl(),
           "type"    =>  $linkType,
         );
         if($linkType == "internal")
         {
-          $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['url'] = "#INTERNAL_LINK_{$componentValueObject->getLinkEntityKey()}#";
           if($this->pages && $componentValueObject->getLinkEntityKey()) {
+            $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['url'] = "#INTERNAL_LINK_{$componentValueObject->getLinkEntityKey()}#";
             list($entity, $id) = explode(":", $componentValueObject->getLinkEntityKey());
             $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]["linkObject"] = $this->pages->retreiveByEntityAndId($entity,$id);
           }
