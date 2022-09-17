@@ -11,7 +11,7 @@
 namespace Austral\ContentBlockBundle\Listener;
 
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentInterface;
-use Austral\ContentBlockBundle\Entity\Interfaces\EntityContentBlockInterface;
+use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Austral\ContentBlockBundle\Entity\Traits\EntityComponentsTrait;
 use Austral\ContentBlockBundle\EntityManager\ComponentEntityManager;
 
@@ -100,11 +100,11 @@ class DoctrineListener implements EventSubscriber
   }
 
   /**
-   * @param EntityContentBlockInterface $object
+   * @param ComponentsInterface $object
    *
    * @return void
    */
-  protected function updateComponents(EntityContentBlockInterface $object)
+  protected function updateComponents(ComponentsInterface $object)
   {
     /** @var ComponentInterface $component */
     foreach($object->getComponents() as $componentsByContainer)

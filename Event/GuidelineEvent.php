@@ -11,7 +11,7 @@
 namespace Austral\ContentBlockBundle\Event;
 
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentInterface;
-use Austral\ContentBlockBundle\Entity\Interfaces\EntityContentBlockInterface;
+use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Symfony\Contracts\EventDispatcher\Event;
 
 /**
@@ -35,9 +35,9 @@ class GuidelineEvent extends Event
   private ?ComponentInterface $componentObject = null;
 
   /**
-   * @var EntityContentBlockInterface|null
+   * @var ComponentsInterface|null
    */
-  private ?EntityContentBlockInterface $defaultObjectPage = null;
+  private ?ComponentsInterface $defaultObjectPage = null;
 
   /**
    * @var string
@@ -148,19 +148,19 @@ class GuidelineEvent extends Event
   }
 
   /**
-   * @return EntityContentBlockInterface|null
+   * @return ComponentsInterface|null
    */
-  public function getDefaultObjectPage(): ?EntityContentBlockInterface
+  public function getDefaultObjectPage(): ?ComponentsInterface
   {
     return $this->defaultObjectPage;
   }
 
   /**
-   * @param EntityContentBlockInterface|null $defaultObjectPage
+   * @param ComponentsInterface|null $defaultObjectPage
    *
    * @return $this
    */
-  public function setDefaultObjectPage(?EntityContentBlockInterface $defaultObjectPage): GuidelineEvent
+  public function setDefaultObjectPage(?ComponentsInterface $defaultObjectPage): GuidelineEvent
   {
     $this->defaultObjectPage = $defaultObjectPage;
     return $this;

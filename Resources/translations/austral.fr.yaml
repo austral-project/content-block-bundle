@@ -9,9 +9,21 @@ pages:
     contentBlockLibrary:
       singular:                 Librarie
       plural:                   Libraries
+    contentBlockLibraryByDomain:
+      singular:                  "Librarie : %domainName%"
+      plural:                    "Libraries : %domainName%"
+    contentBlockLibraryForAllDomain:
+      singular:                  "Librarie pour tous les domains"
+      plural:                    "Librarie pour tous les domains"
     navigation:
       singular:                  Navigation
       plural:                    Navigations
+    navigationByDomain:
+      singular:                  "Navigation %domainName%"
+      plural:                    "Navigations %domainName%"
+    navigationForAllDomain:
+      singular:                  "Navigation pour tous les domains"
+      plural:                    "Navigations pour tous les domains"
 
 fieldset:
   contentBlockTypeEditor:       Editeur de type de bloc de contenu
@@ -29,6 +41,9 @@ errors:
     loopDetected:               L'ajout de cet élément créera une erreur 500 sur votre site Web
 
 button:
+  link:
+    choice:                     Sélectionner
+    selected:                   Selectionné
   edit:
     library:                    Éditer la librairie
   new:

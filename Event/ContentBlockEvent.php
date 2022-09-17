@@ -11,7 +11,7 @@
 namespace Austral\ContentBlockBundle\Event;
 
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentInterface;
-use Austral\ContentBlockBundle\Entity\Interfaces\EntityContentBlockInterface;
+use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Symfony\Contracts\EventDispatcher\Event;
 
 /**
@@ -26,9 +26,9 @@ class ContentBlockEvent extends Event
   const EVENT_AUSTRAL_CONTENT_BLOCK_GUIDELINE_INIT = "austral.event.content_block.guideline_init";
 
   /**
-   * @var EntityContentBlockInterface|null
+   * @var ComponentsInterface|null
    */
-  private ?EntityContentBlockInterface $object;
+  private ?ComponentsInterface $object;
 
   /**
    * @var array
@@ -48,29 +48,29 @@ class ContentBlockEvent extends Event
   /**
    * FormEvent constructor.
    *
-   * @param EntityContentBlockInterface|null $object
+   * @param ComponentsInterface|null $object
    * @param string $rootTemplateDir
    */
-  public function __construct(?EntityContentBlockInterface $object = null, string $rootTemplateDir = "Front")
+  public function __construct(?ComponentsInterface $object = null, string $rootTemplateDir = "Front")
   {
     $this->object = $object;
     $this->rootTemplateDir = $rootTemplateDir;
   }
 
   /**
-   * @return EntityContentBlockInterface|null
+   * @return ComponentsInterface|null
    */
-  public function getObject(): ?EntityContentBlockInterface
+  public function getObject(): ?ComponentsInterface
   {
     return $this->object;
   }
 
   /**
-   * @param EntityContentBlockInterface $object
+   * @param ComponentsInterface $object
    *
    * @return ContentBlockEvent
    */
-  public function setObject(EntityContentBlockInterface $object): ContentBlockEvent
+  public function setObject(ComponentsInterface $object): ContentBlockEvent
   {
     $this->object = $object;
     return $this;

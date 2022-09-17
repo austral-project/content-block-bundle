@@ -5,7 +5,7 @@
   "keywords":                                 ["Austral", "Editor content block", "Symfony"],
   "license":                                  "MIT",
   "homepage":                                 "https://austral.dev",
-  "version":                                  "3.0",
+  "version":                                  "3.1",
   "authors": [
     {
       "name":                                 "Matthieu Beurel",
@@ -17,9 +17,9 @@
     "php":                                    "^7.4 || ^8.0",
     "symfony/string":                         "^5.3|^5.4",
 
-    "austral/tools-bundle":                   "^3.0",
-    "austral/entity-bundle":                  "^3.0",
-    "austral/form-bundle":                    "^3.0",
+    "austral/tools-bundle":                   "^3.1",
+    "austral/entity-bundle":                  "^3.1",
+    "austral/form-bundle":                    "^3.1",
 
     "gedmo/doctrine-extensions":              "^3.0",
     "ramsey/uuid":                            "^3.0",

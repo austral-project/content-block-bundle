@@ -5,13 +5,22 @@ pages:
       plural:                    Contents Blocks
     contentBlockEditor:
       singular:                  Editor Component
-      plural:                    Editor Component
+      plural:                    Editor Components
     contentBlockLibrary:
       singular:                  Library
-      plural:                    Library
+      plural:                    Libraries
+    contentBlockLibraryByDomain:
+      singular:                  "Library : %domainName%"
+      plural:                    "Libraries : %domainName%"
+    contentBlockLibraryForAllDomain:
+      singular:                  "Library for all domains"
+      plural:                    "Libraries for all domains"
     navigation:
       singular:                  Navigation
       plural:                    Navigations
+    navigationForAllDomain:
+      singular:                  "Navigation for all domains"
+      plural:                    "Navigations for all domains"
 
 fieldset:
   contentBlockTypeEditor:       Content block Type Editor
@@ -29,6 +38,9 @@ errors:
     loopDetected:               Adding this element will create a 500 error on your web site
 
 button:
+  link:
+    choice:                     Select
+    selected:                   Selected
   edit:
     library:                    Edit library
   new:

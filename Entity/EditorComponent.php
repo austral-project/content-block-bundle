@@ -22,7 +22,7 @@ use Austral\EntityBundle\Entity\EntityInterface;
 use Austral\EntityBundle\Entity\Traits\EntityTimestampableTrait;
 use Austral\EntityFileBundle\Annotation as AustralFile;
 
-use Austral\EntityFileBundle\Entity\Interfaces\EntityFileInterface;
+use Austral\EntityBundle\Entity\Interfaces\FileInterface;
 use Austral\EntityFileBundle\Entity\Traits\EntityFileTrait;
 use Austral\ToolsBundle\AustralTools;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -39,7 +39,7 @@ use function Symfony\Component\String\u;
  * @abstract
  * @ORM\MappedSuperclass
  */
-abstract class EditorComponent extends Entity implements EditorComponentInterface, EntityInterface, EntityFileInterface
+abstract class EditorComponent extends Entity implements EditorComponentInterface, EntityInterface, FileInterface
 {
 
   use EntityTimestampableTrait;

@@ -48,12 +48,6 @@ class NavigationAdmin extends Admin implements AdminModuleInterface
   public function configureListMapper(ListAdminEvent $listAdminEvent)
   {
     $listAdminEvent->getListMapper()
-      ->buildDataHydrate(function(DataHydrateORM $dataHydrate) {
-        $dataHydrate->addQueryBuilderClosure(function(QueryBuilder $queryBuilder) {
-          $queryBuilder->where("root.isNavigationMenu = :isNavigationMenu")
-            ->setParameter("isNavigationMenu", true);
-        });
-      })
       ->addColumn(new Column\Value("name"))
       ->addColumn(new Column\SwitchValue("isEnabled", null, 0, 1,
           $listAdminEvent->getCurrentModule()->generateUrl("change"),

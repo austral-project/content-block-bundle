@@ -10,14 +10,14 @@
 
 namespace Austral\ContentBlockBundle\Entity\Interfaces;
 
-use Austral\EntityFileBundle\Entity\Interfaces\EntityFileInterface;
+use Austral\EntityBundle\Entity\Interfaces\FileInterface;
 use Doctrine\Common\Collections\Collection;
 
 /**
  * Austral ComponentValue Interface.
  * @author Matthieu Beurel <matthieu@austral.dev>
  */
-interface ComponentValueInterface extends EntityFileInterface
+interface ComponentValueInterface extends FileInterface
 {
 
   /**

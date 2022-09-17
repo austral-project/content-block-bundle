@@ -10,7 +10,7 @@
 
 namespace Austral\ContentBlockBundle\Services;
 use Austral\ContentBlockBundle\Entity\Component;
-use Austral\ContentBlockBundle\Entity\Interfaces\EntityContentBlockInterface;
+use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Austral\EntityBundle\Entity\EntityInterface;
 use Austral\ToolsBundle\AustralTools;
 use Austral\ToolsBundle\Services\Debug;
@@ -109,7 +109,7 @@ Class ContentBlockContainer
         $className = $classMeta->getName();
         if(strpos($className,"Entity\Base") === false)
         {
-          if(AustralTools::usedImplements($className, EntityContentBlockInterface::class))
+          if(AustralTools::usedImplements($className, ComponentsInterface::class))
           {
             $entityName = trim(str_replace($classMeta->namespace, "", $className), "\\");
             if(strpos($className,"Translate") === false)
@@ -201,7 +201,7 @@ Class ContentBlockContainer
         {
           $this->objectsByEntity[$entityName][$object->getId()] = $object;
           $this->objectsByEntityWithTranslate[$entityName][$object->getId()] = $object;
-          if(AustralTools::usedImplements($object, "Austral\EntityTranslateBundle\Entity\Interfaces\EntityTranslateMasterInterface"))
+          if(AustralTools::usedImplements($object, "Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface"))
           {
             foreach ($object->getTranslates() as $translate)
             {
@@ -261,12 +261,12 @@ Class ContentBlockContainer
   }
 
   /**
-   * @param EntityInterface|EntityContentBlockInterface $object
+   * @param EntityInterface|ComponentsInterface $object
    */
   public function initComponentByObject(EntityInterface $object)
   {
     $this->debug->stopWatchStart("content_block_container.init_component_by_object", $this->debugContainer);
-    if(AustralTools::usedImplements(get_class($object), "Austral\EntityTranslateBundle\Entity\Interfaces\EntityTranslateMasterInterface"))
+    if(AustralTools::usedImplements(get_class($object), "Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface"))
     {
       $object = $object->getTranslateCurrent();
     }

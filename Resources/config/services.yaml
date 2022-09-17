@@ -19,7 +19,7 @@ services:
 ##### Event Subscriber
   austral.content_block.event_subscriber:
     class:        Austral\ContentBlockBundle\EventSubscriber\ContentBlockSubscriber
-    arguments:    [ "@austral.content_block.content_block_container", "@event_dispatcher","@?austral.entity_seo.pages" ]
+    arguments:    [ "@austral.content_block.content_block_container", "@event_dispatcher","@?austral.seo.url_parameter.management" ]
     tags:
       - { name: kernel.event_subscriber }
 

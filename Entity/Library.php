@@ -11,20 +11,22 @@
 namespace Austral\ContentBlockBundle\Entity;
 
 use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
-use Austral\ContentBlockBundle\Entity\Interfaces\EntityContentBlockInterface;
+use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 
 use Austral\ContentBlockBundle\Model\Editor\Restriction;
 use Austral\EntityBundle\Entity\Entity;
 use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\EntityBundle\Entity\Interfaces\FilterByDomainInterface;
 use Austral\EntityBundle\Entity\Traits\EntityTimestampableTrait;
 
-use Austral\EntityFileBundle\Entity\Interfaces\EntityFileInterface;
+use Austral\EntityBundle\Entity\Interfaces\FileInterface;
 use Austral\EntityFileBundle\Entity\Traits\EntityFileTrait;
-use Austral\EntityTranslateBundle\Entity\Interfaces\EntityTranslateMasterInterface;
+use Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface;
 use Austral\EntityTranslateBundle\Entity\Traits\EntityTranslateMasterComponentsTrait;
 use Austral\EntityTranslateBundle\Entity\Traits\EntityTranslateMasterTrait;
 use Austral\EntityTranslateBundle\Annotation\Translate;
 
+use Austral\HttpBundle\Entity\Traits\FilterByDomainTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -39,13 +41,20 @@ use Exception;
  * @ORM\MappedSuperclass
  * @Translate(relationClass="Austral\ContentBlockBundle\Entity\Interfaces\LibraryTranslateInterface")
  */
-abstract class Library extends Entity implements LibraryInterface, EntityInterface, EntityTranslateMasterInterface, EntityContentBlockInterface, EntityFileInterface
+abstract class Library extends Entity implements
+  LibraryInterface,
+  EntityInterface,
+  TranslateMasterInterface,
+  ComponentsInterface,
+  FileInterface,
+  FilterByDomainInterface
 {
 
   use EntityTimestampableTrait;
   use EntityTranslateMasterTrait;
   use EntityTranslateMasterComponentsTrait;
   use EntityFileTrait;
+  use FilterByDomainTrait;
 
   /**
    * @var string

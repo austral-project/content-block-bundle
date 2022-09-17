@@ -10,7 +10,7 @@
 namespace Austral\ContentBlockBundle\Entity\Traits;
 
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentInterface;
-use Austral\ContentBlockBundle\Entity\Interfaces\EntityContentBlockInterface;
+use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 
@@ -97,9 +97,9 @@ trait EntityComponentsTrait
   /**
    * @param array $components
    *
-   * @return $this|EntityContentBlockInterface
+   * @return $this|ComponentsInterface
    */
-  public function setComponents(array $components): EntityContentBlockInterface
+  public function setComponents(array $components): ComponentsInterface
   {
     $this->components = $components;
     $this->setComponentsUpdated(new DateTime());
@@ -109,9 +109,9 @@ trait EntityComponentsTrait
   /**
    * @param array $componentsTemplate
    *
-   * @return $this|EntityContentBlockInterface
+   * @return $this|ComponentsInterface
    */
-  public function setComponentsTemplate(array $componentsTemplate): EntityContentBlockInterface
+  public function setComponentsTemplate(array $componentsTemplate): ComponentsInterface
   {
     $this->componentsTemplate = $componentsTemplate;
     return $this;
@@ -123,9 +123,9 @@ trait EntityComponentsTrait
    * @param string $containerName
    * @param ComponentInterface $child
    *
-   * @return $this|EntityContentBlockInterface
+   * @return $this|ComponentsInterface
    */
-  public function addComponents(string $containerName, ComponentInterface $child): EntityContentBlockInterface
+  public function addComponents(string $containerName, ComponentInterface $child): ComponentsInterface
   {
     if(!array_key_exists($containerName, $this->components))
     {
@@ -148,9 +148,9 @@ trait EntityComponentsTrait
    * @param string $containerName
    * @param ComponentInterface $child
    *
-   * @return $this|EntityContentBlockInterface
+   * @return $this|ComponentsInterface
    */
-  public function removeComponents(string $containerName, ComponentInterface $child):EntityContentBlockInterface
+  public function removeComponents(string $containerName, ComponentInterface $child):ComponentsInterface
   {
     if(array_key_exists($containerName, $this->components) && array_key_exists($child->getId(), $this->components[$containerName]))
     {
@@ -173,9 +173,9 @@ trait EntityComponentsTrait
   /**
    * @param DateTime $componentsUpdated
    *
-   * @return $this|EntityContentBlockInterface
+   * @return $this|ComponentsInterface
    */
-  public function setComponentsUpdated(DateTime $componentsUpdated): EntityContentBlockInterface
+  public function setComponentsUpdated(DateTime $componentsUpdated): ComponentsInterface
   {
     $this->componentsUpdated = $componentsUpdated;
     return $this;

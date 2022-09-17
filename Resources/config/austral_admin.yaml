@@ -10,6 +10,11 @@ services:
     tags:
       - { name: kernel.event_listener, event: "austral.event.admin.dashboard", method: dashboard }
 
+  austral.content_block.module.listener:
+    class: Austral\ContentBlockBundle\Listener\ModuleListener
+    tags:
+      - { name: kernel.event_listener, event: "austral.event.module.admin.add", method: moduleAdd }
+
 parameters:
 
   austral.admin.class.editor_component.class:                             Austral\ContentBlockBundle\Admin\EditorComponentAdmin

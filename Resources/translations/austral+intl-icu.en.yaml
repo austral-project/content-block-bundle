@@ -1,0 +1,16 @@
+pages:
+  names:
+    contentBlockLibraryByDomain:
+      subTitle: >-
+                    {count, plural,
+                        =0    { 0 librairy }
+                        one   { 1 librairy }
+                        other { # librairies }
+                    }
+    navigationByDomain:
+      subTitle: >-
+                    {count, plural,
+                        =0    { 0 navigation }
+                        one   { 1 navigation }
+                        other { # navigations }
+                    }

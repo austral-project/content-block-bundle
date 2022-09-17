@@ -14,7 +14,7 @@ use Austral\ContentBlockBundle\Repository\LibraryRepository;
 use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 
 use Austral\EntityBundle\EntityManager\EntityManager;
-use Austral\EntityTranslateBundle\Entity\Interfaces\EntityTranslateMasterInterface;
+use Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface;
 
 /**
  * Austral Library EntityManager.
@@ -38,7 +38,7 @@ class LibraryEntityManager extends EntityManager
    */
   public function create(array $values = array()): LibraryInterface
   {
-    /** @var LibraryInterface|EntityTranslateMasterInterface $object */
+    /** @var LibraryInterface|TranslateMasterInterface $object */
     $object = parent::create($values);
     $object->setCurrentLanguage($this->currentLanguage);
     $object->createNewTranslateByLanguage();
@@ -60,9 +60,9 @@ class LibraryEntityManager extends EntityManager
    * @return array|int|mixed|string
    * @throws \Doctrine\ORM\Query\QueryException
    */
-  public function selectAccessibleInContent()
+  public function selectAccessibleInContent( \Closure $closure = null)
   {
-    return $this->repository->selectAccessibleInContent();
+    return $this->repository->selectAccessibleInContent($closure);
   }
 
 }

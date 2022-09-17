@@ -11,7 +11,7 @@
 namespace Austral\ContentBlockBundle\Event;
 
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentInterface;
-use Austral\ContentBlockBundle\Entity\Interfaces\EntityContentBlockInterface;
+use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Symfony\Contracts\EventDispatcher\Event;
 
 /**
@@ -25,9 +25,9 @@ class ComponentEvent extends Event
   const EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_INIT = "austral.event.content_block.component_init";
 
   /**
-   * @var EntityContentBlockInterface
+   * @var ComponentsInterface
    */
-  private EntityContentBlockInterface $currentObject;
+  private ComponentsInterface $currentObject;
 
   /**
    * @var ComponentInterface
@@ -52,19 +52,19 @@ class ComponentEvent extends Event
   /**
    * FormEvent constructor.
    *
-   * @param EntityContentBlockInterface $currentObject
+   * @param ComponentsInterface $currentObject
    * @param ComponentInterface $component
    */
-  public function __construct(EntityContentBlockInterface $currentObject, ComponentInterface $component)
+  public function __construct(ComponentsInterface $currentObject, ComponentInterface $component)
   {
     $this->currentObject = $currentObject;
     $this->component = $component;
   }
 
   /**
-   * @return EntityContentBlockInterface
+   * @return ComponentsInterface
    */
-  public function getCurrentObject(): EntityContentBlockInterface
+  public function getCurrentObject(): ComponentsInterface
   {
     return $this->currentObject;
   }

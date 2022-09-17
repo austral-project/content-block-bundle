@@ -44,12 +44,16 @@ class LibraryRepository extends EntityRepository
   /**
    * @return array|int|mixed|string
    */
-  public function selectAccessibleInContent()
+  public function selectAccessibleInContent(\Closure $closure = null)
   {
     $queryBuilder = $this->createQueryBuilder('root')
       ->leftJoin("root.translates", "translates")->addSelect("translates");
     $queryBuilder->where("root.accessibleInContent = :accessibleInContent")
       ->setParameter("accessibleInContent", true);
+    if($closure instanceof \Closure)
+    {
+      $closure->call($this, $queryBuilder);
+    }
     $query = $queryBuilder->getQuery();
     try {
       $objects = $query->execute();

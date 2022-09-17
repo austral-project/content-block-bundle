@@ -13,7 +13,7 @@ namespace Austral\ContentBlockBundle\Listener;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValueInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValuesInterface;
-use Austral\ContentBlockBundle\Entity\Interfaces\EntityContentBlockInterface;
+use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Austral\ContentBlockBundle\EntityManager\ComponentEntityManager;
 use Austral\EntityBundle\Event\EntityManagerEvent;
 use Austral\ToolsBundle\AustralTools;
@@ -49,7 +49,7 @@ class EntityManagerListener
   public function duplicate(EntityManagerEvent $entityManagerEvent)
   {
 
-    if(AustralTools::usedImplements(get_class($entityManagerEvent->getObject()), EntityContentBlockInterface::class))
+    if(AustralTools::usedImplements(get_class($entityManagerEvent->getObject()), ComponentsInterface::class))
     {
       $componentsBlocks = $this->componentEntityManager->selectComponentsByObjectIdAndClassname($entityManagerEvent->getSourceObject()->getId(), $entityManagerEvent->getSourceObject()->getClassname());
       /**

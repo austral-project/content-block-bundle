@@ -22,7 +22,7 @@ use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValueInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValuesInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentTypeInterface;
-use Austral\ContentBlockBundle\Entity\Interfaces\EntityContentBlockInterface;
+use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\ContentBlockBundle\Entity\Traits\EntityComponentsTrait;
 use Austral\ContentBlockBundle\EntityManager\ComponentEntityManager;
@@ -42,6 +42,7 @@ use Austral\FormBundle\Mapper\Base\MapperElementInterface;
 use Austral\ToolsBundle\AustralTools;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Query\QueryException;
+use Doctrine\ORM\QueryBuilder;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -158,7 +159,7 @@ class FormListener
   {
     $this->loopLibraryDetected($formEvent);
     try {
-      if($formEvent->getFormMapper()->getObject() instanceof EntityContentBlockInterface)
+      if($formEvent->getFormMapper()->getObject() instanceof ComponentsInterface)
       {
         /** @var EntityComponentsTrait $object */
         $object = $formEvent->getFormMapper()->getObject();
@@ -321,7 +322,7 @@ class FormListener
   public function uploads(FormEvent $formEvent)
   {
     try {
-      if($formEvent->getFormMapper()->getObject() instanceof EntityContentBlockInterface)
+      if($formEvent->getFormMapper()->getObject() instanceof ComponentsInterface)
       {
         /** @var EntityComponentsTrait $object */
         $object = $formEvent->getFormMapper()->getObject();
@@ -329,7 +330,6 @@ class FormListener
       }
     } catch(Exception $e) {
       $formEvent->getFormMapper()->setFormStatus("exception");
-      throw $e;
       throw new FormUploadException($e->getMessage());
     }
   }
@@ -412,7 +412,7 @@ class FormListener
     /** @var EntityComponentsTrait|EntityInterface $object */
     $object = $formFieldEvent->getFormMapper()->getObject();
     $field = $formFieldEvent->getField();
-    if($field instanceof ContentBlockField and $object instanceof EntityContentBlockInterface)
+    if($field instanceof ContentBlockField and $object instanceof ComponentsInterface)
     {
       $collectionFormsChildren = array();
 
@@ -556,7 +556,7 @@ class FormListener
                   },
                   "editable"            =>  true
                 ),
-                "getter"              =>  function(EntityContentBlockInterface $object) use ($editorComponent, $field){
+                "getter"              =>  function(ComponentsInterface $object) use ($editorComponent, $field){
                   $components = array();
                   /** @var Component $component */
                   foreach ($object->getComponentsByContainerName($field->getFieldname()) as $component)
@@ -571,7 +571,7 @@ class FormListener
                   }
                   return $components;
                 },
-                "setter"              =>  function(EntityContentBlockInterface $object, $components) use ($editorComponent, $field){
+                "setter"              =>  function(ComponentsInterface $object, $components) use ($editorComponent, $field){
                   $componentsExist = $object->getComponentsByContainerName($field->getFieldname());
                   /** @var Component $component */
                   foreach($components as $component)
@@ -602,7 +602,18 @@ class FormListener
 
       /** @var LibraryEntityManager $libraryManager */
       $libraryManager = $this->container->get("austral.entity_manager.library");
-      $libraries = $libraryManager->selectAccessibleInContent();
+      $filterByDomain = null;
+      if($formFieldEvent->getFormMapper()->getModule())
+      {
+        $filterByDomain = $formFieldEvent->getFormMapper()->getModule()->getParametersByKey("austral_filter_by_domain");
+      }
+      $libraries = $libraryManager->selectAccessibleInContent(function(QueryBuilder $queryBuilder) use($filterByDomain) {
+        if($filterByDomain)
+        {
+          $queryBuilder->andWhere("root.domainId = :domainId")
+          ->setParameter("domainId", $filterByDomain);
+        }
+      });
 
       if($libraries)
       {
@@ -664,7 +675,7 @@ class FormListener
                   },
                   "editable"            =>  true
                 ),
-                "getter"              =>  function(EntityContentBlockInterface $object) use ($library, $field){
+                "getter"              =>  function(ComponentsInterface $object) use ($library, $field){
                   $components = array();
                   /** @var Component $component */
                   foreach ($object->getComponentsByContainerName($field->getFieldname()) as $component)
@@ -679,7 +690,7 @@ class FormListener
                   }
                   return $components;
                 },
-                "setter"              =>  function(EntityContentBlockInterface $object, $components) use ($library, $field){
+                "setter"              =>  function(ComponentsInterface $object, $components) use ($library, $field){
                   $componentsExist = $object->getComponentsByContainerName($field->getFieldname());
                   /** @var Component $component */
                   foreach($components as $component)
@@ -1391,7 +1402,16 @@ class FormListener
       "button"  =>  array(
         "entitled"      =>  "",
         "picto"         =>  "austral-picto-link",
-        "class"         =>  "button-picto"
+        "class"         =>  "button-picto",
+        "data"          =>  array(
+          "data-check-value"  =>  json_encode(array(
+            "*[data-popin-update-input='field-link-choice']",
+            "*[data-popin-update-input='field-link-url']",
+            "*[data-popin-update-input='field-link-email']",
+            "*[data-popin-update-input='field-link-phone']",
+            "*[data-popin-update-input='field-link-file']",
+          ))
+        )
       ),
       "popin"  =>  array(
         "id"            =>  "master",
@@ -1402,36 +1422,43 @@ class FormListener
     $popin->add(Field\SymfonyField::create("linkType", TextType::class, array(
       "entitled"    =>  false,
       "attr"        =>  array(
+        "autocomplete"            => "off",
         "data-popin-update-input" => "field-link-type"
       )
     )));
     $popin->add(Field\SymfonyField::create("linkEntityKey", TextType::class, array(
       "entitled"    =>  false,
       "attr"        =>  array(
-        "data-popin-update-input" => "field-link-choice"
+        "autocomplete"            => "off",
+        "data-popin-update-input" => "field-link-choice",
+        "data-popin-update-value" => "field-link-choice-name",
       )
     )));
     $popin->add(Field\SymfonyField::create("linkUrl", TextType::class, array(
       "entitled"    =>  false,
       "attr"        =>  array(
+        "autocomplete"            => "off",
         "data-popin-update-input" => "field-link-url"
       )
     )));
     $popin->add(Field\SymfonyField::create("linkEmail", TextType::class, array(
       "entitled"    =>  false,
       "attr"        =>  array(
+        "autocomplete"            => "off",
         "data-popin-update-input" => "field-link-email"
       )
     )));
     $popin->add(Field\SymfonyField::create("linkPhone", TextType::class, array(
       "entitled"    =>  false,
       "attr"        =>  array(
+        "autocomplete"            => "off",
         "data-popin-update-input" => "field-link-phone"
       )
     )));
     $popin->add(Field\SymfonyField::create("target", TextType::class, array(
       "entitled"    =>  false,
       "attr"        =>  array(
+        "autocomplete"            => "off",
         "data-popin-update-input" => "field-target-blank"
       ),
       "getter"      =>  function(ComponentValue $componentValue){
@@ -1444,6 +1471,7 @@ class FormListener
     $popin->add(Field\SymfonyField::create("anchor", TextType::class, array(
       "entitled"    =>  false,
       "attr"        =>  array(
+        "autocomplete"            => "off",
         "data-popin-update-input" => "field-anchor"
       ),
       "getter"      =>  function(ComponentValue $componentValue){

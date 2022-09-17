@@ -24,7 +24,7 @@ use Austral\ContentBlockBundle\Event\GuidelineEvent;
 use Austral\ContentBlockBundle\Model\Editor\Option;
 use Austral\ContentBlockBundle\Model\Editor\Theme;
 use Austral\ContentBlockBundle\Services\ContentBlockContainer;
-use Austral\EntitySeoBundle\Services\Pages;
+use Austral\SeoBundle\Services\UrlParameterManagement;
 use Doctrine\Common\Collections\Collection;
 use joshtronic\LoremIpsum;
 use Ramsey\Uuid\Uuid;
@@ -51,22 +51,22 @@ class ContentBlockSubscriber implements EventSubscriberInterface
   protected ContentBlockContainer $contentBlockContainer;
   
   /**
-   * @var Pages|null
+   * @var UrlParameterManagement|null
    */
-  protected ?Pages $pages;
+  protected ?UrlParameterManagement $urlParameterManagement;
 
   /**
    * ContentBlockSubscriber constructor.
    *
    * @param ContentBlockContainer $contentBlockContainer
    * @param EventDispatcherInterface $dispatcher
-   * @param Pages|null $pages
+   * @param UrlParameterManagement|null $urlParameterManagement
    */
-  public function __construct(ContentBlockContainer $contentBlockContainer, EventDispatcherInterface $dispatcher, Pages $pages = null)
+  public function __construct(ContentBlockContainer $contentBlockContainer, EventDispatcherInterface $dispatcher, ?UrlParameterManagement $urlParameterManagement = null)
   {
     $this->dispatcher = $dispatcher;
     $this->contentBlockContainer = $contentBlockContainer;
-    $this->pages = $pages;
+    $this->urlParameterManagement = $urlParameterManagement;
   }
 
   /**
@@ -215,10 +215,11 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         );
         if($linkType == "internal")
         {
-          if($this->pages && $componentValueObject->getLinkEntityKey()) {
+          if($this->urlParameterManagement && $componentValueObject->getLinkEntityKey()) {
             $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['url'] = "#INTERNAL_LINK_{$componentValueObject->getLinkEntityKey()}#";
             list($entity, $id) = explode(":", $componentValueObject->getLinkEntityKey());
-            $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]["linkObject"] = $this->pages->retreiveByEntityAndId($entity,$id);
+            $urlParameter = $this->urlParameterManagement->getObjectRelationByClassnameAndId($entity,$id);
+            $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]["urlParameter"] = $urlParameter;
           }
         }
         elseif($linkType == "external")

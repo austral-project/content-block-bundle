@@ -10,7 +10,7 @@
 
 namespace Austral\ContentBlockBundle\Entity;
 
-use Austral\ContentBlockBundle\Entity\Interfaces\EntityContentBlockInterface;
+use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\LibraryTranslateInterface;
 
@@ -21,8 +21,8 @@ use Austral\EntityBundle\Entity\EntityInterface;
 use Austral\EntityFileBundle\Annotation as AustralFile;
 
 use Austral\EntityBundle\Entity\Traits\EntityTimestampableTrait;
-use Austral\EntityTranslateBundle\Entity\Interfaces\EntityTranslateChildInterface;
-use Austral\EntityTranslateBundle\Entity\Interfaces\EntityTranslateMasterInterface;
+use Austral\EntityBundle\Entity\Interfaces\TranslateChildInterface;
+use Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface;
 use Austral\EntityTranslateBundle\Entity\Traits\EntityTranslateChildTrait;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
@@ -35,7 +35,7 @@ use Exception;
  * @abstract
  * @ORM\MappedSuperclass
  */
-abstract class LibraryTranslate extends Entity implements LibraryTranslateInterface, EntityInterface, EntityTranslateChildInterface, EntityContentBlockInterface
+abstract class LibraryTranslate extends Entity implements LibraryTranslateInterface, EntityInterface, TranslateChildInterface, ComponentsInterface
 {
 
   use EntityTranslateChildTrait;
@@ -50,12 +50,12 @@ abstract class LibraryTranslate extends Entity implements LibraryTranslateInterf
   protected $id;
 
   /**
-   * @var LibraryInterface|EntityTranslateMasterInterface
+   * @var LibraryInterface|TranslateMasterInterface
    *
    * @ORM\ManyToOne(targetEntity="\Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface", inversedBy="translates", cascade={"persist"})
    * @ORM\JoinColumn(name="master_id", referencedColumnName="id")
    */
-  protected EntityTranslateMasterInterface $master;
+  protected TranslateMasterInterface $master;
 
   /**
    * @var string|null
