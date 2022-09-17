@@ -1,7 +1,7 @@
 Changelog
 =========
 
-### Version 3.1.0 (2021-09-17)
+### Version 3.1.0 (2022-09-17)
 * Moving all the Entities interfaces in bundle entity-bundle
 * Adding manage Library with multi domain
 * Removed entity-seo-bundle
