@@ -13,7 +13,7 @@ services:
   austral.content_block.module.listener:
     class: Austral\ContentBlockBundle\Listener\ModuleListener
     tags:
-      - { name: kernel.event_listener, event: "austral.event.module.admin.add", method: moduleAdd }
+      - { name: kernel.event_listener, event: "austral.event.module.admin.add", method: moduleAdd, priority: 1024 }
 
 parameters:
 
