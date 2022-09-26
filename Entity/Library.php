@@ -16,7 +16,6 @@ use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Austral\ContentBlockBundle\Model\Editor\Restriction;
 use Austral\EntityBundle\Entity\Entity;
 use Austral\EntityBundle\Entity\EntityInterface;
-use Austral\EntityBundle\Entity\Interfaces\FilterByDomainInterface;
 use Austral\EntityBundle\Entity\Traits\EntityTimestampableTrait;
 
 use Austral\EntityBundle\Entity\Interfaces\FileInterface;
@@ -27,6 +26,8 @@ use Austral\EntityTranslateBundle\Entity\Traits\EntityTranslateMasterTrait;
 use Austral\EntityTranslateBundle\Annotation\Translate;
 
 use Austral\HttpBundle\Entity\Traits\FilterByDomainTrait;
+use Austral\HttpBundle\Annotation\DomainFilter;
+
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -40,14 +41,13 @@ use Exception;
  * @abstract
  * @ORM\MappedSuperclass
  * @Translate(relationClass="Austral\ContentBlockBundle\Entity\Interfaces\LibraryTranslateInterface")
+ * @DomainFilter(forAllDomainEnabled=true, autoDomainId=true)
  */
-abstract class Library extends Entity implements
-  LibraryInterface,
+abstract class Library extends Entity implements LibraryInterface,
   EntityInterface,
   TranslateMasterInterface,
   ComponentsInterface,
-  FileInterface,
-  FilterByDomainInterface
+  FileInterface
 {
 
   use EntityTimestampableTrait;

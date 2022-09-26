@@ -217,8 +217,13 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         {
           if($this->urlParameterManagement && $componentValueObject->getLinkEntityKey()) {
             $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['url'] = "#INTERNAL_LINK_{$componentValueObject->getLinkEntityKey()}#";
-            list($entity, $id) = explode(":", $componentValueObject->getLinkEntityKey());
-            $urlParameter = $this->urlParameterManagement->getObjectRelationByClassnameAndId($entity,$id);
+            $separator = ":";
+            if(strpos($componentValueObject->getLinkEntityKey(), "::") !== false)
+            {
+              $separator = "::";
+            }
+            list($entity, $id) = explode($separator, $componentValueObject->getLinkEntityKey());
+            $urlParameter = $this->urlParameterManagement->getUrlParameterByObjectClassnameAndId($entity,$id);
             $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]["urlParameter"] = $urlParameter;
           }
         }
@@ -461,11 +466,11 @@ class ContentBlockSubscriber implements EventSubscriberInterface
   /**
    * @param array $editorComponentTypes
    * @param Component $componentObject
-   * @param null $optionsValue
+   * @param array $optionsValue
    *
    * @return array
    */
-  protected function generateValues(array $editorComponentTypes, Component $componentObject, $optionsValue = null): array
+  protected function generateValues(array $editorComponentTypes, Component $componentObject, array$optionsValue = array()): array
   {
     $lipsum = new LoremIpsum();
     $values = array();
