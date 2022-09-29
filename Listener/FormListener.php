@@ -605,7 +605,7 @@ class FormListener
       $filterByDomain = null;
       if($formFieldEvent->getFormMapper()->getModule())
       {
-        $filterByDomain = $formFieldEvent->getFormMapper()->getModule()->getParametersByKey("austral_filter_by_domain");
+        $filterByDomain = $formFieldEvent->getFormMapper()->getModule()->getFilterDomainId();
       }
 
       $libraries = $libraryManager->selectAccessibleInContent(function(QueryBuilder $queryBuilder) use($filterByDomain) {

@@ -15,6 +15,7 @@ use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 
 use Austral\EntityBundle\EntityManager\EntityManager;
 use Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface;
+use Doctrine\ORM\Query\QueryException;
 
 /**
  * Austral Library EntityManager.
@@ -47,13 +48,14 @@ class LibraryEntityManager extends EntityManager
 
   /**
    * @param string $indexBy
+   * @param string|null $domainId
    *
    * @return array|int|mixed|string
-   * @throws \Doctrine\ORM\Query\QueryException
+   * @throws QueryException
    */
-  public function selectAllIndexBy(string $indexBy = "keyname")
+  public function selectAllIndexBy(string $indexBy = "keyname", ?string $domainId = null)
   {
-    return $this->repository->selectAllIndexBy($indexBy);
+    return $this->repository->selectAllIndexBy($indexBy, $domainId);
   }
 
   /**

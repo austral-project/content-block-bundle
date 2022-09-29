@@ -27,11 +27,16 @@ class LibraryRepository extends EntityRepository
    * @return array|int|mixed|string
    * @throws \Doctrine\ORM\Query\QueryException
    */
-  public function selectAllIndexBy(string $indexBy = "keyname")
+  public function selectAllIndexBy(string $indexBy = "keyname", ?string $domainId = null)
   {
     $queryBuilder = $this->createQueryBuilder('root')
       ->leftJoin("root.translates", "translates")->addSelect("translates");
     $queryBuilder->indexBy("root", "root.{$indexBy}");
+    if($domainId)
+    {
+      $queryBuilder->where("root.domainId = :domainId")
+        ->setParameter("domainId", $domainId);
+    }
     $query = $queryBuilder->getQuery();
     try {
       $objects = $query->execute();

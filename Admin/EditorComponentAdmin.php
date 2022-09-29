@@ -214,7 +214,7 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
             $componentsUsed[$component['objectLiaison']] = array(
               "objectClassname"     =>  $objectClassname,
               "objectId"            =>  $objectId,
-              "module"              =>  $australModules->getModuleByEntityClassname($objectClassname)[0]
+              "module"              =>  ""//$australModules->getModuleByEntityClassname($objectClassname)[0]
             );
           }
         }
