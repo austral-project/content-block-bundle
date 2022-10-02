@@ -17,7 +17,7 @@ composer require austral/content-block-bundle
 ```
 
 ## Documentation
-See documentation on the [official website](https://austral.dev/bundles/content-block-bundle)
+See documentation on the [official website](https://austral.dev/en/bundles/content-block-bundle)
 
 ## Commit Messages
 
