@@ -15,6 +15,7 @@ use Austral\EntityBundle\Repository\EntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
+use Doctrine\ORM\Query\QueryException;
 
 /**
  * Austral EditorComponent Repository.
@@ -58,6 +59,7 @@ class EditorComponentRepository extends EntityRepository
    * @param string $orderByType
    *
    * @return ArrayCollection|array
+   * @throws QueryException
    */
   public function selectAllEnabled(string $orderByAttribute = 'id', string $orderByType = "ASC")
   {
