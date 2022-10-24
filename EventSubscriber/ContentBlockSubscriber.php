@@ -218,7 +218,10 @@ class ContentBlockSubscriber implements EventSubscriberInterface
           if($this->pages && $componentValueObject->getLinkEntityKey()) {
             $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['url'] = "#INTERNAL_LINK_{$componentValueObject->getLinkEntityKey()}#";
             list($entity, $id) = explode(":", $componentValueObject->getLinkEntityKey());
-            $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]["linkObject"] = $this->pages->retreiveByEntityAndId($entity,$id);
+            $entityClassname = ($this->pages->retreiveEntityName($entity));
+            if(!is_null($entityClassname) && !is_null($id)) {
+              $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]["linkObject"] = $this->pages->retreiveByEntityAndId($entityClassname,$id);
+            }
           }
         }
         elseif($linkType == "external")
