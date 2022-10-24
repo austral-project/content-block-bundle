@@ -1008,7 +1008,7 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
             )
           );
         }
-        if($choiceKey == "image")
+        if($choiceKey === "image" || $choiceKey === "file")
         {
             $group->add(Field\SwitchField::create("viewEntitled", array(
                 'required'      =>  true,
@@ -1057,10 +1057,27 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
               "choice_style"  =>  "full",
               "entitled" => false,
               "group"       =>  array(
-                'size'  => GroupFields::SIZE_COL_12
+                'size'  => GroupFields::SIZE_COL_8
               )
             )
           )->setConstraints(array(new Constraints\NotNull()))
+        );
+        $group->add(Field\SwitchField::create("viewEntitled", array(
+              'required'      =>  true,
+              "container"     =>  array(
+                "class"         =>  "side-by-side"
+              ),
+              "getter"        =>  function(EditorComponentTypeInterface $editorComponentType) {
+                return $editorComponentType->getParameterByKey("viewEntitled", false);
+              },
+              "setter"        =>  function(EditorComponentTypeInterface $editorComponentType, $value) {
+                return $editorComponentType->setParameterByKey("viewEntitled", $value);
+              },
+              "group"       =>  array(
+                'size'  => GroupFields::SIZE_COL_4
+              )
+            )
+          )
         );
       }
     }

@@ -931,6 +931,7 @@ class FormListener
       $hasComponentInputFileChild = false;
       $group = $componentValuesListFormMapper->addGroup(
         "component-values-block",
+        $editorComponentType->getParameterByKey("viewEntitled") ? $editorComponentType->getEntitled() : null
         )->setStyle($editorComponentType->getType() != "list" ? GroupFields::STYLE_WHITE : GroupFields::STYLE_NONE)
         ->setDirection($editorComponentType->getType() == "list" ? GroupFields::DIRECTION_ROW : $editorComponentType->getBlockDirection());
       /** @var EditorComponentTypeInterface $editorComponentTypeChildren */
