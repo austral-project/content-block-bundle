@@ -262,8 +262,9 @@ Class ContentBlockContainer
 
   /**
    * @param EntityInterface|ComponentsInterface $object
+   * @param bool $updated
    */
-  public function initComponentByObject(EntityInterface $object)
+  public function initComponentByObject(EntityInterface $object, bool $updated = true)
   {
     $this->debug->stopWatchStart("content_block_container.init_component_by_object", $this->debugContainer);
     if(AustralTools::usedImplements(get_class($object), "Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface"))
@@ -281,7 +282,7 @@ Class ContentBlockContainer
       }
       if($componentsByContainerName)
       {
-        $object->setComponents($componentsByContainerName);
+        $object->setComponents($componentsByContainerName, $updated);
       }
     }
     $this->debug->stopWatchStop("content_block_container.init_component_by_object");

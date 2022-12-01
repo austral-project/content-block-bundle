@@ -99,10 +99,12 @@ trait EntityComponentsTrait
    *
    * @return $this|ComponentsInterface
    */
-  public function setComponents(array $components): ComponentsInterface
+  public function setComponents(array $components, bool $updated = true): ComponentsInterface
   {
     $this->components = $components;
-    $this->setComponentsUpdated(new DateTime());
+    if($updated) {
+      $this->setComponentsUpdated(new DateTime());
+    }
     return $this;
   }
 

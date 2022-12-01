@@ -88,7 +88,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
    */
   public function componentsHydrate(ContentBlockEvent $contentBlockEvent)
   {
-    $this->contentBlockContainer->initComponentByObject($contentBlockEvent->getObject());
+    $this->contentBlockContainer->initComponentByObject($contentBlockEvent->getObject(), false);
     $finalComponents = array();
     /** @var Component $componentObject */
     foreach($contentBlockEvent->getObject()->getComponents() as $containerName => $componentObjects)
