@@ -487,11 +487,15 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
       }
     }
 
-
+    $configContainerByEntity = $this->container->get('austral.content_block.config')->getConfig('container_by_entity');
     $containerNameByEntities = array();
     foreach($contentBlockContainer->getEntitiesWithReelName() as $entityName => $classname)
     {
       $containerNameByEntities[$entityName] = $this->container->get('austral.entity_manager.component')->selectArrayComponentsContainerNameByClassname($classname);
+
+      if(array_key_exists($entityName, $configContainerByEntity)) {
+        $containerNameByEntities[$entityName] = array_merge($containerNameByEntities[$entityName], $configContainerByEntity[$entityName]);
+      }
     }
 
     $restrictionFormMapper = new FormMapper();

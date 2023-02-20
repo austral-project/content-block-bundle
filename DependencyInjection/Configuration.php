@@ -10,6 +10,7 @@
 
 namespace Austral\ContentBlockBundle\DependencyInjection;
 
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -28,8 +29,9 @@ class Configuration implements ConfigurationInterface
     $treeBuilder = new TreeBuilder('austral_content_block');
 
     $rootNode = $treeBuilder->getRootNode();
-    $rootNode->children()
-      ->arrayNode("type_values")
+    $node = $rootNode->children();
+
+    $node->arrayNode("type_values")
         ->arrayPrototype()
           ->children()
             ->scalarNode('entitled')->isRequired()->end()
@@ -62,7 +64,24 @@ class Configuration implements ConfigurationInterface
 
     ->end();
 
+    $node = $this->buildContainerByEntity($node
+      ->arrayNode('container_by_entity')
+      ->arrayPrototype()
+    );
+
+
+
     return $treeBuilder;
+  }
+
+  /**
+   * @param ArrayNodeDefinition $node
+   *
+   * @return mixed
+   */
+  protected function buildContainerByEntity(ArrayNodeDefinition $node)
+  {
+    return $node->scalarPrototype()->end()->end()->end();
   }
 
   /**
