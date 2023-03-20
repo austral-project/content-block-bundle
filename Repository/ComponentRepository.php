@@ -66,9 +66,16 @@ class ComponentRepository extends EntityRepository
     $queryBuilder = $this->createQueryBuilder('root');
     $queryBuilder->leftJoin("root.editorComponent", "editorComponent")->addSelect("editorComponent")
       ->leftJoin("root.componentValues", "componentValues")->addSelect("componentValues")
+      ->leftJoin("componentValues.editorComponentType", "editorComponentType")->addSelect("editorComponentType")
+
       ->leftJoin("componentValues.children", "children")->addSelect("children")
       ->leftJoin("children.children", "componentValuesChildren")->addSelect("componentValuesChildren")
-      ->leftJoin("componentValues.editorComponentType", "editorComponentType")->addSelect("editorComponentType")
+      ->leftJoin("componentValuesChildren.editorComponentType", "editorComponentType2")->addSelect("editorComponentType2")
+
+      ->leftJoin("componentValuesChildren.children", "children2")->addSelect("children2")
+      ->leftJoin("children2.children", "componentValuesChildren2")->addSelect("componentValuesChildren2")
+      ->leftJoin("componentValuesChildren2.editorComponentType", "editorComponentType3")->addSelect("editorComponentType3")
+
       ->where("root.objectId = :objectId")
       ->andWhere("root.objectClassname = :objectClassname")
       ->setParameters(array(
