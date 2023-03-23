@@ -37,6 +37,7 @@ class ContentBlockField extends CollectionEmbedField
    */
   public function __construct(string $fieldname = "master", array $options = array())
   {
+    $options["class"] = "block-contenu-embed";
     if(!array_key_exists("button", $options))
     {
       $options["button"]  = "button.new.block";
