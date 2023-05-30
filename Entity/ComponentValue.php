@@ -156,6 +156,12 @@ abstract class ComponentValue extends Entity implements ComponentValueInterface,
 
   /**
    * @var string|null
+   * @ORM\Column(name="link_picto", type="string", length=255, nullable=true)
+   */
+  protected ?string $linkPicto = null;
+
+  /**
+   * @var string|null
    * @ORM\Column(name="link_entity_key", type="string", length=255, nullable=true)
    */
   protected ?string $linkEntityKey = null;
@@ -493,6 +499,25 @@ abstract class ComponentValue extends Entity implements ComponentValueInterface,
   public function setLinkPhone(?string $linkPhone): ComponentValue
   {
     $this->linkPhone = $linkPhone;
+    return $this;
+  }
+
+  /**
+   * @return string|null
+   */
+  public function getLinkPicto(): ?string
+  {
+    return $this->linkPicto;
+  }
+
+  /**
+   * @param string|null $linkPicto
+   *
+   * @return $this
+   */
+  public function setLinkPicto(?string $linkPicto): ComponentValue
+  {
+    $this->linkPicto = $linkPicto;
     return $this;
   }
 

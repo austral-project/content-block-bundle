@@ -102,8 +102,11 @@ fields:
     entitled:                   "%value%"
   category:
     entitled:                   Catégorie
-
+  hasPicto:
+    entitled:                   Possède un picto ?
   componentLink:
+    picto:
+      entitled:                 Picto
     url:
       entitled:                 Url de la page
     page:
@@ -170,3 +173,4 @@ choices:
       choice:                   Selecteur
       button:                   Bouton
       movie:                    Vidéo
+      graphicItem:              Picto

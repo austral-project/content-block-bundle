@@ -39,6 +39,7 @@ use Austral\EntityBundle\Mapping\EntityMapping;
 use Austral\EntityBundle\Mapping\Mapping;
 use Austral\EntityFileBundle\File\Mapping\FieldFileMapping;
 use Austral\FormBundle\Mapper\Base\MapperElementInterface;
+use Austral\GraphicItemsBundle\Field\GraphicItemField;
 use Austral\ToolsBundle\AustralTools;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Query\QueryException;
@@ -1254,6 +1255,23 @@ class FormListener
           );
         }
       }
+      elseif($editorComponentType->getType() == "graphicItem")
+      {
+        if($this->container->get("kernel")->getBundle("AustralGraphicItemsBundle"))
+        {
+          $group->add(GraphicItemField::create("content", array(
+                "entitled"        =>  $editorComponentType->getEntitled(),
+                "container"       =>  array(
+                  "class"           =>  "animate"
+                ),
+                "fieldOptions"  =>  array(
+                  "translation_domain"  =>  false,
+                )
+              )
+            )->setConstraints($contraints)
+          );
+        }
+      }
       elseif($editorComponentType->getType() == "image")
       {
         $this->addFieldFileMapping($editorComponentType, $editorComponentType->getType());
@@ -1340,6 +1358,19 @@ class FormListener
       }
       elseif($editorComponentType->getType() == "button")
       {
+        if($this->container->get("kernel")->getBundle("AustralGraphicItemsBundle") && $editorComponentType->getParameterByKey("hasPicto", false))
+        {
+          $group->setDirection(GroupFields::DIRECTION_ROW);
+          $group->add(GraphicItemField::create("linkPicto", array(
+                "entitled"        =>  false,
+                "container"       =>  array(
+                  "class"           =>  "picto-to-button"
+                ),
+              )
+            )->setConstraints($contraints)
+            ->setGroupSize(GroupFields::SIZE_COL_2)
+          );
+        }
         $group->add(Field\TextField::create("content", array(
               "entitled"        =>  false,
               "placeholder"     =>  $editorComponentType->getEntitled(),

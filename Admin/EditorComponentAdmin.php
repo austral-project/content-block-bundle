@@ -58,6 +58,11 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
 {
 
   /**
+   * @var bool
+   */
+  protected bool $graphicItemBundleEnabled = false;
+
+  /**
    * @return array
    */
   public function getEvents() : array
@@ -629,6 +634,18 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
 
     $collectionsChoices = array();
     $collectionFormsChildren = array();
+
+    $this->graphicItemBundleEnabled = (bool) $this->container->get("kernel")->getBundle("AustralGraphicItemsBundle");
+    if($this->graphicItemBundleEnabled)
+    {
+      $typeValues["graphicItem"] = array(
+        "entitled"      => "choices.collections.blockType.graphicItem",
+        "picto"         => "austral-picto-cog",
+        "allow_child"   => false,
+        "can_has_link"  => false
+      );
+    }
+
     foreach($typeValues as $choiceKey => $choice)
     {
       $collectionFormFieldname = "editorComponentTypes_{$choiceKey}";
@@ -649,7 +666,7 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
       $editorComponentTypeFormType->addFormMappers($choiceKey, $formMapper);
       $collectionFormsChildren[$collectionFormFieldname] = Field\CollectionEmbedField::create($collectionFormFieldname, array(
           "entitled"            =>  false,
-          "title"               =>  "fields.editorComponentType.entitled",
+          "title"               =>  "choices.collections.blockType.{$choiceKey}",
           "button"              =>  "button.new.contentBlock.typeValueChild",
           "master_children"     =>  true,
 
@@ -745,7 +762,7 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
       ->add(Field\SymfonyField::create("id", HiddenType::class, array("entitled"=>false)))
       ->add(Field\SymfonyField::create("position", HiddenType::class, array("entitled"=>false, "attr"=>array("data-collection-sortabled"=>""))));
 
-    if($choiceKey !== "choice")
+    if($choiceKey !== "choice" && $choiceKey !== "graphicItem")
     {
       $formMapper->addGroup("classCss")
         ->add(Field\SelectField::create("classCss", array(), array(
@@ -957,6 +974,27 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
             )
           )
         );
+
+        if($this->graphicItemBundleEnabled && $choiceKey === "button")
+        {
+          $group->add(Field\SwitchField::create("hasPicto", array(
+                'required'      =>  true,
+                "container"     =>  array(
+                  "class"         =>  "side-by-side"
+                ),
+                "getter"        =>  function(EditorComponentTypeInterface $editorComponentType) {
+                  return $editorComponentType->getParameterByKey("hasPicto", false);
+                },
+                "setter"        =>  function(EditorComponentTypeInterface $editorComponentType, $value) {
+                  return $editorComponentType->setParameterByKey("hasPicto", $value);
+                },
+                "group"       =>  array(
+                  'size'  => $colGroup
+                )
+              )
+            )
+          );
+        }
 
         if($choiceParameters["can_has_link"])
         {
