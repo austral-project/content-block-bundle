@@ -15,6 +15,7 @@ services:
     arguments:      ["@austral.entity_manager.component"]
     tags:
       - { name: kernel.event_listener, event: "austral.entity_manager.duplicate", method: duplicate }
+      - { name: kernel.event_listener, event: "austral.event.entity.initialise.mapping", method: mapping }
 
 ##### Event Subscriber
   austral.content_block.event_subscriber:

@@ -17,6 +17,7 @@ use Austral\AdminBundle\Admin\Event\FormAdminEvent;
 use Austral\AdminBundle\Admin\Event\ListAdminEvent;
 use Austral\AdminBundle\Module\Modules;
 
+use Austral\ContentBlockBundle\Annotation\ObjectContentBlock;
 use Austral\ContentBlockBundle\Configuration\ContentBlockConfiguration;
 use Austral\ContentBlockBundle\Entity\EditorComponent;
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentInterface;
@@ -27,6 +28,7 @@ use Austral\ContentBlockBundle\Form\Type\LayoutFormType;
 use Austral\ContentBlockBundle\Form\Type\OptionFormType;
 use Austral\ContentBlockBundle\Form\Type\RestrictionFormType;
 use Austral\ContentBlockBundle\Form\Type\ThemeFormType;
+use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
 use Austral\ContentBlockBundle\Model\Editor\Layout;
 use Austral\ContentBlockBundle\Model\Editor\Option;
 use Austral\ContentBlockBundle\Model\Editor\Restriction;
@@ -35,6 +37,7 @@ use Austral\ContentBlockBundle\Services\ContentBlockContainer;
 
 use Austral\EntityBundle\Entity\EntityInterface;
 
+use Austral\EntityBundle\Mapping\EntityMapping;
 use Austral\FormBundle\Mapper\GroupFields;
 use Austral\FormBundle\Field as Field;
 use Austral\FormBundle\Mapper\Fieldset;
@@ -762,7 +765,7 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
       ->add(Field\SymfonyField::create("id", HiddenType::class, array("entitled"=>false)))
       ->add(Field\SymfonyField::create("position", HiddenType::class, array("entitled"=>false, "attr"=>array("data-collection-sortabled"=>""))));
 
-    if($choiceKey !== "choice" && $choiceKey !== "graphicItem")
+    if($choiceKey !== "choice" && $choiceKey !== "graphicItem" && $choiceKey !== "object")
     {
       $formMapper->addGroup("classCss")
         ->add(Field\SelectField::create("classCss", array(), array(
@@ -887,6 +890,64 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
             )
           )
         )
+      );
+    }
+    elseif($choiceKey === "object" || $choiceKey === "objects")
+    {
+      $mapping = $this->container->get("austral.entity.mapping");
+      $objectsContentBlockChoice = array();
+
+      /** @var EntityMapping $entityMapping */
+      foreach($mapping->getEntitiesMapping() as $entityMapping)
+      {
+        /** @var ObjectContentBlockMapping $objectContentBlock */
+        if($objectContentBlock = $entityMapping->getEntityClassMapping(ObjectContentBlockMapping::class))
+        {
+          $objectsContentBlockChoice[$objectContentBlock->getName()] = $entityMapping->entityClass;
+        }
+      }
+      $formMapper->addGroup("choices")
+          ->add(Field\SelectField::create("choices", $objectsContentBlockChoice, array(
+              "entitled"          =>  "fields.addChoice.entitled",
+              "multiple"          =>  false,
+              "select-options"    =>  array(
+                "tag"               =>  false,
+                "searchEnabled"     =>  false
+              ),
+              "container"         =>  array(
+                "class"             =>  "animate"
+              ),
+              'required' => true,
+              "getter"    =>  function(EditorComponentTypeInterface $editorComponentType) {
+                return $editorComponentType->getParameterByKey("entityClass", null);
+              },
+              "setter"    =>  function(EditorComponentTypeInterface $editorComponentType, $value) {
+                return $editorComponentType->setParameterByKey("entityClass", $value);
+              },
+              "group"       =>  array(
+                'size'  => GroupFields::SIZE_COL_12
+              )
+            )
+          )
+        )
+      ->end();
+      $group = $formMapper->addGroup("configuration");
+      $group->add(Field\SwitchField::create("isRequired", array(
+          'required'    =>  true,
+          "container"   =>  array(
+            "class"       =>  "side-by-side"
+          ),
+          "getter"      =>  function(EditorComponentTypeInterface $editorComponentType) {
+            return $editorComponentType->getParameterByKey("isRequired", false);
+          },
+          "setter"      =>  function(EditorComponentTypeInterface $editorComponentType, $value) {
+            return $editorComponentType->setParameterByKey("isRequired", $value);
+          },
+          "group"       =>  array(
+            'size'  => GroupFields::SIZE_COL_12
+          )
+        )
+      )
       );
     }
     else
@@ -1121,6 +1182,45 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
             )
           )
         );
+
+        if($choiceKey === "list")
+        {
+          $formMapper->addGroup("minMax")
+            ->add(Field\IntegerField::create("listElementMin", array(
+                  "container"  =>  array(
+                    "class" =>  "animate"
+                  ),
+                  "group"       =>  array(
+                    'size'  => GroupFields::SIZE_COL_8
+                  ),
+                  "getter"        =>  function(EditorComponentTypeInterface $editorComponentType) {
+                    return $editorComponentType->getParameterByKey("min", null);
+                  },
+                  "setter"        =>  function(EditorComponentTypeInterface $editorComponentType, $value) {
+                    return $editorComponentType->setParameterByKey("min", $value);
+                  },
+                )
+              ),
+            )->add(Field\IntegerField::create("listElementMax", array(
+                  "container"  =>  array(
+                    "class" =>  "animate"
+                  ),
+                  "group"       =>  array(
+                    'size'  => GroupFields::SIZE_COL_8
+                  ),
+                  "getter"        =>  function(EditorComponentTypeInterface $editorComponentType) {
+                    return $editorComponentType->getParameterByKey("max", null);
+                  },
+                  "setter"        =>  function(EditorComponentTypeInterface $editorComponentType, $value) {
+                    return $editorComponentType->setParameterByKey("max", $value);
+                  },
+                )
+              ),
+            )
+          ->end();
+        }
+
+
       }
     }
   }

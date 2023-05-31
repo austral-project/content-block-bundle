@@ -10,12 +10,17 @@
 
 namespace Austral\ContentBlockBundle\Listener;
 
+use Austral\ContentBlockBundle\Annotation\ObjectContentBlock;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValueInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValuesInterface;
+use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
 use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Austral\ContentBlockBundle\EntityManager\ComponentEntityManager;
+use Austral\EntityBundle\EntityAnnotation\EntityAnnotations;
 use Austral\EntityBundle\Event\EntityManagerEvent;
+use Austral\EntityBundle\Event\EntityMappingEvent;
+use Austral\EntityBundle\Mapping\EntityMapping;
 use Austral\ToolsBundle\AustralTools;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Query\QueryException;
@@ -108,6 +113,33 @@ class EntityManagerListener
         $duplicateComponentValue->setParent($entityManagerEvent->getObject());
         $entityManagerEvent->getObject()->addChildren($duplicateComponentValue);
         $entityManagerEvent->getEntityManager()->update($duplicateComponentValue, false);
+      }
+    }
+  }
+
+  /**
+   * @param EntityMappingEvent $entityAnnotationEvent
+   *
+   * @return void
+   * @throws \Exception
+   */
+  public function mapping(EntityMappingEvent $entityAnnotationEvent)
+  {
+    $initialiseEntitesAnnotations = $entityAnnotationEvent->getEntitiesAnnotations();
+    /**
+     * @var EntityAnnotations $entityAnnotation
+     */
+    foreach($initialiseEntitesAnnotations->all() as $entityAnnotation)
+    {
+      if(array_key_exists(ObjectContentBlock::class, $entityAnnotation->getClassAnnotations()))
+      {
+        if(!$entityMapping = $entityAnnotationEvent->getMapping()->getEntityMapping($entityAnnotation->getClassname()))
+        {
+          $entityMapping = new EntityMapping($entityAnnotation->getClassname(), $entityAnnotation->getSlugger());
+        }
+        $objectContentBlockMapping = new ObjectContentBlockMapping($entityAnnotation->getClassAnnotations()[ObjectContentBlock::class]->name);
+        $entityMapping->addEntityClassMapping($objectContentBlockMapping);
+        $entityAnnotationEvent->getMapping()->addEntityMapping($entityAnnotation->getClassname(), $entityMapping);
       }
     }
   }

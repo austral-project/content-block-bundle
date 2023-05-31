@@ -121,6 +121,10 @@ fields:
       entitled:                 Email
     phone:
       entitled:                 Phone
+  listElementMin:
+    entitled:                   Enfants minimum
+  listElementMax:
+    entitled:                   Enfants maximum
 
 component:
   title:
@@ -174,3 +178,5 @@ choices:
       button:                   Bouton
       movie:                    Vidéo
       graphicItem:              Picto
+      object:                   Objet
+      objects:                  Objets

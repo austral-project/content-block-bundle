@@ -149,7 +149,13 @@ class Configuration implements ConfigurationInterface
         "picto"           => "austral-picto-paper-clip",
         "allow_child"     => false,
         "can_has_link"    => false,
-      )
+      ),
+      "object"          =>  array(
+        "entitled"        => "choices.collections.blockType.object",
+        "picto"           => "austral-picto-database",
+        "allow_child"     => false,
+        "can_has_link"    => false,
+      ),
     );
   }
 

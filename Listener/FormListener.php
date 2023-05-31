@@ -22,6 +22,7 @@ use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValueInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValuesInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentTypeInterface;
+use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
 use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\ContentBlockBundle\Entity\Traits\EntityComponentsTrait;
@@ -37,7 +38,9 @@ use Austral\ContentBlockBundle\Model\Editor\Theme;
 
 use Austral\EntityBundle\Mapping\EntityMapping;
 use Austral\EntityBundle\Mapping\Mapping;
+use Austral\EntityBundle\ORM\AustralQueryBuilder;
 use Austral\EntityFileBundle\File\Mapping\FieldFileMapping;
+use Austral\EntityTranslateBundle\Mapping\EntityTranslateMapping;
 use Austral\FormBundle\Mapper\Base\MapperElementInterface;
 use Austral\GraphicItemsBundle\Field\GraphicItemField;
 use Austral\ToolsBundle\AustralTools;
@@ -935,6 +938,7 @@ class FormListener
         $editorComponentType->getParameterByKey("viewEntitled") ? $editorComponentType->getEntitled() : null
         )->setStyle($editorComponentType->getType() != "list" ? GroupFields::STYLE_WHITE : GroupFields::STYLE_NONE)
         ->setDirection($editorComponentType->getType() == "list" ? GroupFields::DIRECTION_ROW : $editorComponentType->getBlockDirection());
+
       /** @var EditorComponentTypeInterface $editorComponentTypeChildren */
       foreach($editorComponentType->getChildren() as $editorComponentTypeChildren)
       {
@@ -967,6 +971,10 @@ class FormListener
             "between_insert"      =>  true,
             "attr"                =>  array(
               "class"               =>  "direction-{$editorComponentType->getBlockDirection()} block-type-{$editorComponentType->getType()}".( $hasComponentInputFileChild ? " component-file-children" : ""),
+            ),
+            "children_parameters"  =>  array(
+              "min"                 =>  $editorComponentType->getParameterByKey("min", null),
+              "max"                 =>  $editorComponentType->getParameterByKey("max", null),
             ),
             "prototype"           =>  array(
               "data"                =>  $componentValues,
@@ -1124,6 +1132,64 @@ class FormListener
             )->addConstraint(new Constraints\NotNull())
           );
         }
+      }
+      elseif($editorComponentType->getType() == "object")
+      {
+        if($entityClass = $editorComponentType->getParameterByKey("entityClass", null))
+        {
+          $objects = array();
+          $repository = $this->container->get('austral.entity_manager')
+            ->getRepository($entityClass);
+
+          $translateMapping = $this->mapping->getEntityClassMapping($entityClass, EntityTranslateMapping::class);
+          /** @var ObjectContentBlockMapping $objectContentBlock */
+          $objectContentBlock = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlockMapping::class);
+          if($repositoryFunction = $objectContentBlock->getRepositoryFunction())
+          {
+            if(method_exists($repository, $repositoryFunction))
+            {
+              $objects = $repository->$repositoryFunction();
+            }
+          }
+          if(!$objects)
+          {
+            $objects = $this->container->get('austral.entity_manager')
+              ->getRepository($entityClass)
+              ->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder) use($translateMapping){
+                if($translateMapping)
+                {
+                  $australQueryBuilder->leftJoin("root.translates", "translates")->addSelect("translates");
+                }
+                $australQueryBuilder->indexBy("root", "root.id");
+              });
+          }
+
+          $choices = array();
+          foreach ($objects as $object)
+          {
+            $choices[$object->__toString()] = $object->getId();
+          }
+
+          $group->add(Field\SelectField::create("choices", $choices,
+              array(
+                "entitled"    =>  $editorComponentType->getEntitled(),
+                "container"   =>  array(
+                  "class" =>  "animate"
+                ),
+                "getter"    =>  function(ComponentValue $componentValue) use($editorComponentType, $objects){
+                  return $componentValue->getOptionsByKey("objectId", null);
+                },
+                "setter"    =>  function(ComponentValue $componentValue, string $value)  use($editorComponentType) {
+                  return $componentValue->setOptionsByKey("objectId", $value);
+                },
+                "group"       =>  array(
+                  'size'  => GroupFields::SIZE_COL_12
+                ),
+              )
+            )->setConstraints($contraints)
+          );
+        }
+
       }
       elseif($editorComponentType->getType() == "text")
       {
