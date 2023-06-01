@@ -122,6 +122,10 @@ fields:
     entitled:                   Min child
   listElementMax:
     entitled:                   Max child
+  layoutViewChoice:
+    entitled:                   Active "ViewChoice" in content blocks
+  layoutChoiceViewKeyname:
+    entitled:                   Layout Keyname for to be visible
 
 component:
   title:

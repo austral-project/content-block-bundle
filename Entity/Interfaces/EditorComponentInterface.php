@@ -245,6 +245,31 @@ interface EditorComponentInterface
    * @return $this
    */
   public function setCategory(?string $category): EditorComponentInterface;
+
+  /**
+   * @return int
+   */
+  public function getPosition(): int;
+  /**
+   * @param int $position
+   *
+   * @return $this
+   */
+  public function setPosition(int $position): EditorComponentInterface;
+
+  /**
+   * @return bool
+   */
+  public function getLayoutViewChoice(): bool;
+
+  /**
+   * @param bool $layoutViewChoice
+   *
+   * @return $this
+   */
+  public function setLayoutViewChoice(bool $layoutViewChoice): EditorComponentInterface;
+
+
 }
 
     

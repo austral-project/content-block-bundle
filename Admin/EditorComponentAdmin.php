@@ -177,6 +177,17 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
       ->end()
 
       ->addFieldset("fieldset.editorComponent.layouts")
+        ->add(Field\SwitchField::create("layoutViewChoice", array(
+          "attr"        =>  array(
+            "data-view-by-choices-parent" =>  ".form-container .central-container",
+            "data-view-by-choices-children" =>  ".layout-view-choice",
+            'data-view-by-choices' =>  json_encode(array(
+              0       =>  "layout-view-choice-hide",
+              1       =>  "layout-view-choice-view",
+            ))
+          )
+
+        )))
         ->add($this->createCollectionLayout($formAdminEvent))
       ->end()
 
@@ -764,6 +775,42 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
     $formMapper->add(Field\SymfonyField::create("parentId", HiddenType::class, array("entitled"=>false)))
       ->add(Field\SymfonyField::create("id", HiddenType::class, array("entitled"=>false)))
       ->add(Field\SymfonyField::create("position", HiddenType::class, array("entitled"=>false, "attr"=>array("data-collection-sortabled"=>""))));
+
+
+    $formMapper->addGroup("layoutViewChoice")
+        ->setAttr(array(
+          "class" =>  "layout-view-choice layout-view-choice-view"
+        ))
+        ->add(Field\SelectField::create("layoutChoiceViewKeyname", array(), array(
+              "entitled"    =>  "fields.layoutChoiceViewKeyname.entitled",
+              "multiple"    =>  true,
+              "container"   =>  array(
+                "class"       =>  "animate"
+              ),
+              "getter"      =>  function(EditorComponentTypeInterface $object){
+                $choices = array();
+                foreach($object->getParameterByKey("layoutChoiceViewKeyname", array()) as $choice)
+                {
+                  $choices[$choice] = $choice;
+                }
+                return $choices;
+              },
+              "setter"      =>  function(EditorComponentTypeInterface $object, $values) {
+                $choices = array();
+                foreach($values as $value)
+                {
+                  $choices[$value] = $value;
+                }
+                return $object->setParameterByKey("layoutChoiceViewKeyname", $choices);
+              },
+              "select-options"   =>  array(
+                "tag"              =>  true,
+                "searchEnabled"    =>  false
+              )
+            )
+          )
+        )
+      ->end();
 
     if($choiceKey !== "choice" && $choiceKey !== "graphicItem" && $choiceKey !== "object")
     {

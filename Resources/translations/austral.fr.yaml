@@ -125,6 +125,10 @@ fields:
     entitled:                   Enfants minimum
   listElementMax:
     entitled:                   Enfants maximum
+  layoutViewChoice:
+    entitled:                   Activer "ViewChoice" sur les blocs de contenu
+  layoutChoiceViewKeyname:
+    entitled:                   Keyname du layout pour être visible
 
 component:
   title:

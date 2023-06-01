@@ -126,6 +126,12 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
 
   /**
    * @var boolean
+   * @ORM\Column(name="layout_view_choice", type="boolean", nullable=false, options={"default" : false})
+   */
+  protected bool $layoutViewChoice = false;
+
+  /**
+   * @var boolean
    * @ORM\Column(name="is_enabled", type="boolean", nullable=true, options={"default" : true} )
    */
   protected bool $isEnabled = true;
@@ -135,6 +141,12 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
    * @ORM\Column(name="restrictions", type="json", nullable=true )
    */
   protected array $restrictions = array();
+
+  /**
+   * @var int
+   * @ORM\Column(name="position", type="integer", nullable=true, options={"default" : 0} )
+   */
+  protected int $position = 0;
 
   /**
    * Constructor
@@ -530,6 +542,25 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
   /**
    * @return bool
    */
+  public function getLayoutViewChoice(): bool
+  {
+    return $this->layoutViewChoice;
+  }
+
+  /**
+   * @param bool $layoutViewChoice
+   *
+   * @return $this
+   */
+  public function setLayoutViewChoice(bool $layoutViewChoice): EditorComponent
+  {
+    $this->layoutViewChoice = $layoutViewChoice;
+    return $this;
+  }
+
+  /**
+   * @return bool
+   */
   public function getIsEnabled(): bool
   {
     return $this->isEnabled;
@@ -637,6 +668,25 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
   public function setImage(?string $image): EditorComponent
   {
     $this->image = $image;
+    return $this;
+  }
+
+  /**
+   * @return int
+   */
+  public function getPosition(): int
+  {
+    return $this->position;
+  }
+
+  /**
+   * @param int $position
+   *
+   * @return $this
+   */
+  public function setPosition(int $position): EditorComponent
+  {
+    $this->position = $position;
     return $this;
   }
 

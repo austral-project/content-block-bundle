@@ -798,10 +798,18 @@ class FormListener
       if($themes)
       {
         $selectThemes = array();
+        $defaultValueTitle = "";
         /** @var Theme $theme */
         foreach($themes as $theme)
         {
-          $selectThemes[$theme->getTitle()] = $theme->getId();
+          if($theme->getKeyname() !== "default")
+          {
+            $selectThemes[$theme->getTitle()] = $theme->getId();
+          }
+          else
+          {
+            $defaultValueTitle = $theme->getTitle();
+          }
         }
         $group->add(Field\SelectField::create("themeId", $selectThemes, array(
               "container"   =>  array(
@@ -811,8 +819,9 @@ class FormListener
                 'size'  => GroupFields::SIZE_COL_6
               ),
               "fieldOptions"  =>  array(
-                "choice_translation_domain"  =>  false,
-              )
+                "choice_translation_domain"   =>  false,
+                "placeholder"  =>  $defaultValueTitle
+              ),
             )
           )
         );
@@ -820,10 +829,18 @@ class FormListener
       if($options)
       {
         $selectOptions = array();
+        $defaultValueTitle = "";
         /** @var Theme $theme */
         foreach($options as $option)
         {
-          $selectOptions[$option->getTitle()] = $option->getId();
+          if($option->getKeyname() !== "default")
+          {
+            $selectOptions[$option->getTitle()] = $option->getId();
+          }
+          else
+          {
+            $defaultValueTitle = $option->getTitle();
+          }
         }
         $group->add(Field\SelectField::create("optionId", $selectOptions, array(
               "container"   =>  array(
@@ -834,6 +851,7 @@ class FormListener
               ),
               "fieldOptions"  =>  array(
                 "choice_translation_domain"  =>  false,
+                "placeholder"  =>  $defaultValueTitle
               )
             )
           )
@@ -844,6 +862,7 @@ class FormListener
     if($layouts = $editorComponent->getLayouts())
     {
       $selectLayouts = array();
+      $dataViewChoices = array();
       /** @var Layout $layout */
       foreach($layouts as $layout)
       {
@@ -852,7 +871,19 @@ class FormListener
           $componentByEditor->setLayoutId($layout->getId());
         }
         $selectLayouts[$layout->getTitle()] = $layout->getId();
+        $dataViewChoices[$layout->getId()] = "layout-view-choice-{$layout->getKeyname()}";
       }
+
+      $attr = array();
+      if($editorComponent->getLayoutViewChoice())
+      {
+        $attr = array(
+          "data-view-by-choices-parent"   =>  ".collection-embed-element",
+          "data-view-by-choices-children" =>  ".layout-view-choice",
+          'data-view-by-choices' =>  json_encode($dataViewChoices)
+        );
+      }
+
       $componentFormMapper->addGroup("layout", null)
         ->setAttr(array('class'=>"background-white"))
         ->add(Field\ChoiceField::create("layoutId", $selectLayouts, array(
@@ -867,7 +898,8 @@ class FormListener
               ),
               "fieldOptions"  =>  array(
                 "choice_translation_domain"  =>  false,
-              )
+              ),
+              "attr"        =>  $attr
             ),
           )->addConstraint(new Constraints\NotNull())
         );
@@ -1058,10 +1090,21 @@ class FormListener
         );
       }
 
+      $layoutChoiceViewKeynameGroupClass = array();
+      if($layoutChoiceViewKeynames = $editorComponentType->getParameterByKey("layoutChoiceViewKeyname", array()))
+      {
+        $layoutChoiceViewKeynameGroupClass[] = "layout-view-choice";
+        foreach ($layoutChoiceViewKeynames as $layoutChoiceViewKeyname)
+        {
+          $layoutChoiceViewKeynameGroupClass[] = "layout-view-choice-{$layoutChoiceViewKeyname}";
+        }
+      }
+      $layoutChoiceViewKeynameGroupClass = implode(" ", $layoutChoiceViewKeynameGroupClass);
+
       $group = $componentValueFormMapper->addGroup('content-fields' )
         ->setStyle(GroupFields::STYLE_WHITE)
         ->setDirection(GroupFields::DIRECTION_COLUMN)
-        ->setAttr(array("class"=>"content-{$editorComponentType->getType()}"));
+        ->setAttr(array("class"=>"content-{$editorComponentType->getType()} {$layoutChoiceViewKeynameGroupClass}"));
       if($editorComponentType->getType() == "title")
       {
         $choicesTags = array();
@@ -1433,7 +1476,7 @@ class FormListener
                   "class"           =>  "picto-to-button"
                 ),
               )
-            )->setConstraints($contraints)
+            )
             ->setGroupSize(GroupFields::SIZE_COL_2)
           );
         }

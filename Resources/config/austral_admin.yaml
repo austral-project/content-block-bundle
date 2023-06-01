@@ -58,6 +58,7 @@ parameters:
           route:                  "editor"
           class:                  "%austral.admin.class.editor_component.class%"
           translate:              "male_c"
+          sortable:               true
         library:
           enabled:                "%austral.admin.modules.content_block_bundle.config.library.enabled%"
           name:                   "Library"
