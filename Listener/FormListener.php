@@ -422,8 +422,7 @@ class FormListener
 
       /** @var EditorComponentEntityManager $blockEditorsManager */
       $editorComponentManager = $this->container->get("austral.entity_manager.editor_component");
-      $editorComponents = $editorComponentManager->selectAllEnabled("name");
-
+      $editorComponents = $editorComponentManager->selectAllEnabled("position");
 
       if(($hydrates = $field->getHydrateAuto()))
       {
@@ -967,9 +966,22 @@ class FormListener
       $hasComponentInputFileChild = false;
       $group = $componentValuesListFormMapper->addGroup(
         "component-values-block",
-        $editorComponentType->getParameterByKey("viewEntitled") ? $editorComponentType->getEntitled() : null
+        ($editorComponentType->getParameterByKey("viewEntitled") && $editorComponentType->getType() != "list") ? $editorComponentType->getEntitled() : null
         )->setStyle($editorComponentType->getType() != "list" ? GroupFields::STYLE_WHITE : GroupFields::STYLE_NONE)
         ->setDirection($editorComponentType->getType() == "list" ? GroupFields::DIRECTION_ROW : $editorComponentType->getBlockDirection());
+
+
+      $layoutChoiceViewKeynameGroupClass = array();
+      if($layoutChoiceViewKeynames = $editorComponentType->getParameterByKey("layoutChoiceViewKeyname", array()))
+      {
+        $layoutChoiceViewKeynameGroupClass[] = "layout-view-choice";
+        foreach ($layoutChoiceViewKeynames as $layoutChoiceViewKeyname)
+        {
+          $layoutChoiceViewKeynameGroupClass[] = "layout-view-choice-{$layoutChoiceViewKeyname}";
+        }
+      }
+      $layoutChoiceViewKeynameGroupClass = implode(" ", $layoutChoiceViewKeynameGroupClass);
+      $group->setAttr(array("class"=>"content-{$editorComponentType->getType()} {$layoutChoiceViewKeynameGroupClass}"));
 
       /** @var EditorComponentTypeInterface $editorComponentTypeChildren */
       foreach($editorComponentType->getChildren() as $editorComponentTypeChildren)
@@ -983,6 +995,10 @@ class FormListener
           $hasComponentChildren,
           $hasComponentInputFileChild)
         ;
+        if($editorComponentTypeChildren->getType() === "graphicItem")
+        {
+          $componentValueCollectionForm->setGroupSize(GroupFields::SIZE_COL_4);
+        }
         $group->add($componentValueCollectionForm);
       }
       if($editorComponentType->getType() == "list")
@@ -992,7 +1008,7 @@ class FormListener
         $componentValueFormMapper->add(Field\CollectionEmbedField::create("{$collectionFormFieldname}_children", array(
             "button"              =>  "button.new.contentBlock.typeValueChild",
             "formMapper"          =>  $componentValueFormMapper,
-            "entitled"            =>  false,
+            "entitled"            =>  $editorComponentType->getParameterByKey("viewEntitled") ? $editorComponentType->getEntitled() : null,
             "allow"               =>  array(
               "child"               =>  false,
               "add"                 =>  true,
@@ -1002,7 +1018,7 @@ class FormListener
             "master_children"     =>  false,
             "between_insert"      =>  true,
             "attr"                =>  array(
-              "class"               =>  "direction-{$editorComponentType->getBlockDirection()} block-type-{$editorComponentType->getType()}".( $hasComponentInputFileChild ? " component-file-children" : ""),
+              "class"               =>  "direction-{$editorComponentType->getBlockDirection()} block-type-{$editorComponentType->getType()} {$layoutChoiceViewKeynameGroupClass}".( $hasComponentInputFileChild ? " component-file-children" : ""),
             ),
             "children_parameters"  =>  array(
               "min"                 =>  $editorComponentType->getParameterByKey("min", null),
@@ -1116,9 +1132,30 @@ class FormListener
         if($choicesTags)
         {
           $defaultValue = array_key_exists("h2", $choicesTags) ? $choicesTags['h2'] : AustralTools::first($choicesTags);
-          $group->add(Field\ChoiceField::create("tag", $choicesTags, array(
+
+          if(count($choicesTags) > 1)
+          {
+            $group->add(Field\ChoiceField::create("tag", $choicesTags, array(
+                  "entitled"      =>  false,
+                  "choice_style"  =>  "light",
+                  "required"      =>  true,
+                  "getter"        =>  function(ComponentValue $componentValue) use($defaultValue){
+                    return $componentValue->getOptionsByKey("tags", $defaultValue);
+                  },
+                  "setter"        =>  function(ComponentValue $componentValue, $value) {
+                    return $componentValue->setOptionsByKey("tags", $value);
+                  },
+                  "fieldOptions"  =>  array(
+                    "translation_domain"  =>  false,
+                    "choice_translation_domain"  =>  false,
+                  )
+                )
+              )->addConstraint(new Constraints\NotNull())
+            );
+          }
+          else {
+            $group->add(Field\SymfonyField::create("tag", HiddenType::class, array(
                 "entitled"      =>  false,
-                "choice_style"  =>  "light",
                 "required"      =>  true,
                 "getter"        =>  function(ComponentValue $componentValue) use($defaultValue){
                   return $componentValue->getOptionsByKey("tags", $defaultValue);
@@ -1126,13 +1163,10 @@ class FormListener
                 "setter"        =>  function(ComponentValue $componentValue, $value) {
                   return $componentValue->setOptionsByKey("tags", $value);
                 },
-                "fieldOptions"  =>  array(
-                  "translation_domain"  =>  false,
-                  "choice_translation_domain"  =>  false,
-                )
               )
             )->addConstraint(new Constraints\NotNull())
-          );
+            );
+          }
         }
         $group->add(Field\TextField::create("content", array(
               "entitled"    =>  false,
@@ -1222,7 +1256,7 @@ class FormListener
                 "getter"    =>  function(ComponentValue $componentValue) use($editorComponentType, $objects){
                   return $componentValue->getOptionsByKey("objectId", null);
                 },
-                "setter"    =>  function(ComponentValue $componentValue, string $value)  use($editorComponentType) {
+                "setter"    =>  function(ComponentValue $componentValue, ?string $value)  use($editorComponentType) {
                   return $componentValue->setOptionsByKey("objectId", $value);
                 },
                 "group"       =>  array(
@@ -1237,6 +1271,26 @@ class FormListener
       elseif($editorComponentType->getType() == "text")
       {
         $typeField = $editorComponentType->getParameterByKey("type");
+        $defaultValue = $editorComponentType->getParameterByKey("defaultValue");
+        if($defaultValue)
+        {
+          if($typeField == "date")
+          {
+            if($defaultValue === "now")
+            {
+              $defaultValue = new \DateTime();
+            }
+            else
+            {
+              $defaultValue = new \DateTime($defaultValue);
+            }
+            $componentValue->setDate($defaultValue);
+          }
+          else
+          {
+            $componentValue->setContent($defaultValue);
+          }
+        }
         if($typeField !== "date")
         {
           $contraints[] = new Constraints\Length(array(
@@ -1304,6 +1358,35 @@ class FormListener
           );
         }
       }
+      elseif($editorComponentType->getType() == "switch")
+      {
+        $defaultEnabled = $editorComponentType->getParameterByKey("defaultEnabled");
+        $defaultValue = $defaultEnabled ? "enabled" : "disabled";
+        $componentValue->setContent($defaultValue);
+        $group->add(Field\SwitchField::create("content", array(
+            "entitled"        =>  $editorComponentType->getEntitled(),
+            "container"       =>  array(
+              "class"           =>  "side-by-side"
+            ),
+            "fieldOptions"  =>  array(
+              "translation_domain"  =>  false,
+            ),
+            "getter"    =>  function(ComponentValue $componentValue) use($defaultValue) {
+              $value = $componentValue->getContent() ?? $defaultValue;
+              return $value === "enabled";
+            },
+            "setter"    =>  function(ComponentValue $componentValue, string $value) {
+              $contentValue = "disabled";
+              if($value)
+              {
+                $contentValue = "enabled";
+              }
+              return $componentValue->setContent($contentValue);
+            }
+          )
+        )->setConstraints($contraints)
+        );
+      }
       elseif($editorComponentType->getType() == "textarea")
       {
         if($editorComponentType->getParameterByKey("isWysiwyg"))
@@ -1369,10 +1452,7 @@ class FormListener
         if($this->container->get("kernel")->getBundle("AustralGraphicItemsBundle"))
         {
           $group->add(GraphicItemField::create("content", array(
-                "entitled"        =>  $editorComponentType->getEntitled(),
-                "container"       =>  array(
-                  "class"           =>  "animate"
-                ),
+                "entitled"        =>  false,
                 "fieldOptions"  =>  array(
                   "translation_domain"  =>  false,
                 )
@@ -1489,6 +1569,10 @@ class FormListener
             )
           )->setConstraints($contraints)
         );
+      }
+      elseif($editorComponentType->getType() == "separate")
+      {
+        $group->add(Field\TemplateField::create("separate", "@AustralContentBlock/Admin/Component/separate.html.twig"));
       }
     }
 

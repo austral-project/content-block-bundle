@@ -126,6 +126,10 @@ fields:
     entitled:                   Active "ViewChoice" in content blocks
   layoutChoiceViewKeyname:
     entitled:                   Layout Keyname for to be visible
+  defaultValue:
+    entitled:                   Default value
+  defaultEnabled:
+    entitled:                   Default enabled
 
 component:
   title:
@@ -169,6 +173,7 @@ choices:
       integer:                  Integer
       number:                   Number
       date:                     Date
+      switch:                   Switch
   collections:
     title:                      Add block
     blockType:
@@ -186,3 +191,5 @@ choices:
       graphicItem:              Picto
       object:                   Object
       objects:                  Objects
+      switch:                   Switch
+      separate:                 Separator

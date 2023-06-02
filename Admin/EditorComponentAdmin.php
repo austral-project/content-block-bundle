@@ -46,6 +46,7 @@ use Austral\FormBundle\Mapper\FormMapper;
 use Austral\ListBundle\Column as Column;
 use Austral\ListBundle\DataHydrate\DataHydrateORM;
 
+use Austral\ToolsBundle\AustralTools;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
 use ReflectionException;
@@ -97,7 +98,7 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
       ->getSection("default")
         ->buildDataHydrate(function(DataHydrateORM $dataHydrate) {
           $dataHydrate->addQueryBuilderPaginatorClosure(function(QueryBuilder $queryBuilder) {
-            return $queryBuilder->orderBy("root.name", "ASC");
+            return $queryBuilder->orderBy("root.position", "ASC");
           });
         })
         ->addColumn(new Column\Value("name"))
@@ -742,6 +743,9 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
       $collectionForms = Field\CollectionEmbedField::create("editorComponentTypes", array(
         "entitled"            =>  false,
         "button"              =>  "button.new.contentBlock.typeValue",
+        "container"           =>  array(
+          "class"               =>  "child-color"
+        ),
         "collections"         =>  array(
           "choices"             =>  $collectionsChoices
         ),
@@ -812,7 +816,7 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
         )
       ->end();
 
-    if($choiceKey !== "choice" && $choiceKey !== "graphicItem" && $choiceKey !== "object")
+    if($choiceKey !== "choice" && $choiceKey !== "graphicItem" && $choiceKey !== "object" && $choiceKey !== "switch" && $choiceKey !== "separate")
     {
       $formMapper->addGroup("classCss")
         ->add(Field\SelectField::create("classCss", array(), array(
@@ -846,42 +850,54 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
         )
       ->end();
     }
-    $formMapper->addGroup("generalInformations")
-      ->add(Field\TextField::create("entitled", array(
+    if($choiceKey !== "separate")
+    {
+      $formMapper->addGroup("generalInformations")
+        ->add(Field\TextField::create("entitled", array(
+                "container"  =>  array(
+                  "class" =>  "animate"
+                ),
+                "group"       =>  array(
+                  'size'  => GroupFields::SIZE_COL_8
+                )
+              )
+            )->setConstraints(array(
+              new Constraints\NotNull(),
+              new Constraints\Length(array(
+                  "max" => 255,
+                  "maxMessage" => "errors.length.max"
+                )
+              )
+            )
+          ),
+        )->add(Field\TextField::create("keyname", array(
               "container"  =>  array(
                 "class" =>  "animate"
               ),
               "group"       =>  array(
-                'size'  => GroupFields::SIZE_COL_8
+                'size'  => GroupFields::SIZE_COL_4
               )
             )
-          )->setConstraints(array(
-            new Constraints\NotNull(),
-            new Constraints\Length(array(
+          )->addConstraint(
+              new Constraints\Length(array(
                 "max" => 255,
                 "maxMessage" => "errors.length.max"
               )
             )
-          )
-        ),
-      )->add(Field\TextField::create("keyname", array(
-            "container"  =>  array(
-              "class" =>  "animate"
-            ),
-            "group"       =>  array(
-              'size'  => GroupFields::SIZE_COL_4
-            )
-          )
-        )->addConstraint(
-            new Constraints\Length(array(
-              "max" => 255,
-              "maxMessage" => "errors.length.max"
-            )
-          )
-        ),
-      )
-    ->end();
-
+          ),
+        )
+      ->end();
+    }
+    else
+    {
+      $formMapper->getObject()
+        ->setEntitled("Separate")
+        ->setKeyname('separate-'.AustralTools::random(4));
+      $formMapper->addGroup("generalInformations")
+        ->add(Field\SymfonyField::create("entitled", HiddenType::class))
+        ->add(Field\SymfonyField::create("keyname", HiddenType::class))
+        ->end();
+    }
     if($choiceKey === "choice")
     {
       $formMapper->addGroup("choices")
@@ -980,24 +996,24 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
       ->end();
       $group = $formMapper->addGroup("configuration");
       $group->add(Field\SwitchField::create("isRequired", array(
-          'required'    =>  true,
-          "container"   =>  array(
-            "class"       =>  "side-by-side"
-          ),
-          "getter"      =>  function(EditorComponentTypeInterface $editorComponentType) {
-            return $editorComponentType->getParameterByKey("isRequired", false);
-          },
-          "setter"      =>  function(EditorComponentTypeInterface $editorComponentType, $value) {
-            return $editorComponentType->setParameterByKey("isRequired", $value);
-          },
-          "group"       =>  array(
-            'size'  => GroupFields::SIZE_COL_12
+            'required'    =>  true,
+            "container"   =>  array(
+              "class"       =>  "side-by-side"
+            ),
+            "getter"      =>  function(EditorComponentTypeInterface $editorComponentType) {
+              return $editorComponentType->getParameterByKey("isRequired", false);
+            },
+            "setter"      =>  function(EditorComponentTypeInterface $editorComponentType, $value) {
+              return $editorComponentType->setParameterByKey("isRequired", $value);
+            },
+            "group"       =>  array(
+              'size'  => GroupFields::SIZE_COL_12
+            )
           )
         )
-      )
       );
     }
-    else
+    elseif($choiceKey !== "separate")
     {
       if($choiceKey !== "group" && $choiceKey !== "list")
       {
@@ -1055,6 +1071,45 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
               )
             )
           )
+          ->add(Field\TextField::create("defaultValue", array(
+                "container"   =>  array(
+                  "class"       =>  "animate"
+                ),
+                'required'    =>  false,
+                "getter"      =>  function(EditorComponentTypeInterface $editorComponentType) {
+                  return $editorComponentType->getParameterByKey("defaultValue", null);
+                },
+                "setter"      =>  function(EditorComponentTypeInterface $editorComponentType, $value) {
+                  return $editorComponentType->setParameterByKey("defaultValue", $value);
+                },
+                "group"       =>  array(
+                  'size'  => GroupFields::SIZE_COL_12
+                )
+              )
+            )
+          )
+          ->end();
+        }
+        elseif($choiceKey == "switch")
+        {
+          $formMapper->addGroup("default-value")
+          ->add(Field\SwitchField::create("defaultEnabled", array(
+                'required'    =>  true,
+                "container"     =>  array(
+                  "class"         =>  "side-by-side"
+                ),
+                "getter"      =>  function(EditorComponentTypeInterface $editorComponentType) {
+                  return $editorComponentType->getParameterByKey("defaultEnabled", null);
+                },
+                "setter"      =>  function(EditorComponentTypeInterface $editorComponentType, $value) {
+                  return $editorComponentType->setParameterByKey("defaultEnabled", $value);
+                },
+                "group"       =>  array(
+                  'size'  => GroupFields::SIZE_COL_6
+                )
+              )
+            )
+          )
           ->end();
         }
 
@@ -1064,24 +1119,27 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
           $colGroup = GroupFields::SIZE_COL_4;
         }
 
-        $group = $formMapper->addGroup("configuration");
-        $group->add(Field\SwitchField::create("isRequired", array(
-              'required'      =>  true,
-              "container"     =>  array(
-                "class"         =>  "side-by-side"
-              ),
-              "getter"        =>  function(EditorComponentTypeInterface $editorComponentType) {
-                return $editorComponentType->getParameterByKey("isRequired", false);
-              },
-              "setter"        =>  function(EditorComponentTypeInterface $editorComponentType, $value) {
-                return $editorComponentType->setParameterByKey("isRequired", $value);
-              },
-              "group"       =>  array(
-                'size'  => $colGroup
+        if($choiceKey !== "switch")
+        {
+          $group = $formMapper->addGroup("configuration");
+          $group->add(Field\SwitchField::create("isRequired", array(
+                'required'      =>  true,
+                "container"     =>  array(
+                  "class"         =>  "side-by-side"
+                ),
+                "getter"        =>  function(EditorComponentTypeInterface $editorComponentType) {
+                  return $editorComponentType->getParameterByKey("isRequired", false);
+                },
+                "setter"        =>  function(EditorComponentTypeInterface $editorComponentType, $value) {
+                  return $editorComponentType->setParameterByKey("isRequired", $value);
+                },
+                "group"       =>  array(
+                  'size'  => $colGroup
+                )
               )
             )
-          )
-        );
+          );
+        }
 
         if($this->graphicItemBundleEnabled && $choiceKey === "button")
         {
@@ -1284,5 +1342,11 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
     if(!$object->getKeyname()) {
       $object->setKeyname($object->getName());
     }
+
+    if(!$object->getPosition())
+    {
+      $object->setPosition($this->container->get('austral.entity_manager.editor_component')->countAll()+1);
+    }
+
   }
 }

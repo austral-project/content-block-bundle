@@ -116,7 +116,7 @@ class Configuration implements ConfigurationInterface
       ),
       "textarea"            =>  array(
         "entitled"        => "choices.collections.blockType.textarea",
-        "picto"           => "austral-picto-text",
+        "picto"           => "austral-picto-news",
         "allow_child"     => false,
         "can_has_link"    => false,
       ),
@@ -140,7 +140,13 @@ class Configuration implements ConfigurationInterface
       ),
       "choice"           =>  array(
         "entitled"        => "choices.collections.blockType.choice",
-        "picto"           => "austral-picto-text",
+        "picto"           => "austral-picto-simply-down",
+        "allow_child"     => false,
+        "can_has_link"    => false,
+      ),
+      "switch"           =>  array(
+        "entitled"        => "choices.collections.blockType.switch",
+        "picto"           => "austral-picto-toggle-right",
         "allow_child"     => false,
         "can_has_link"    => false,
       ),
@@ -153,6 +159,12 @@ class Configuration implements ConfigurationInterface
       "object"          =>  array(
         "entitled"        => "choices.collections.blockType.object",
         "picto"           => "austral-picto-database",
+        "allow_child"     => false,
+        "can_has_link"    => false,
+      ),
+      "separate"          =>  array(
+        "entitled"        => "choices.collections.blockType.separate",
+        "picto"           => "austral-picto-minus",
         "allow_child"     => false,
         "can_has_link"    => false,
       ),

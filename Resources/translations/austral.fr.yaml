@@ -129,6 +129,10 @@ fields:
     entitled:                   Activer "ViewChoice" sur les blocs de contenu
   layoutChoiceViewKeyname:
     entitled:                   Keyname du layout pour être visible
+  defaultValue:
+    entitled:                   Valeur par défaut
+  defaultEnabled:
+    entitled:                   Activé par défaut
 
 component:
   title:
@@ -167,6 +171,7 @@ choices:
       integer:                  Chiffre
       number:                   Nombre
       date:                     Date
+      switch:                   Switch
   collections:
     title:                      Ajouter un bloc
     blockType:
@@ -178,9 +183,11 @@ choices:
       textarea:                 Texte
       image:                    Image
       file:                     Fichier
-      choice:                   Selecteur
+      choice:                   Sélecteur
       button:                   Bouton
       movie:                    Vidéo
       graphicItem:              Picto
       object:                   Objet
       objects:                  Objets
+      switch:                   Switch
+      separate:                 Séparateur
