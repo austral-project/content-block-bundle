@@ -30,6 +30,11 @@ class GuidelineEvent extends Event
   private array $editorComponents = array();
 
   /**
+   * @var array
+   */
+  private array $guidelineFormValues = array();
+
+  /**
    * @var ComponentInterface|null
    */
   private ?ComponentInterface $componentObject = null;
@@ -201,6 +206,25 @@ class GuidelineEvent extends Event
   public function setContainers(array $containers): GuidelineEvent
   {
     $this->containers = $containers;
+    return $this;
+  }
+
+  /**
+   * @return array
+   */
+  public function getGuidelineFormValues(): array
+  {
+    return $this->guidelineFormValues;
+  }
+
+  /**
+   * @param array $guidelineFormValues
+   *
+   * @return $this
+   */
+  public function setGuidelineFormValues(array $guidelineFormValues = array()): GuidelineEvent
+  {
+    $this->guidelineFormValues = $guidelineFormValues;
     return $this;
   }
 

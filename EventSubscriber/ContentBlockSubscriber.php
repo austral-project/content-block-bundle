@@ -24,8 +24,10 @@ use Austral\ContentBlockBundle\Event\GuidelineEvent;
 use Austral\ContentBlockBundle\Model\Editor\Layout;
 use Austral\ContentBlockBundle\Model\Editor\Option;
 use Austral\ContentBlockBundle\Model\Editor\Theme;
+use Austral\ContentBlockBundle\Model\Guideline\GuidelineComponent;
 use Austral\ContentBlockBundle\Services\ContentBlockContainer;
 use Austral\SeoBundle\Services\UrlParameterManagement;
+use Austral\ToolsBundle\AustralTools;
 use Doctrine\Common\Collections\Collection;
 use joshtronic\LoremIpsum;
 use Ramsey\Uuid\Uuid;
@@ -329,124 +331,92 @@ class ContentBlockSubscriber implements EventSubscriberInterface
     }
 
     $finalComponents = array();
+    $guidelineFormValues = $guidelineEvent->getGuidelineFormValues();
     foreach($containersChoice as $containerName => $container)
     {
-      $components = array();
+      $guidelineComponents = array();
       /** @var EditorComponentInterface $editorComponent */
       foreach($guidelineEvent->getEditorComponents() as $editorComponent)
       {
         if(!$editorComponent->getIsContainer() && $editorComponent->getIsGuidelineView())
         {
-          $combinations = array();
-          /** @var EditorComponentTypeInterface $type */
-          foreach($editorComponent->getEditorComponentTypes() as $type)
-          {
-            if($type->getType() == "title")
-            {
-              $combinations[$type->getKeyname()] = array();
-              foreach($type->getParameterByKey("tags") as $tag)
-              {
-                $combinations[$type->getKeyname()][] = $tag;
-              }
-              if($type->getCanHasLink())
-              {
-                $combinations["link"] = array(
-                  "noLink",
-                  "internal",
-                  "external",
-                  "file"
-                );
-              }
-            }
-            elseif($type->getType() == "button")
-            {
-              $combinations[$type->getKeyname()] = array(
-                "internal",
-                "external",
-                "file"
-              );
-            }
-            elseif($type->getType() == "switch")
-            {
-              $combinations[$type->getKeyname()] = array(
-                true,
-                false
-              );
-            }
-          }
-          $allCombinations = array();
-          if(count($combinations))
-          {
-            $combinationsKeys = array_keys($combinations);
-            $allCombinations = $this->createAllCombinations($combinations, $combinationsKeys, 0);
-          }
+          $guidelineComponent = new GuidelineComponent();
+          $guidelineComponent->setCombinaisons($this->combinaisons($editorComponent));
+          $guidelineComponent->setLayouts($editorComponent->getLayouts());
+          $guidelineComponent->setThemes($editorComponent->getThemes());
+          $guidelineComponent->setOptions($editorComponent->getOptions());
 
-
-          $themeDefault = (new Theme())->setKeyname("default");
-          $optionDefault = (new Theme())->setKeyname("default");
-          if(!$layouts = $editorComponent->getLayouts())
+          if(AustralTools::getValueByKey($guidelineFormValues, "id") === $editorComponent->getId())
           {
-            $layouts = array(
-              "noLayout"
-            );
+            $guidelineComponent->setLayout(AustralTools::getValueByKey($editorComponent->getLayouts(), AustralTools::getValueByKey($guidelineFormValues, "layout")));
+            $guidelineComponent->setTheme(AustralTools::getValueByKey($editorComponent->getThemes(), AustralTools::getValueByKey($guidelineFormValues, "theme")));
+            $guidelineComponent->setOption(AustralTools::getValueByKey($editorComponent->getOptions(), AustralTools::getValueByKey($guidelineFormValues, "option")));
+            $guidelineComponent->setCombinaisonChoices(AustralTools::getValueByKey($guidelineFormValues, "combinaisons", array()));
           }
-          if(!$themes = $editorComponent->getThemes())
+          if($component = $this->generateComponent($guidelineEvent, $editorComponent, $guidelineComponent->getLayout(), $guidelineComponent->getTheme(), $guidelineComponent->getOption(), $guidelineComponent->getCombinaisonChoices()))
           {
-            $themes = array(
-              $themeDefault
-            );
-          }
-          if(!$options = $editorComponent->getOptions())
-          {
-            $options = array(
-              $optionDefault
-            );
-          }
-
-          /** @var Layout|string $layout */
-          foreach ($layouts as $layout)
-          {
-            $hasThemeDefault = false;
-            $layout = is_string($layout) ? null : $layout;
-            /** @var Theme $theme */
-            foreach ($themes as $theme)
-            {
-              $hasOptionDefault = false;
-              if($theme->getKeyname() === "default")
-              {
-                $hasThemeDefault = true;
-              }
-              /** @var Option $option */
-              foreach ($options as $option)
-              {
-                if($option->getKeyname() === "default")
-                {
-                  $hasOptionDefault = true;
-                }
-                if(!$hasOptionDefault)
-                {
-                  $this->generateComponent($components, $guidelineEvent, $editorComponent, $allCombinations, $layout, $theme, $option);
-                }
-              }
-              if(!$hasThemeDefault)
-              {
-                foreach ($options as $option)
-                {
-                  $this->generateComponent($components, $guidelineEvent, $editorComponent, $allCombinations, $layout, $theme, $option);
-                }
-              }
-            }
-            $this->generateComponent($components, $guidelineEvent, $editorComponent, $allCombinations, $layout);
+            $guidelineComponent->setComponent($component);
+            $guidelineComponents[] = $guidelineComponent;
           }
         }
       }
-
       $finalComponents["master"][$containerName] = $container;
-      $finalComponents["master"][$containerName]["children"] = $components;
+      $finalComponents["master"][$containerName]["children"] = $guidelineComponents;
     }
     $guidelineEvent->setFinalComponents($finalComponents);
     $guidelineEvent->setContainers($containersListe);
   }
+
+  /**
+   * combinaisons
+   *
+   * @param EditorComponentInterface $editorComponent
+   *
+   * @return array
+   */
+  protected function combinaisons(EditorComponentInterface $editorComponent): array
+  {
+    $combinaisons = array();
+    /** @var EditorComponentTypeInterface $type */
+    foreach ($editorComponent->getEditorComponentTypes() as $type)
+    {
+      if($type->getType() === "title")
+      {
+        $combinaisons[$type->getKeyname()] = array();
+        foreach($type->getParameterByKey("tags") as $tag)
+        {
+          $combinaisons[$type->getKeyname()][] = $tag;
+        }
+        if($type->getCanHasLink())
+        {
+          $combinaisons["link"] = array(
+            "noLink",
+            "internal",
+            "external",
+            "file"
+          );
+        }
+      }
+      elseif($type->getType() === "button")
+      {
+        $combinaisons[$type->getKeyname()] = array(
+          "internal",
+          "external",
+          "file"
+        );
+      }
+      elseif($type->getType() === "switch")
+      {
+        $combinaisons[$type->getKeyname()] = array(
+          true,
+          false
+        );
+      }
+    }
+    return $combinaisons;
+  }
+
+
 
   /**
    * @param EditorComponentInterface $editorComponent
@@ -467,7 +437,6 @@ class ContentBlockSubscriber implements EventSubscriberInterface
   }
 
   /**
-   * @param $components
    * @param GuidelineEvent $guidelineEvent
    * @param EditorComponent $editorComponent
    * @param array $combinations
@@ -476,55 +445,38 @@ class ContentBlockSubscriber implements EventSubscriberInterface
    * @param Option|null $option
    * @param array $optionsValue
    *
+   * @return array
    * @throws \Exception
    */
-  protected function generateComponent(&$components, GuidelineEvent $guidelineEvent, EditorComponent $editorComponent, array $combinations = array(), ?Layout $layout = null, ?Theme $theme = null, ?Option $option = null, array $optionsValue = array())
+  protected function generateComponent(GuidelineEvent $guidelineEvent, EditorComponent $editorComponent, ?Layout $layout = null, ?Theme $theme = null, ?Option $option = null, array $optionsValue = array()): array
   {
-    if($combinations)
-    {
-      foreach($combinations as $combinationKey => $combinationValue)
-      {
-        list($optionValueKey, $optionValue) = explode("@", $combinationKey);
-        $optionsValue[$optionValueKey] = $optionValue;
-        if(is_array($combinationValue))
-        {
-          $this->generateComponent($components, $guidelineEvent, $editorComponent, $combinationValue, $layout, $theme, $option, $optionsValue);
-        }
-        else
-        {
-          $this->generateComponent($components, $guidelineEvent, $editorComponent, array(), $layout, $theme, $option, $optionsValue);
-        }
-      }
-    }
-    else
-    {
-      /** @var Component $componentObject */
-      $componentObject = clone $guidelineEvent->getComponentObject();
-      $componentObject->setId(Uuid::uuid4()->toString());
-      $componentObject->setEditorComponent($editorComponent);
-      $componentObject->setLayoutId($layout ? $layout->getId() : null);
-      $componentObject->setOptionId($option ? $option->getId() : null);
-      $componentObject->setThemeId($theme ? $theme->getId() : null);
+    /** @var Component $componentObject */
+    $componentObject = clone $guidelineEvent->getComponentObject();
+    $componentObject->setId(Uuid::uuid4()->toString());
+    $componentObject->setEditorComponent($editorComponent);
+    $componentObject->setLayoutId($layout ? $layout->getId() : null);
+    $componentObject->setOptionId($option ? $option->getId() : null);
+    $componentObject->setThemeId($theme ? $theme->getId() : null);
 
-      $componentEvent = new ComponentEvent($guidelineEvent->getDefaultObjectPage(), $componentObject);
-      $componentEvent->setIsGuideline(true);
-      $this->dispatcher->dispatch($componentEvent, ComponentEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_INIT);
+    $componentEvent = new ComponentEvent($guidelineEvent->getDefaultObjectPage(), $componentObject);
+    $componentEvent->setIsGuideline(true);
+    $this->dispatcher->dispatch($componentEvent, ComponentEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_INIT);
 
-      if(!$componentEvent->getIsDisabled())
-      {
-        $components[] = array(
-          "id"                =>  $editorComponent->getId(),
-          "keyname"           =>  $editorComponent->getKeyname(),
-          "type"              =>  "default",
-          "theme"             =>  $theme ? $theme->getKeyname() : "",
-          "option"            =>  $option ? $option->getKeyname() : "",
-          "layout"            =>  $layout ? $layout->getKeyname() : "",
-          "templatePath"      =>  "Front\\{$editorComponent->getTemplatePathOrDefault()}",
-          "values"            =>  $this->generateValues($editorComponent->getEditorComponentTypesWithChild(), $componentObject, $optionsValue),
-          "vars"              =>  $componentEvent->getVars()
-        );
-      }
+    if(!$componentEvent->getIsDisabled())
+    {
+      return array(
+        "id"                =>  $editorComponent->getId(),
+        "keyname"           =>  $editorComponent->getKeyname(),
+        "type"              =>  "default",
+        "theme"             =>  $theme ? $theme->getKeyname() : "",
+        "option"            =>  $option ? $option->getKeyname() : "",
+        "layout"            =>  $layout ? $layout->getKeyname() : "",
+        "templatePath"      =>  "Front\\{$editorComponent->getTemplatePathOrDefault()}",
+        "values"            =>  $this->generateValues($editorComponent->getEditorComponentTypesWithChild(), $componentObject, $optionsValue),
+        "vars"              =>  $componentEvent->getVars()
+      );
     }
+    return array();
   }
 
   /**
@@ -550,13 +502,13 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       $linkType = null;
       if($type->getType() == "title")
       {
-        $values[$type->getKeyname()]['tag'] = $optionsValue[$type->getKeyname()];
-        $values[$type->getKeyname()]['value'] = $optionsValue[$type->getKeyname()]." > ".$lipsum->words(3);
+        $values[$type->getKeyname()]['tag'] = AustralTools::getValueByKey($optionsValue, $type->getKeyname(), null);
+        $values[$type->getKeyname()]['value'] = $lipsum->words(3);
         if(array_key_exists("link", $optionsValue))
         {
-          if($optionsValue["link"] !== "noLink")
+          if(AustralTools::getValueByKey($optionsValue, "link", null) !== "noLink")
           {
-            $linkType = $optionsValue["link"];
+            $linkType = AustralTools::getValueByKey($optionsValue, "link", null);
           }
         }
       }
@@ -582,7 +534,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       elseif($type->getType() == "button")
       {
         $values[$type->getKeyname()]['value'] = $lipsum->words(2);
-        $linkType = $optionsValue[$type->getKeyname()];
+        $linkType = AustralTools::getValueByKey($optionsValue, $type->getKeyname(), null);
       }
       elseif($type->getType() == "list" || $type->getType() == "group")
       {
@@ -590,7 +542,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       }
       elseif($type->getType() === "switch")
       {
-        $values[$type->getKeyname()]["value"] =  (bool) $optionsValue[$type->getKeyname()];
+        $values[$type->getKeyname()]["value"] =  (bool) AustralTools::getValueByKey($optionsValue, $type->getKeyname(), false);
       }
       elseif($type->getType() === "switch")
       {
