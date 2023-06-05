@@ -152,7 +152,10 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
       ->end()
       ->addFieldset("fieldset.generalInformation")
         ->add(Field\TextField::create("name"))
-        ->add(Field\UploadField::create("image"))
+        ->add(Field\TextField::create("templatePath"))
+        ->addGroup("imagePicto")
+          ->add(Field\UploadField::create("image"))
+        ->end()
         ->addPopin("popup-editor-image", "image", array(
             "button"  =>  array(
               "entitled"            =>  "actions.picture.edit",
@@ -166,7 +169,6 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
           )
         )
         ->end()
-        ->add(Field\TextField::create("templatePath"))
       ->end()
 
       ->addFieldset("fieldset.editorComponent.themes")
@@ -196,6 +198,15 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
         ->add($this->createCollectionRestrictions($formAdminEvent))
       ->end()
     ;
+
+    if($this->container->get("kernel")->getBundle("AustralGraphicItemsBundle"))
+    {
+      $formAdminEvent->getFormMapper()->getFieldset("fieldset.generalInformation")
+        ->addGroup("imagePicto")
+          ->add(\Austral\GraphicItemsBundle\Field\GraphicItemField::create("graphicItem"))
+        ->end();
+    }
+
 
     if(!$formAdminEvent->getFormMapper()->getObject()->getIsContainer())
     {

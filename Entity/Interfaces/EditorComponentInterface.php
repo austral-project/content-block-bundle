@@ -237,6 +237,18 @@ interface EditorComponentInterface
   /**
    * @return string|null
    */
+  public function getGraphicItem(): ?string;
+
+  /**
+   * @param string|null $graphicItem
+   *
+   * @return $this
+   */
+  public function setGraphicItem(?string $graphicItem): EditorComponentInterface;
+
+  /**
+   * @return string|null
+   */
   public function getCategory(): ?string;
 
   /**

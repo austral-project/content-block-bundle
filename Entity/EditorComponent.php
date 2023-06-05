@@ -99,6 +99,12 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
    * @AustralFile\UploadParameters(isRequired=false, configName="editor_component")
    */
   protected ?string $image = null;
+  
+  /**
+   * @var string|null
+   * @ORM\Column(name="graphicItem", type="string", length=255, nullable=true )
+   */
+  protected ?string $graphicItem = null;
 
   /**
    * @var string|null
@@ -668,6 +674,25 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
   public function setImage(?string $image): EditorComponent
   {
     $this->image = $image;
+    return $this;
+  }
+
+  /**
+   * @return string|null
+   */
+  public function getGraphicItem(): ?string
+  {
+    return $this->graphicItem;
+  }
+
+  /**
+   * @param string|null $graphicItem
+   *
+   * @return $this
+   */
+  public function setGraphicItem(?string $graphicItem): EditorComponent
+  {
+    $this->graphicItem = $graphicItem;
     return $this;
   }
 
