@@ -21,6 +21,7 @@ use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\ContentBlockBundle\Event\ComponentEvent;
 use Austral\ContentBlockBundle\Event\ContentBlockEvent;
 use Austral\ContentBlockBundle\Event\GuidelineEvent;
+use Austral\ContentBlockBundle\Model\Editor\Layout;
 use Austral\ContentBlockBundle\Model\Editor\Option;
 use Austral\ContentBlockBundle\Model\Editor\Theme;
 use Austral\ContentBlockBundle\Services\ContentBlockContainer;
@@ -31,6 +32,7 @@ use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use function Symfony\Component\String\u;
+use function Webmozart\Assert\Tests\StaticAnalysis\boolean;
 
 /**
  * Austral ContentBlock Subscriber.
@@ -292,16 +294,24 @@ class ContentBlockSubscriber implements EventSubscriberInterface
     {
       if($editorComponent->getIsContainer())
       {
+        $hasThemeDefault = false;
         if($editorComponent->getThemes())
         {
           foreach($editorComponent->getThemes() as $theme)
           {
             $keynameTemplate = $theme->getKeyname();
+            if($keynameTemplate === "default")
+            {
+              $hasThemeDefault = true;
+            }
             $containersListe["{$keynameTemplate}-{$editorComponent->getId()}"] = $this->generateContainer($editorComponent, $theme);
           }
         }
-        $keynameTemplate = $editorComponent->getKeyname();
-        $containersListe["{$keynameTemplate}-{$editorComponent->getId()}"] = $this->generateContainer($editorComponent);
+        if(!$hasThemeDefault)
+        {
+          $keynameTemplate = $editorComponent->getKeyname();
+          $containersListe["{$keynameTemplate}-{$editorComponent->getId()}"] = $this->generateContainer($editorComponent);
+        }
       }
     }
 
@@ -356,6 +366,13 @@ class ContentBlockSubscriber implements EventSubscriberInterface
                 "file"
               );
             }
+            elseif($type->getType() == "switch")
+            {
+              $combinations[$type->getKeyname()] = array(
+                true,
+                false
+              );
+            }
           }
           $allCombinations = array();
           if(count($combinations))
@@ -364,19 +381,63 @@ class ContentBlockSubscriber implements EventSubscriberInterface
             $allCombinations = $this->createAllCombinations($combinations, $combinationsKeys, 0);
           }
 
-          foreach($editorComponent->getThemes() as $theme)
+
+          $themeDefault = (new Theme())->setKeyname("default");
+          $optionDefault = (new Theme())->setKeyname("default");
+          if(!$layouts = $editorComponent->getLayouts())
           {
-            foreach($editorComponent->getOptions() as $option)
+            $layouts = array(
+              "noLayout"
+            );
+          }
+          if(!$themes = $editorComponent->getThemes())
+          {
+            $themes = array(
+              $themeDefault
+            );
+          }
+          if(!$options = $editorComponent->getOptions())
+          {
+            $options = array(
+              $optionDefault
+            );
+          }
+
+          /** @var Layout|string $layout */
+          foreach ($layouts as $layout)
+          {
+            $hasThemeDefault = false;
+            $layout = is_string($layout) ? null : $layout;
+            /** @var Theme $theme */
+            foreach ($themes as $theme)
             {
-              $this->generateComponent($components, $guidelineEvent, $editorComponent, $allCombinations, $theme, $option);
+              $hasOptionDefault = false;
+              if($theme->getKeyname() === "default")
+              {
+                $hasThemeDefault = true;
+              }
+              /** @var Option $option */
+              foreach ($options as $option)
+              {
+                if($option->getKeyname() === "default")
+                {
+                  $hasOptionDefault = true;
+                }
+                if(!$hasOptionDefault)
+                {
+                  $this->generateComponent($components, $guidelineEvent, $editorComponent, $allCombinations, $layout, $theme, $option);
+                }
+              }
+              if(!$hasThemeDefault)
+              {
+                foreach ($options as $option)
+                {
+                  $this->generateComponent($components, $guidelineEvent, $editorComponent, $allCombinations, $layout, $theme, $option);
+                }
+              }
             }
-            $this->generateComponent($components, $guidelineEvent, $editorComponent, $allCombinations, $theme, );
+            $this->generateComponent($components, $guidelineEvent, $editorComponent, $allCombinations, $layout);
           }
-          foreach($editorComponent->getOptions() as $option)
-          {
-            $this->generateComponent($components, $guidelineEvent, $editorComponent, $allCombinations, null, $option);
-          }
-          $this->generateComponent($components, $guidelineEvent, $editorComponent, $allCombinations);
         }
       }
 
@@ -398,7 +459,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
     return array(
       "id"        =>  $editorComponent->getId(),
       "type"      =>  "default",
-      "theme"     =>  $theme ? $theme->getKeyname() : "",
+      "theme"     =>  $theme ? $theme->getKeyname() : "default",
       "keyname"   =>  $editorComponent->getKeyname(),
       "children"  =>  array(),
       "vars"      =>  array()
@@ -410,13 +471,14 @@ class ContentBlockSubscriber implements EventSubscriberInterface
    * @param GuidelineEvent $guidelineEvent
    * @param EditorComponent $editorComponent
    * @param array $combinations
+   * @param Layout|null $layout
    * @param Theme|null $theme
    * @param Option|null $option
    * @param array $optionsValue
    *
    * @throws \Exception
    */
-  protected function generateComponent(&$components, GuidelineEvent $guidelineEvent, EditorComponent $editorComponent, array $combinations = array(), ?Theme $theme = null, ?Option $option = null, array $optionsValue = array())
+  protected function generateComponent(&$components, GuidelineEvent $guidelineEvent, EditorComponent $editorComponent, array $combinations = array(), ?Layout $layout = null, ?Theme $theme = null, ?Option $option = null, array $optionsValue = array())
   {
     if($combinations)
     {
@@ -426,11 +488,11 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         $optionsValue[$optionValueKey] = $optionValue;
         if(is_array($combinationValue))
         {
-          $this->generateComponent($components, $guidelineEvent, $editorComponent, $combinationValue, $theme, $option, $optionsValue);
+          $this->generateComponent($components, $guidelineEvent, $editorComponent, $combinationValue, $layout, $theme, $option, $optionsValue);
         }
         else
         {
-          $this->generateComponent($components, $guidelineEvent, $editorComponent, array(), $theme, $option, $optionsValue);
+          $this->generateComponent($components, $guidelineEvent, $editorComponent, array(), $layout, $theme, $option, $optionsValue);
         }
       }
     }
@@ -440,6 +502,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       $componentObject = clone $guidelineEvent->getComponentObject();
       $componentObject->setId(Uuid::uuid4()->toString());
       $componentObject->setEditorComponent($editorComponent);
+      $componentObject->setLayoutId($layout ? $layout->getId() : null);
       $componentObject->setOptionId($option ? $option->getId() : null);
       $componentObject->setThemeId($theme ? $theme->getId() : null);
 
@@ -455,6 +518,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
           "type"              =>  "default",
           "theme"             =>  $theme ? $theme->getKeyname() : "",
           "option"            =>  $option ? $option->getKeyname() : "",
+          "layout"            =>  $layout ? $layout->getKeyname() : "",
           "templatePath"      =>  "Front\\{$editorComponent->getTemplatePathOrDefault()}",
           "values"            =>  $this->generateValues($editorComponent->getEditorComponentTypesWithChild(), $componentObject, $optionsValue),
           "vars"              =>  $componentEvent->getVars()
@@ -470,7 +534,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
    *
    * @return array
    */
-  protected function generateValues(array $editorComponentTypes, Component $componentObject, array$optionsValue = array()): array
+  protected function generateValues(array $editorComponentTypes, Component $componentObject, array $optionsValue = array()): array
   {
     $lipsum = new LoremIpsum();
     $values = array();
@@ -524,6 +588,16 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       {
         $values[$type->getKeyname()]['children'] = array();
       }
+      elseif($type->getType() === "switch")
+      {
+        $values[$type->getKeyname()]["value"] =  (bool) $optionsValue[$type->getKeyname()];
+      }
+      elseif($type->getType() === "switch")
+      {
+        $values[$type->getKeyname()]["value"] = "austral-picto-company";
+      }
+
+
       if($linkType)
       {
         if($linkType == "internal")
