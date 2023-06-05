@@ -1132,7 +1132,6 @@ class FormListener
         if($choicesTags)
         {
           $defaultValue = array_key_exists("h2", $choicesTags) ? $choicesTags['h2'] : AustralTools::first($choicesTags);
-
           if(count($choicesTags) > 1)
           {
             $group->add(Field\ChoiceField::create("tag", $choicesTags, array(
@@ -1154,18 +1153,7 @@ class FormListener
             );
           }
           else {
-            $group->add(Field\SymfonyField::create("tag", HiddenType::class, array(
-                "entitled"      =>  false,
-                "required"      =>  true,
-                "getter"        =>  function(ComponentValue $componentValue) use($defaultValue){
-                  return $componentValue->getOptionsByKey("tags", $defaultValue);
-                },
-                "setter"        =>  function(ComponentValue $componentValue, $value) {
-                  return $componentValue->setOptionsByKey("tags", $value);
-                },
-              )
-            )->addConstraint(new Constraints\NotNull())
-            );
+            $componentValue->setOptionsByKey("tags", $defaultValue);
           }
         }
         $group->add(Field\TextField::create("content", array(
