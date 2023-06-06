@@ -346,6 +346,14 @@ class ContentBlockSubscriber implements EventSubscriberInterface
           $guidelineComponent->setLayouts($editorComponent->getLayouts());
           $guidelineComponent->setThemes($editorComponent->getThemes());
           $guidelineComponent->setOptions($editorComponent->getOptions());
+
+          if($editorComponent->getLayouts())
+          {
+            /** @var Layout $firstLayout */
+            $firstLayout = AustralTools::first($editorComponent->getLayouts());
+            $guidelineComponent->setLayout($firstLayout);
+          }
+
           if(AustralTools::getValueByKey($guidelineFormValues, "id") === $editorComponent->getId())
           {
             $guidelineComponent->setLayout(AustralTools::getValueByKey($editorComponent->getLayouts(), AustralTools::getValueByKey($guidelineFormValues, "layout")));
@@ -570,7 +578,33 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         $values[$type->getKeyname()]['isWysiwyg'] = $type->getParameterByKey("isWysiwyg");
         if($type->getParameterByKey("isWysiwyg"))
         {
-          $values[$type->getKeyname()]['value'] = "{$lipsum->paragraphs(2)} <ul>{$lipsum->words(3, '<li>$1</li>')}</ul>";
+          $ulArray = array();
+          for($line = 1; $line <= rand(0, 12); $line++)
+          {
+            $ulArray[] = "<li>{$lipsum->words(rand(4, 6))}</li>";
+          }
+          $ul = "";
+          if(count($ulArray) > 0)
+          {
+            $ul = implode("", $ulArray);
+            $ul = "<ul>{$ul}</ul>";
+          }
+
+          $paragraphFirstArray = array();
+          for($p = 1; $p <= rand(1, 3); $p++)
+          {
+            $paragraphFirstArray[] = "<p>{$lipsum->words(rand(50, 100))}</p>";
+          }
+          $paragraphFirst = implode("", $paragraphFirstArray);
+
+          $paragraphSecondArray = array();
+          for($p = 1; $p <= rand(1, 2); $p++)
+          {
+            $paragraphSecondArray[] = "<p>{$lipsum->words(rand(50, 100))}</p>";
+          }
+          $paragraphSecond = implode("", $paragraphSecondArray);
+
+          $values[$type->getKeyname()]['value'] = "{$paragraphFirst}{$ul}{$paragraphSecond}";
         }
       }
       elseif($type->getType() == "movie")
