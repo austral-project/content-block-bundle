@@ -342,10 +342,10 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         {
           $guidelineComponent = new GuidelineComponent();
           $guidelineComponent->setCombinaisons($this->combinaisons($editorComponent));
+          $guidelineComponent->setCombinaisonChoices($this->combinaisonDefaultValues($editorComponent));
           $guidelineComponent->setLayouts($editorComponent->getLayouts());
           $guidelineComponent->setThemes($editorComponent->getThemes());
           $guidelineComponent->setOptions($editorComponent->getOptions());
-
           if(AustralTools::getValueByKey($guidelineFormValues, "id") === $editorComponent->getId())
           {
             $guidelineComponent->setLayout(AustralTools::getValueByKey($editorComponent->getLayouts(), AustralTools::getValueByKey($guidelineFormValues, "layout")));
@@ -353,6 +353,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
             $guidelineComponent->setOption(AustralTools::getValueByKey($editorComponent->getOptions(), AustralTools::getValueByKey($guidelineFormValues, "option")));
             $guidelineComponent->setCombinaisonChoices(AustralTools::getValueByKey($guidelineFormValues, "combinaisons", array()));
           }
+
           if($component = $this->generateComponent($guidelineEvent, $editorComponent, $guidelineComponent->getLayout(), $guidelineComponent->getTheme(), $guidelineComponent->getOption(), $guidelineComponent->getCombinaisonChoices()))
           {
             $guidelineComponent->setComponent($component);
@@ -414,6 +415,51 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       }
     }
     return $combinaisons;
+  }
+
+  /**
+   * combinaisons
+   *
+   * @param EditorComponentInterface $editorComponent
+   *
+   * @return array
+   */
+  protected function combinaisonDefaultValues(EditorComponentInterface $editorComponent): array
+  {
+    $defaultValues = array();
+    /** @var EditorComponentTypeInterface $type */
+    foreach ($editorComponent->getEditorComponentTypes() as $type)
+    {
+      if($type->getType() === "title")
+      {
+        $tags = array();
+        foreach($type->getParameterByKey("tags") as $tag)
+        {
+          $tags[] = $tag;
+        }
+        if(count($tags) > 1 && in_array("h2", $tags))
+        {
+          $defaultValues[$type->getKeyname()] = "h2";
+        }
+        else
+        {
+          $defaultValues[$type->getKeyname()] = AustralTools::first($tags);
+        }
+        if($type->getCanHasLink())
+        {
+          $defaultValues[$type->getKeyname()] = "internal";
+        }
+      }
+      elseif($type->getType() === "button")
+      {
+        $defaultValues[$type->getKeyname()] = "internal";
+      }
+      elseif($type->getType() === "switch")
+      {
+        $defaultValues[$type->getKeyname()] = true;
+      }
+    }
+    return $defaultValues;
   }
 
 
@@ -503,7 +549,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       if($type->getType() == "title")
       {
         $values[$type->getKeyname()]['tag'] = AustralTools::getValueByKey($optionsValue, $type->getKeyname(), null);
-        $values[$type->getKeyname()]['value'] = $lipsum->words(3);
+        $values[$type->getKeyname()]['value'] = $lipsum->words(4);
         if(array_key_exists("link", $optionsValue))
         {
           if(AustralTools::getValueByKey($optionsValue, "link", null) !== "noLink")
@@ -548,7 +594,6 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       {
         $values[$type->getKeyname()]["value"] = "austral-picto-company";
       }
-
 
       if($linkType)
       {
