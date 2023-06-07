@@ -413,6 +413,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
           "external",
           "file"
         );
+        $combinaisons["graphicItem"] = null;
       }
       elseif($type->getType() === "switch")
       {
@@ -615,6 +616,8 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       {
         $values[$type->getKeyname()]['value'] = $lipsum->words(2);
         $linkType = AustralTools::getValueByKey($optionsValue, $type->getKeyname(), null);
+
+        $values[$type->getKeyname()]["linkPicto"] = AustralTools::getValueByKey($optionsValue, "graphicItem", null);
       }
       elseif($type->getType() == "list" || $type->getType() == "group")
       {
