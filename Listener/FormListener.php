@@ -1571,7 +1571,7 @@ class FormListener
       }
       elseif($editorComponentType->getType() == "separate")
       {
-        $group->add(Field\TemplateField::create("separate", "@AustralContentBlock/Admin/Component/separate.html.twig"));
+        $group->add(Field\TemplateField::create("separateNum".AustralTools::random(4), "@AustralContentBlock/Admin/Component/separate.html.twig"));
       }
     }
 
@@ -1771,26 +1771,36 @@ class FormListener
       }
     }
 
-    if(array_key_exists("{$object->getClassname()}:{$object->getId()}_{$field->getFieldname()}", $restrictionsByKey))
+    $classnamePrefix = null;
+    if($object->getClassname() === "Library")
     {
-      $isInclude = $restrictionsByKey["{$object->getClassname()}:{$object->getId()}_{$field->getFieldname()}"];
+      if($object->getIsNavigationMenu())
+      {
+        $classnamePrefix = "Navigation";
+      }
     }
-    elseif(array_key_exists("{$object->getClassname()}:{$object->getId()}_all", $restrictionsByKey))
+
+    if(array_key_exists("{$object->getClassname()}{$classnamePrefix}:{$object->getId()}_{$field->getFieldname()}", $restrictionsByKey))
     {
-      $isInclude = $restrictionsByKey["{$object->getClassname()}:{$object->getId()}_all"];
+      $isInclude = $restrictionsByKey["{$object->getClassname()}{$classnamePrefix}:{$object->getId()}_{$field->getFieldname()}"];
     }
-    elseif(array_key_exists("{$object->getClassname()}:all_all", $restrictionsByKey))
+    elseif(array_key_exists("{$object->getClassname()}{$classnamePrefix}:{$object->getId()}_all", $restrictionsByKey))
     {
-      $isInclude = $restrictionsByKey["{$object->getClassname()}:all_all"];
+      $isInclude = $restrictionsByKey["{$object->getClassname()}{$classnamePrefix}:{$object->getId()}_all"];
     }
-    elseif(array_key_exists("{$object->getClassname()}:all_{$field->getFieldname()}", $restrictionsByKey))
+    elseif(array_key_exists("{$object->getClassname()}{$classnamePrefix}:all_all", $restrictionsByKey))
     {
-      $isInclude = $restrictionsByKey["{$object->getClassname()}:all_{$field->getFieldname()}"];
+      $isInclude = $restrictionsByKey["{$object->getClassname()}{$classnamePrefix}:all_all"];
+    }
+    elseif(array_key_exists("{$object->getClassname()}{$classnamePrefix}:all_{$field->getFieldname()}", $restrictionsByKey))
+    {
+      $isInclude = $restrictionsByKey["{$object->getClassname()}{$classnamePrefix}:all_{$field->getFieldname()}"];
     }
     else
     {
       $isInclude = $restrictionsByKey["all"];
     }
+
     return $isInclude;
   }
 

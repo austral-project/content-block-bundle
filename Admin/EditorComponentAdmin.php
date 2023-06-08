@@ -86,10 +86,28 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
     $contentBlockContainerSelect = array();
     foreach($contentBlockContainer as $entityName => $objects)
     {
+      if($entityName === "Library")
+      {
+        $contentBlockContainerSelect["{$entityName}Navigation:all"] = $this->translator->trans("choices.restriction.all", array('%element%'=>"{$entityName}Navigation"),$listAdminEvent->getListMapper()->getTranslateDomain());
+      }
       $contentBlockContainerSelect["{$entityName}:all"] = $this->translator->trans("choices.restriction.all", array('%element%'=>$entityName),$listAdminEvent->getListMapper()->getTranslateDomain());
       foreach($objects as $object)
       {
-        $contentBlockContainerSelect["{$entityName}:{$object->getId()}"] = $object->__toString();
+        if($entityName === "Library")
+        {
+          if($object->getIsNavigationMenu())
+          {
+            $contentBlockContainerSelect["{$entityName}Navigation:{$object->getId()}"] = $object->__toString();
+          }
+          else
+          {
+            $contentBlockContainerSelect["{$entityName}:{$object->getId()}"] = $object->__toString();
+          }
+        }
+        else
+        {
+          $contentBlockContainerSelect["{$entityName}:{$object->getId()}"] = $object->__toString();
+        }
       }
     }
 
@@ -508,13 +526,35 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
     $contentBlockContainerData = array();
     foreach($contentBlockContainer->getObjectsByEntity() as $entityName => $objects)
     {
+      if($entityName === "Library")
+      {
+        $contentBlockContainerData["{$entityName}Navigation"] = "element-view-{$entityName}";
+        $contentBlockContainerSelect["{$entityName}Navigation"] = array(
+          $this->translator->trans("choices.restriction.all", array('%element%'=>"{$entityName}Navigation"),$formAdminEvent->getFormMapper()->getTranslateDomain())    =>  "{$entityName}Navigation:all"
+        );
+      }
+
       $contentBlockContainerData["{$entityName}"] = "element-view-{$entityName}";
       $contentBlockContainerSelect[$entityName] = array(
         $this->translator->trans("choices.restriction.all", array('%element%'=>$entityName),$formAdminEvent->getFormMapper()->getTranslateDomain())    =>  "{$entityName}:all"
       );
       foreach($objects as $object)
       {
-        $contentBlockContainerSelect[$entityName][$object->__toString()] = "{$entityName}:{$object->getId()}";
+        if($entityName === "Library")
+        {
+          if($object->getIsNavigationMenu())
+          {
+            $contentBlockContainerSelect["{$entityName}Navigation"][$object->__toString()] = "{$entityName}Navigation:{$object->getId()}";
+          }
+          else
+          {
+            $contentBlockContainerSelect[$entityName][$object->__toString()] = "{$entityName}:{$object->getId()}";
+          }
+        }
+        else
+        {
+          $contentBlockContainerSelect[$entityName][$object->__toString()] = "{$entityName}:{$object->getId()}";
+        }
       }
     }
 
@@ -523,10 +563,18 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
     foreach($contentBlockContainer->getEntitiesWithReelName() as $entityName => $classname)
     {
       $containerNameByEntities[$entityName] = $this->container->get('austral.entity_manager.component')->selectArrayComponentsContainerNameByClassname($classname);
-
       if(array_key_exists($entityName, $configContainerByEntity)) {
         $containerNameByEntities[$entityName] = array_merge($containerNameByEntities[$entityName], $configContainerByEntity[$entityName]);
       }
+
+      if($entityName === "Library")
+      {
+        $containerNameByEntities["{$entityName}Navigation"] = $containerNameByEntities[$entityName];
+        if(array_key_exists($entityName, $configContainerByEntity)) {
+          $containerNameByEntities["{$entityName}Navigation"] = array_merge($containerNameByEntities["{$entityName}Navigation"], $configContainerByEntity[$entityName]);
+        }
+      }
+
     }
 
     $restrictionFormMapper = new FormMapper();
