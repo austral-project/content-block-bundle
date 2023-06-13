@@ -261,6 +261,61 @@ Class ContentBlockContainer
   }
 
   /**
+   * @var array
+   */
+  protected array $componentsByObjectsIds = array();
+
+  /**
+   * initComponentsByObjectsIds
+   * @return void
+   */
+  protected function initComponentsByObjectsIds()
+  {
+    $this->debug->stopWatchStart("content_block_container.init_component_by_objects_ids", $this->debugContainer);
+    $components = $this->entityManager->getRepository("App\Entity\Austral\ContentBlockBundle\Component")->selectComponentsByObjectsIds();
+    /** @var Component $component */
+    foreach($components as $component)
+    {
+      $objectKey = "{$component->getObjectClassname()}:{$component->getObjectId()}";
+      if(!array_key_exists($objectKey, $this->componentsByObjectsIds))
+      {
+        $this->componentsByObjectsIds[$objectKey] = array();
+      }
+      $this->componentsByObjectsIds[$objectKey][$component->getId()] = $component;
+    }
+    $this->debug->stopWatchStop("content_block_container.init_component_by_objects_ids");
+  }
+
+  /**
+   * getComponentByObject
+   *
+   * @param EntityInterface $object
+   *
+   * @return array
+   */
+  public function getComponentByObject(EntityInterface $object): array
+  {
+    return $this->getComponentByObjectClassnameAndObjectId($object->getClassname(), $object->getId());
+  }
+
+  /**
+   * getComponentByObjectClassnameAndObjectId
+   *
+   * @param string $classname
+   * @param $objectId
+   *
+   * @return array
+   */
+  public function getComponentByObjectClassnameAndObjectId(string $classname, $objectId): array
+  {
+    if(!$this->componentsByObjectsIds)
+    {
+      $this->initComponentsByObjectsIds();
+    }
+    return AustralTools::getValueByKey($this->componentsByObjectsIds, "{$classname}:{$objectId}", array());
+  }
+
+  /**
    * @param EntityInterface|ComponentsInterface $object
    * @param bool $updated
    */
@@ -274,7 +329,8 @@ Class ContentBlockContainer
     if($object && $object->getId())
     {
       $componentsByContainerName = array();
-      $components = $this->entityManager->getRepository("App\Entity\Austral\ContentBlockBundle\Component")->selectComponentsByObjectIdAndClassname($object->getId(), $object->getClassname());
+      $components = $this->getComponentByObject($object);
+
       /** @var Component $component */
       foreach($components as $key => $component)
       {

@@ -16,6 +16,7 @@ use App\Entity\Austral\ContentBlockBundle\EditorComponent;
 use App\Entity\Austral\ContentBlockBundle\EditorComponentType;
 
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentInterface;
+use Austral\EntityBundle\ORM\AustralQueryBuilder;
 use Austral\EntityBundle\Repository\EntityRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\NoResultException;
@@ -55,16 +56,34 @@ class ComponentRepository extends EntityRepository
   }
 
   /**
-   * @param $objectId
-   * @param string $classname
-   *
    * @return Collection|array
    * @throws QueryException
    */
-  public function selectComponentsByObjectIdAndClassname($objectId, string $classname)
+  public function selectComponentsByObjectsIds(): Collection
+  {
+    $queryBuilder = $this->queryBuilderComponents();
+    $queryBuilder->orderBy("root.position", "ASC");
+    $queryBuilder->indexBy("root", "root.id");
+    $query = $queryBuilder->getQuery();
+    try {
+      $objects = $query->execute();
+    } catch (NoResultException $e) {
+      $objects = array();
+    }
+    return $objects;
+  }
+
+  /**
+   * queryBuilderComponents
+   * @return AustralQueryBuilder
+   */
+  protected function queryBuilderComponents(): AustralQueryBuilder
   {
     $queryBuilder = $this->createQueryBuilder('root');
     $queryBuilder->leftJoin("root.editorComponent", "editorComponent")->addSelect("editorComponent")
+      ->leftJoin("editorComponent.editorComponentTypes", "editorComponentChildren")->addSelect("editorComponentChildren")
+      ->leftJoin("root.library", "library")->addSelect("library")
+      ->leftJoin("library.translates", "libraryTranslates")->addSelect("libraryTranslates")
       ->leftJoin("root.componentValues", "componentValues")->addSelect("componentValues")
       ->leftJoin("componentValues.editorComponentType", "editorComponentType")->addSelect("editorComponentType")
 
@@ -76,7 +95,28 @@ class ComponentRepository extends EntityRepository
       ->leftJoin("children2.children", "componentValuesChildren2")->addSelect("componentValuesChildren2")
       ->leftJoin("componentValuesChildren2.editorComponentType", "editorComponentType3")->addSelect("editorComponentType3")
 
-      ->where("root.objectId = :objectId")
+      ->leftJoin("componentValuesChildren2.children", "children3")->addSelect("children3")
+      ->leftJoin("children3.children", "componentValuesChildren3")->addSelect("componentValuesChildren3")
+      ->leftJoin("componentValuesChildren3.editorComponentType", "editorComponentType4")->addSelect("editorComponentType4")
+
+      ->leftJoin("componentValuesChildren3.children", "children4")->addSelect("children4")
+      ->leftJoin("children4.children", "componentValuesChildren4")->addSelect("componentValuesChildren4")
+      ->leftJoin("componentValuesChildren4.editorComponentType", "editorComponentType5")->addSelect("editorComponentType5");
+    
+    return $queryBuilder;
+  }
+
+  /**
+   * @param $objectId
+   * @param string $classname
+   *
+   * @return Collection|array
+   * @throws QueryException
+   */
+  public function selectComponentsByObjectIdAndClassname($objectId, string $classname): Collection
+  {
+    $queryBuilder = $this->queryBuilderComponents();
+    $queryBuilder->where("root.objectId = :objectId")
       ->andWhere("root.objectClassname = :objectClassname")
       ->setParameters(array(
         "objectId"        =>  $objectId,
