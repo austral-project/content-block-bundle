@@ -119,27 +119,69 @@ class LibraryForm
   {
     $contentBlockContainer = $this->container->get('austral.content_block.content_block_container');
 
-    $contentBlockContainerSelect = array();
-    $contentBlockContainerData = array();
+    $contentBlockContainerSelect = array(
+      "all"   => $contentBlockContainerSelect["all"] = array(
+        $this->translator->trans("choices.restriction.all", array('%element%'=>"All"),$this->formMapper->getTranslateDomain())    =>  "all:all"
+      )
+    );
+    $contentBlockContainerData = array(
+      "all"   =>  "element-view-all"
+    );
     foreach($contentBlockContainer->getObjectsByEntity() as $entityName => $objects)
     {
+
+      if($entityName === "Library")
+      {
+        $contentBlockContainerData["{$entityName}Navigation"] = "element-view-{$entityName}";
+        $contentBlockContainerSelect["{$entityName}Navigation"] = array(
+          $this->translator->trans("choices.restriction.all", array('%element%'=>"{$entityName}Navigation"),$this->formMapper->getTranslateDomain())    =>  "{$entityName}Navigation:all"
+        );
+      }
+
       $contentBlockContainerData["{$entityName}"] = "element-view-{$entityName}";
       $contentBlockContainerSelect[$entityName] = array(
         $this->translator->trans("choices.restriction.all", array('%element%'=>$entityName), $this->formMapper->getTranslateDomain())    =>  "{$entityName}:all"
       );
       foreach($objects as $object)
       {
-        $contentBlockContainerSelect[$entityName][$object->__toString()] = "{$entityName}:{$object->getId()}";
+        if($entityName === "Library")
+        {
+          if($object->getIsNavigationMenu())
+          {
+            $contentBlockContainerSelect["{$entityName}Navigation"][$object->__toString()] = "{$entityName}Navigation:{$object->getId()}";
+          }
+          else
+          {
+            $contentBlockContainerSelect[$entityName][$object->__toString()] = "{$entityName}:{$object->getId()}";
+          }
+        }
+        else
+        {
+          $contentBlockContainerSelect[$entityName][$object->__toString()] = "{$entityName}:{$object->getId()}";
+        }
       }
     }
 
-
+    $configContainerByEntity = $this->container->get('austral.content_block.config')->getConfig('container_by_entity');
     $containerNameByEntities = array();
     foreach($contentBlockContainer->getEntitiesWithReelName() as $entityName => $classname)
     {
+
+      $containerNameByEntities[$entityName] = $this->container->get('austral.entity_manager.component')->selectArrayComponentsContainerNameByClassname($classname);
+      if(array_key_exists($entityName, $configContainerByEntity)) {
+        $containerNameByEntities[$entityName] = array_merge($containerNameByEntities[$entityName], $configContainerByEntity[$entityName]);
+      }
+
+      if($entityName === "Library")
+      {
+        $containerNameByEntities["{$entityName}Navigation"] = $containerNameByEntities[$entityName];
+        if(array_key_exists($entityName, $configContainerByEntity)) {
+          $containerNameByEntities["{$entityName}Navigation"] = array_merge($containerNameByEntities["{$entityName}Navigation"], $configContainerByEntity[$entityName]);
+        }
+      }
+
       $containerNameByEntities[$entityName] = $this->container->get('austral.entity_manager.component')->selectArrayComponentsContainerNameByClassname($classname);
     }
-
 
 
     $restrictionFormMapper = new FormMapper();
@@ -189,6 +231,35 @@ class LibraryForm
       ->addGroup("containerName")
       ->setSize(GroupFields::SIZE_COL_3)
       ->setDirection(GroupFields::DIRECTION_COLUMN);
+
+
+    $allContainerNames = array();
+    foreach ($containerNameByEntities as $entityName => $containerNames)
+    {
+      foreach($containerNames as $containerName)
+      {
+        $allContainerNames[$containerName] = $containerName;
+      }
+    }
+
+    $group->add(Field\SelectField::create("containerNameAll",
+      $allContainerNames,
+      array(
+        "entitled"  =>  false,
+        "getter"    =>  function(Restriction $object) {
+          return $object->getContainerName();
+        },
+        "setter"    =>  function(Restriction $object, $value) {
+          if(strpos($object->getValue(), "all") !== false)
+          {
+            $object->setContainerName($value);
+          }
+        },
+        "container" =>  array('class'=>"view-element-by-choices element-view-all")
+      )
+    )->addConstraint(new Constraints\NotNull()))
+      ->end();
+
     foreach($containerNameByEntities as $entityName => $containerNames)
     {
       $containerNamesSelect = array($this->translator->trans("choices.restriction.containerName.all", array('%element%'=>$entityName), $this->formMapper->getTranslateDomain())    =>  "all");

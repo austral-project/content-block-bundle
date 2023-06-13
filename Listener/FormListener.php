@@ -640,7 +640,7 @@ class FormListener
           if($library->getIsEnabled() && $this->restrictionByObject($library, $object, $field))
           {
 
-            $collectionFormFieldname = "components_library-{$library->getKeyname()}";
+            $collectionFormFieldname = "{$field->getFieldname()}_library-{$library->getKeyname()}";
 
             $contentBlockTypeChoices[$collectionFormFieldname] = array(
               "entitled"    =>  $library->getName(),
@@ -658,7 +658,7 @@ class FormListener
 
             $componentFormMapper->add(Field\SymfonyField::create("id", HiddenType::class, array('entitled' => false)));
             $componentFormMapper->add(Field\SymfonyField::create("position", HiddenType::class, array('entitled' => false, 'attr'=>array('data-collection-sortabled'=>""))));
-            $componentFormMapper->addGroup("")
+            $componentFormMapper->addGroup("button")
               ->add(Field\TemplateField::create("button", "@AustralContentBlock/Admin/Library/button.html.twig", array(), array(
               "link"  =>  $modules->getModuleByKey("library")->generateUrl("edit", array("id"=>$library->getId()))
             )));
@@ -1780,7 +1780,11 @@ class FormListener
       }
     }
 
-    if(array_key_exists("{$object->getClassname()}{$classnamePrefix}:{$object->getId()}_{$field->getFieldname()}", $restrictionsByKey))
+    if(array_key_exists("all:all_{$field->getFieldname()}", $restrictionsByKey))
+    {
+      $isInclude = $restrictionsByKey["all:all_{$field->getFieldname()}"];
+    }
+    elseif(array_key_exists("{$object->getClassname()}{$classnamePrefix}:{$object->getId()}_{$field->getFieldname()}", $restrictionsByKey))
     {
       $isInclude = $restrictionsByKey["{$object->getClassname()}{$classnamePrefix}:{$object->getId()}_{$field->getFieldname()}"];
     }

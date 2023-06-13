@@ -5,6 +5,10 @@
         <li>
           <span class="value">{{ listRestrictions[restriction.value] }} -> {{ restriction.condition }}</span>
         </li>
+      {% else %}
+        <li>
+          <span class="value">{{ "choices.restriction.all"|trans({"%element%": restriction.value|split(":")|first}, list.mapper.translateDomain) }} -> {{ restriction.condition }}</span>
+        </li>
       {% endif %}
     {% endfor %}
   </ul>

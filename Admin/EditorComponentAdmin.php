@@ -522,8 +522,14 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
   {
     $contentBlockContainer = $this->container->get('austral.content_block.content_block_container');
 
-    $contentBlockContainerSelect = array();
-    $contentBlockContainerData = array();
+    $contentBlockContainerSelect = array(
+      "all"   => $contentBlockContainerSelect["all"] = array(
+        $this->translator->trans("choices.restriction.all", array('%element%'=>"All"),$formAdminEvent->getFormMapper()->getTranslateDomain())    =>  "all:all"
+      )
+    );
+    $contentBlockContainerData = array(
+      "all"   =>  "element-view-all"
+    );
     foreach($contentBlockContainer->getObjectsByEntity() as $entityName => $objects)
     {
       if($entityName === "Library")
@@ -624,6 +630,35 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
       ->addGroup("containerName")
       ->setSize(GroupFields::SIZE_COL_3)
       ->setDirection(GroupFields::DIRECTION_COLUMN);
+
+    $allContainerNames = array();
+    foreach ($containerNameByEntities as $entityName => $containerNames)
+    {
+      foreach($containerNames as $containerName)
+      {
+        $allContainerNames[$containerName] = $containerName;
+      }
+    }
+
+    $group->add(Field\SelectField::create("containerNameAll",
+      $allContainerNames,
+      array(
+        "entitled"  =>  false,
+        "getter"    =>  function(Restriction $object) {
+          return $object->getContainerName();
+        },
+        "setter"    =>  function(Restriction $object, $value) {
+          if(strpos($object->getValue(), "all") !== false)
+          {
+            $object->setContainerName($value);
+          }
+        },
+        "container" =>  array('class'=>"view-element-by-choices element-view-all")
+      )
+    )->addConstraint(new Constraints\NotNull()))
+    ->end();
+
+
     foreach($containerNameByEntities as $entityName => $containerNames)
     {
       $containerNamesSelect = array($this->translator->trans("choices.restriction.containerName.all", array('%element%'=>$entityName),$formAdminEvent->getFormMapper()->getTranslateDomain())    =>  "all");
