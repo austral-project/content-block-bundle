@@ -56,10 +56,10 @@ class ComponentRepository extends EntityRepository
   }
 
   /**
-   * @return Collection|array
+   * @return array
    * @throws QueryException
    */
-  public function selectComponentsByObjectsIds(): Collection
+  public function selectComponentsByObjectsIds(): array
   {
     $queryBuilder = $this->queryBuilderComponents();
     $queryBuilder->orderBy("root.position", "ASC");
@@ -110,10 +110,10 @@ class ComponentRepository extends EntityRepository
    * @param $objectId
    * @param string $classname
    *
-   * @return Collection|array
+   * @return array
    * @throws QueryException
    */
-  public function selectComponentsByObjectIdAndClassname($objectId, string $classname): Collection
+  public function selectComponentsByObjectIdAndClassname($objectId, string $classname): array
   {
     $queryBuilder = $this->queryBuilderComponents();
     $queryBuilder->where("root.objectId = :objectId")
