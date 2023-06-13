@@ -94,11 +94,16 @@ class ContentBlockSubscriber implements EventSubscriberInterface
   {
     $this->contentBlockContainer->initComponentByObject($contentBlockEvent->getObject(), false);
     $finalComponents = array();
+    $finalComponentsByTypes = array();
     /** @var Component $componentObject */
     foreach($contentBlockEvent->getObject()->getComponents() as $containerName => $componentObjects)
     {
       $blockName = "default-0";
       $finalComponentsByContainer = array($blockName => array(
+        "keyname"   =>  "default",
+        "children"  => array()
+      ));
+      $finalComponentsByContainerByTypes = array($blockName => array(
         "keyname"   =>  "default",
         "children"  => array()
       ));
@@ -111,6 +116,11 @@ class ContentBlockSubscriber implements EventSubscriberInterface
           if($library->getAccessibleInContent() && $library->getIsEnabled())
           {
             $finalComponentsByContainer[$blockName]['children']["{$componentObject->getPosition()}-{$componentObject->getId()}"] = array(
+              "id"                =>  $componentObject->getId(),
+              "type"              =>  "library",
+              "keyname"           =>  $componentObject->getLibrary()->getKeyname(),
+            );
+            $finalComponentsByContainerByTypes[$blockName]['children'][$componentObject->getLibrary()->getKeyname()][] = array(
               "id"                =>  $componentObject->getId(),
               "type"              =>  "library",
               "keyname"           =>  $componentObject->getLibrary()->getKeyname(),
@@ -152,14 +162,28 @@ class ContentBlockSubscriber implements EventSubscriberInterface
                   "values"            =>  $this->componentValues($componentObject->getComponentValues()),
                   "vars"              =>  $componentEvent->getVars()
                 );
+                $finalComponentsByContainerByTypes[$blockName]['children'][$componentObject->getEditorComponent()->getKeyname()][] = array(
+                  "id"                =>  $componentObject->getId(),
+                  "keyname"           =>  $componentObject->getEditorComponent()->getKeyname(),
+                  "type"              =>  "default",
+                  "theme"             =>  $componentObject->getThemeKeyname(),
+                  "option"            =>  $componentObject->getOptionKeyname(),
+                  "layout"            =>  $componentObject->getLayoutKeyname(),
+                  "templatePath"      =>  "{$contentBlockEvent->getRootTemplateDir()}\\{$componentObject->getEditorComponent()->getTemplatePathOrDefault()}",
+                  "values"            =>  $this->componentValues($componentObject->getComponentValues()),
+                  "vars"              =>  $componentEvent->getVars()
+                );
               }
             }
           }
         }
       }
       $finalComponents[$containerName] = $finalComponentsByContainer;
+      $finalComponentsByTypes[$containerName] = $finalComponentsByContainerByTypes;
     }
-    $contentBlockEvent->getObject()->setComponentsTemplate($finalComponents);
+    $contentBlockEvent->getObject()
+      ->setComponentsTemplate($finalComponents)
+      ->setComponentsTemplateByTypes($finalComponentsByTypes);
   }
 
   /**

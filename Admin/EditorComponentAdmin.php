@@ -127,6 +127,10 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
             $listAdminEvent->getCurrentModule()->generateUrl("change"),
             $listAdminEvent->getCurrentModule()->isGranted("edit")
           )
+        )->addColumn(new Column\SwitchValue("isGuidelineView", null, 0, 1,
+            $listAdminEvent->getCurrentModule()->generateUrl("change"),
+            $listAdminEvent->getCurrentModule()->isGranted("edit")
+          )
         )
     ->end();
   }

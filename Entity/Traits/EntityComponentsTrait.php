@@ -40,6 +40,11 @@ trait EntityComponentsTrait
   /**
    * @var array
    */
+  protected array $componentsTemplateByTypes = array();
+
+  /**
+   * @var array
+   */
   protected array $componentsRemoved = array();
 
   /**
@@ -74,6 +79,14 @@ trait EntityComponentsTrait
   public function getComponentsTemplate(): array
   {
     return $this->componentsTemplate;
+  }
+
+  /**
+   * @return array
+   */
+  public function getComponentsTemplateByTypes(): array
+  {
+    return $this->componentsTemplateByTypes;
   }
 
   /**
@@ -116,6 +129,17 @@ trait EntityComponentsTrait
   public function setComponentsTemplate(array $componentsTemplate): ComponentsInterface
   {
     $this->componentsTemplate = $componentsTemplate;
+    return $this;
+  }
+
+  /**
+   * @param array $componentsTemplateByTypes
+   *
+   * @return $this|ComponentsInterface
+   */
+  public function setComponentsTemplateByTypes(array $componentsTemplateByTypes): ComponentsInterface
+  {
+    $this->componentsTemplateByTypes = $componentsTemplateByTypes;
     return $this;
   }
 
