@@ -75,6 +75,12 @@ Class ContentBlockContainer
    */
   protected Debug $debug;
 
+
+  /**
+   * @var array
+   */
+  protected array $componentsByObjectsIds = array();
+
   /**
    * Page constructor.
    *
@@ -133,6 +139,32 @@ Class ContentBlockContainer
     }
     $this->entitiesWithReelName = $entitiesWithReelName;
     $this->debug->stopWatchStop("content_block_container.init_entity");
+    return $this;
+  }
+
+  /**
+   * initComponentsByObjectsIds
+   * @return $this
+   */
+  public function initComponentsByObjectsIds(): ContentBlockContainer
+  {
+    $this->debug->stopWatchStart("content_block_container.init_component_by_objects_ids", $this->debugContainer);
+    $components = $this->entityManager->getRepository("App\Entity\Austral\ContentBlockBundle\Component")->selectComponentsByObjectsIds();
+    /** @var Component $component */
+    foreach($components as $component)
+    {
+      $objectKey = "{$component->getObjectClassname()}:{$component->getObjectId()}";
+      if(!array_key_exists($objectKey, $this->componentsByObjectsIds))
+      {
+        $this->componentsByObjectsIds[$objectKey] = array();
+      }
+      if(!array_key_exists($component->getObjectContainerName(), $this->componentsByObjectsIds[$objectKey]))
+      {
+        $this->componentsByObjectsIds[$objectKey][$component->getObjectContainerName()] = array();
+      }
+      $this->componentsByObjectsIds[$objectKey][$component->getObjectContainerName()][$component->getId()] = $component;
+    }
+    $this->debug->stopWatchStop("content_block_container.init_component_by_objects_ids");
     return $this;
   }
 
@@ -261,32 +293,6 @@ Class ContentBlockContainer
   }
 
   /**
-   * @var array
-   */
-  protected array $componentsByObjectsIds = array();
-
-  /**
-   * initComponentsByObjectsIds
-   * @return void
-   */
-  protected function initComponentsByObjectsIds()
-  {
-    $this->debug->stopWatchStart("content_block_container.init_component_by_objects_ids", $this->debugContainer);
-    $components = $this->entityManager->getRepository("App\Entity\Austral\ContentBlockBundle\Component")->selectComponentsByObjectsIds();
-    /** @var Component $component */
-    foreach($components as $component)
-    {
-      $objectKey = "{$component->getObjectClassname()}:{$component->getObjectId()}";
-      if(!array_key_exists($objectKey, $this->componentsByObjectsIds))
-      {
-        $this->componentsByObjectsIds[$objectKey] = array();
-      }
-      $this->componentsByObjectsIds[$objectKey][$component->getId()] = $component;
-    }
-    $this->debug->stopWatchStop("content_block_container.init_component_by_objects_ids");
-  }
-
-  /**
    * getComponentByObject
    *
    * @param EntityInterface $object
@@ -308,10 +314,6 @@ Class ContentBlockContainer
    */
   public function getComponentByObjectClassnameAndObjectId(string $classname, $objectId): array
   {
-    if(!$this->componentsByObjectsIds)
-    {
-      $this->initComponentsByObjectsIds();
-    }
     return AustralTools::getValueByKey($this->componentsByObjectsIds, "{$classname}:{$objectId}", array());
   }
 
@@ -328,18 +330,8 @@ Class ContentBlockContainer
     }
     if($object && $object->getId())
     {
-      $componentsByContainerName = array();
       $components = $this->getComponentByObject($object);
-
-      /** @var Component $component */
-      foreach($components as $key => $component)
-      {
-        $componentsByContainerName[$component->getObjectContainerName()][$key] = $component;
-      }
-      if($componentsByContainerName)
-      {
-        $object->setComponents($componentsByContainerName, $updated);
-      }
+      $object->setComponents($components, $updated);
     }
     $this->debug->stopWatchStop("content_block_container.init_component_by_object");
   }

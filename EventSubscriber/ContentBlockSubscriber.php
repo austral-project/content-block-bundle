@@ -69,7 +69,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
   public function __construct(ContentBlockContainer $contentBlockContainer, EventDispatcherInterface $dispatcher, ?UrlParameterManagement $urlParameterManagement = null)
   {
     $this->dispatcher = $dispatcher;
-    $this->contentBlockContainer = $contentBlockContainer;
+    $this->contentBlockContainer = $contentBlockContainer->initComponentsByObjectsIds();
     $this->urlParameterManagement = $urlParameterManagement;
   }
 
