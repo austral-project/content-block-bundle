@@ -56,12 +56,25 @@ class ComponentRepository extends EntityRepository
   }
 
   /**
+   * @param array $contentBlockContainerObjectsIds
+   *
    * @return array
    * @throws QueryException
    */
-  public function selectComponentsByObjectsIds(): array
+  public function selectComponentsByObjectsIds(array $contentBlockContainerObjectsIds = array()): array
   {
     $queryBuilder = $this->queryBuilderComponents();
+    $conditions = array();
+    foreach($contentBlockContainerObjectsIds as $i => $contentBlockContainerObjectsId)
+    {
+      $conditions[] = "root.objectId = :objectId_{$i} AND root.objectClassname = :objectClassname_{$i}";
+      $queryBuilder->setParameter("objectId_{$i}", $contentBlockContainerObjectsId["id"]);
+      $queryBuilder->setParameter("objectClassname_{$i}", $contentBlockContainerObjectsId["classname"]);
+    }
+    if($conditions)
+    {
+      $queryBuilder->where(implode(" OR ", $conditions));
+    }
     $queryBuilder->orderBy("root.position", "ASC");
     $queryBuilder->indexBy("root", "root.id");
     $query = $queryBuilder->getQuery();

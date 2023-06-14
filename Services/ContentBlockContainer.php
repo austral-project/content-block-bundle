@@ -144,12 +144,29 @@ Class ContentBlockContainer
 
   /**
    * initComponentsByObjectsIds
+   *
+   * @param array $contentBlockContainerObjects
+   *
    * @return $this
    */
-  public function initComponentsByObjectsIds(): ContentBlockContainer
+  public function initComponentsByObjectsIds(array $contentBlockContainerObjects = array()): ContentBlockContainer
   {
     $this->debug->stopWatchStart("content_block_container.init_component_by_objects_ids", $this->debugContainer);
-    $components = $this->entityManager->getRepository("App\Entity\Austral\ContentBlockBundle\Component")->selectComponentsByObjectsIds();
+    $contentBlockContainerObjectsIds = array();
+
+    /** @var EntityInterface $object */
+    foreach ($contentBlockContainerObjects as $object)
+    {
+      if(AustralTools::usedImplements(get_class($object), "Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface"))
+      {
+        $object = $object->getTranslateCurrent();
+      }
+      $contentBlockContainerObjectsIds[] = array(
+        "id"        =>  $object->getId(),
+        "classname" =>  $object->getClassname()
+      );
+    }
+    $components = $this->entityManager->getRepository("App\Entity\Austral\ContentBlockBundle\Component")->selectComponentsByObjectsIds($contentBlockContainerObjectsIds);
     /** @var Component $component */
     foreach($components as $component)
     {
@@ -330,11 +347,16 @@ Class ContentBlockContainer
     }
     if($object && $object->getId())
     {
+      $componentInit = false;
       if(count($this->componentsByObjectsIds) > 0)
       {
-        $object->setComponents($this->getComponentByObject($object), $updated);
+        if($componentsByContainerName = $this->getComponentByObject($object))
+        {
+          $componentInit = true;
+          $object->setComponents($componentsByContainerName, $updated);
+        }
       }
-      else
+      if(!$componentInit)
       {
         $componentsByContainerName = array();
         $components = $this->entityManager->getRepository("App\Entity\Austral\ContentBlockBundle\Component")->selectComponentsByObjectIdAndClassname($object->getId(), $object->getClassname());
