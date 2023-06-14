@@ -330,8 +330,24 @@ Class ContentBlockContainer
     }
     if($object && $object->getId())
     {
-      $components = $this->getComponentByObject($object);
-      $object->setComponents($components, $updated);
+      if(count($this->componentsByObjectsIds) > 0)
+      {
+        $object->setComponents($this->getComponentByObject($object), $updated);
+      }
+      else
+      {
+        $componentsByContainerName = array();
+        $components = $this->entityManager->getRepository("App\Entity\Austral\ContentBlockBundle\Component")->selectComponentsByObjectIdAndClassname($object->getId(), $object->getClassname());
+        /** @var Component $component */
+        foreach($components as $key => $component)
+        {
+          $componentsByContainerName[$component->getObjectContainerName()][$key] = $component;
+        }
+        if($componentsByContainerName)
+        {
+          $object->setComponents($componentsByContainerName, $updated);
+        }
+      }
     }
     $this->debug->stopWatchStop("content_block_container.init_component_by_object");
   }
