@@ -167,6 +167,17 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
   }
 
   /**
+   * duplicateInit
+   * @return $this
+   */
+  public function duplicateInit(): EditorComponent
+  {
+    $this->editorComponentTypes = new ArrayCollection();
+    $this->components = new ArrayCollection();
+    return $this;
+  }
+
+  /**
    * @return array
    */
   public function getFieldsToDelete(): array

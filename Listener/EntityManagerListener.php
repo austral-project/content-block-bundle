@@ -14,6 +14,8 @@ use Austral\ContentBlockBundle\Annotation\ObjectContentBlock;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValueInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValuesInterface;
+use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentInterface;
+use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentTypeInterface;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
 use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Austral\ContentBlockBundle\EntityManager\ComponentEntityManager;
@@ -115,6 +117,37 @@ class EntityManagerListener
         $entityManagerEvent->getEntityManager()->update($duplicateComponentValue, false);
       }
     }
+
+    if(AustralTools::usedImplements(get_class($entityManagerEvent->getObject()), EditorComponentInterface::class))
+    {
+      /** @var EditorComponentInterface $editorComponentSource */
+      $editorComponentSource = $entityManagerEvent->getSourceObject();
+
+      /** @var EditorComponentInterface $editorComponentNew */
+      $editorComponentNew = $entityManagerEvent->getObject();
+
+      $editorComponentNew->duplicateInit();
+      $editorComponentTypeSourceIdsToNewIds = array();
+
+      /** @var EditorComponentTypeInterface $editorComponentType */
+      foreach ($editorComponentSource->getEditorComponentTypes() as $editorComponentType)
+      {
+        /** @var EditorComponentTypeInterface $duplicateEditorComponentType */
+        $duplicateEditorComponentType = $entityManagerEvent->getEntityManager()->duplicate($editorComponentType);
+        $editorComponentNew->addEditorComponentType($duplicateEditorComponentType);
+        $editorComponentTypeSourceIdsToNewIds[$editorComponentType->getId()] = $duplicateEditorComponentType->getId();
+      }
+
+      /** @var EditorComponentTypeInterface $editorComponentType */
+      foreach ($editorComponentNew->getEditorComponentTypes() as $editorComponentType)
+      {
+        if($editorComponentType->getParentId())
+        {
+          $editorComponentType->setParentId($editorComponentTypeSourceIdsToNewIds[$editorComponentType->getParentId()]);
+        }
+      }
+    }
+
   }
 
   /**

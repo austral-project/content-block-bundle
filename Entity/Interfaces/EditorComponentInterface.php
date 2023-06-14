@@ -10,6 +10,7 @@
 
 namespace Austral\ContentBlockBundle\Entity\Interfaces;
 
+use Austral\ContentBlockBundle\Entity\EditorComponent;
 use Austral\ContentBlockBundle\Model\Editor\Layout;
 use Austral\ContentBlockBundle\Model\Editor\Option;
 use Austral\ContentBlockBundle\Model\Editor\Theme;
@@ -21,6 +22,12 @@ use Doctrine\Common\Collections\Collection;
  */
 interface EditorComponentInterface
 {
+
+  /**
+   * duplicateInit
+   * @return $this
+   */
+  public function duplicateInit(): EditorComponentInterface;
 
   /**
    * @return Collection
