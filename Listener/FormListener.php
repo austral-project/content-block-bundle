@@ -1140,6 +1140,7 @@ class FormListener
         {
           $choicesTags[array_search($tag, $tagsList)] = $tag;
         }
+        ksort($choicesTags);
         if($choicesTags)
         {
           $defaultValue = array_key_exists("h2", $choicesTags) ? $choicesTags['h2'] : AustralTools::first($choicesTags);
