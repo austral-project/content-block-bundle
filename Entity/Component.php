@@ -347,7 +347,7 @@ abstract class Component extends Entity implements ComponentInterface, EntityInt
    *
    * @return ComponentValueInterface
    */
-  public function getComponentValuesByEditorComponentType(EditorComponentTypeInterface $editorComponentType)
+  public function getComponentValuesByEditorComponentType(EditorComponentTypeInterface $editorComponentType): ComponentValueInterface
   {
     /** @var ComponentValueInterface $componentValue */
     foreach($this->componentValues as $componentValue)

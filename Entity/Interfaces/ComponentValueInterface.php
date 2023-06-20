@@ -173,6 +173,26 @@ interface ComponentValueInterface extends FileInterface
    */
   public function setLinkEntityKey(?string $linkEntityKey): ComponentValueInterface;
 
+  /**
+   * @return array
+   */
+  public function getOptions(): array;
+
+  /**
+   * @param string $key
+   * @param null $default
+   *
+   * @return mixed|null
+   */
+  public function getOptionsByKey(string $key, $default = null);
+
+  /**
+   * @param array $options
+   *
+   * @return ComponentValueInterface
+   */
+  public function setOptions(array $options): ComponentValueInterface;
+
 }
 
     

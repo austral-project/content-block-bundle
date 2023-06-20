@@ -98,7 +98,12 @@ interface ComponentInterface
    */
   public function getComponentValues(): Collection;
 
-  public function getComponentValuesByEditorComponentType(EditorComponentTypeInterface $editorComponentType);
+  /**
+   * getComponentValuesByEditorComponentType
+   * @param EditorComponentTypeInterface $editorComponentType
+   * @return ComponentValueInterface
+   */
+  public function getComponentValuesByEditorComponentType(EditorComponentTypeInterface $editorComponentType): ComponentValueInterface;
 
   /**
    * @param Collection $componentValues
