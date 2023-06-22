@@ -22,8 +22,8 @@ use Symfony\Contracts\EventDispatcher\Event;
 class ContentBlockEvent extends Event
 {
 
+  const EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENTS_INIT = "austral.event.content_block.components_init";
   const EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENTS_HYDRATE = "austral.event.content_block.components_hydrate";
-  const EVENT_AUSTRAL_CONTENT_BLOCK_GUIDELINE_INIT = "austral.event.content_block.guideline_init";
 
   /**
    * @var ComponentsInterface|null

@@ -324,7 +324,23 @@ abstract class ComponentValue extends Entity implements ComponentValueInterface,
    */
   public function getOptionsByKey(string $key, $default = null)
   {
-    return array_key_exists($key, $this->options) ? $this->options[$key] : $default;
+    if(array_key_exists($key, $this->options))
+    {
+      return  $this->options[$key];
+    }
+    elseif($editorComponentType = $this->getEditorComponentType())
+    {
+      $editorComponentTypeParameter = $editorComponentType->getParameterByKey($key);
+      if(is_array($editorComponentTypeParameter))
+      {
+        return AustralTools::first($editorComponentTypeParameter);
+      }
+      else
+      {
+        return $editorComponentTypeParameter;
+      }
+    }
+    return $default;
   }
 
   /**

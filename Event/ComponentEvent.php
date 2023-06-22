@@ -23,6 +23,7 @@ class ComponentEvent extends Event
 {
 
   const EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_INIT = "austral.event.content_block.component_init";
+  const EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_HYDRATE = "austral.event.content_block.component_hydrate";
 
   /**
    * @var ComponentsInterface

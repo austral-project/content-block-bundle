@@ -80,9 +80,24 @@ class ContentBlockSubscriber implements EventSubscriberInterface
   {
     return [
       ContentBlockEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENTS_HYDRATE =>  ["componentsHydrate", 1024],
-      GuidelineEvent::EVENT_AUSTRAL_CONTENT_BLOCK_GUIDELINE_INIT =>  ["guidelineInit", 1024],
-      ComponentEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_INIT =>  ["componentInit", 1024],
+      ContentBlockEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENTS_INIT    =>  ["componentsInit", 1024],
+      GuidelineEvent::EVENT_AUSTRAL_CONTENT_BLOCK_GUIDELINE_INIT        =>  ["guidelineInit", 1024],
+      ComponentEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_HYDRATE        =>  ["componentInit", 1024],
     ];
+  }
+
+  public function componentsInit(ContentBlockEvent $contentBlockEvent)
+  {
+    $this->contentBlockContainer->initComponentByObject($contentBlockEvent->getObject(), false);
+    /** @var Component $componentObject */
+    foreach($contentBlockEvent->getObject()->getComponents() as $componentObjects)
+    {
+      foreach($componentObjects as $componentObject)
+      {
+        $componentEvent = new ComponentEvent($contentBlockEvent->getObject(), $componentObject);
+        $this->dispatcher->dispatch($componentEvent, ComponentEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_INIT);
+      }
+    }
   }
 
   /**
@@ -92,9 +107,9 @@ class ContentBlockSubscriber implements EventSubscriberInterface
    */
   public function componentsHydrate(ContentBlockEvent $contentBlockEvent)
   {
-    $this->contentBlockContainer->initComponentByObject($contentBlockEvent->getObject(), false);
     $finalComponents = array();
     $finalComponentsByTypes = array();
+
     /** @var Component $componentObject */
     foreach($contentBlockEvent->getObject()->getComponents() as $containerName => $componentObjects)
     {
@@ -109,7 +124,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       ));
       foreach($componentObjects as $componentObject)
       {
-        if($componentObject->getComponentType() == "library")
+        if($componentObject->getComponentType() === "library")
         {
           /** @var LibraryInterface $library */
           $library = $componentObject->getLibrary();
@@ -127,7 +142,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         else
         {
           $componentEvent = new ComponentEvent($contentBlockEvent->getObject(), $componentObject);
-          $this->dispatcher->dispatch($componentEvent, ComponentEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_INIT);
+          $this->dispatcher->dispatch($componentEvent, ComponentEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_HYDRATE);
           if(!$componentEvent->getIsDisabled())
           {
             if($componentObject->getEditorComponent()->getIsEnabled())
@@ -194,6 +209,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
     {
       $editorComponent = $componentValueObject->getEditorComponentType();
       $values[$componentValueObject->getEditorComponentType()->getKeyname()] = array(
+        "id"        =>  $componentValueObject->getId(),
         "type"      =>  $componentValueObject->getEditorComponentType()->getType(),
         "classCss"  =>  $componentValueObject->getOptionsByKey("classCss", null)
       );
@@ -527,7 +543,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
 
     $componentEvent = new ComponentEvent($guidelineEvent->getDefaultObjectPage(), $componentObject);
     $componentEvent->setIsGuideline(true);
-    $this->dispatcher->dispatch($componentEvent, ComponentEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_INIT);
+    $this->dispatcher->dispatch($componentEvent, ComponentEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_HYDRATE);
 
     if(!$componentEvent->getIsDisabled())
     {
