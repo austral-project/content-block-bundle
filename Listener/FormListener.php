@@ -1221,7 +1221,7 @@ class FormListener
           $translateMapping = $this->mapping->getEntityClassMapping($entityClass, EntityTranslateMapping::class);
           /** @var ObjectContentBlockMapping $objectContentBlock */
           $objectContentBlock = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlockMapping::class);
-          if($repositoryFunction = $objectContentBlock->getRepositoryFunction())
+          if($objectContentBlock && ($repositoryFunction = $objectContentBlock->getRepositoryFunction()))
           {
             if(method_exists($repository, $repositoryFunction))
             {
