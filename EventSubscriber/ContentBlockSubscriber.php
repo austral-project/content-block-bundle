@@ -21,11 +21,18 @@ use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\ContentBlockBundle\Event\ComponentEvent;
 use Austral\ContentBlockBundle\Event\ContentBlockEvent;
 use Austral\ContentBlockBundle\Event\GuidelineEvent;
+use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
 use Austral\ContentBlockBundle\Model\Editor\Layout;
 use Austral\ContentBlockBundle\Model\Editor\Option;
 use Austral\ContentBlockBundle\Model\Editor\Theme;
 use Austral\ContentBlockBundle\Model\Guideline\GuidelineComponent;
 use Austral\ContentBlockBundle\Services\ContentBlockContainer;
+use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\EntityBundle\EntityManager\EntityManager;
+use Austral\EntityBundle\Mapping\EntityMapping;
+use Austral\EntityBundle\Mapping\Mapping;
+use Austral\EntityBundle\ORM\AustralQueryBuilder;
+use Austral\EntityTranslateBundle\Mapping\EntityTranslateMapping;
 use Austral\SeoBundle\Services\UrlParameterManagement;
 use Austral\ToolsBundle\AustralTools;
 use Doctrine\Common\Collections\Collection;
@@ -34,7 +41,6 @@ use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use function Symfony\Component\String\u;
-use function Webmozart\Assert\Tests\StaticAnalysis\boolean;
 
 /**
  * Austral ContentBlock Subscriber.
@@ -55,6 +61,16 @@ class ContentBlockSubscriber implements EventSubscriberInterface
   protected ContentBlockContainer $contentBlockContainer;
   
   /**
+   * @var Mapping
+   */
+  protected Mapping $mapping;
+
+  /**
+   * @var EntityManager
+   */
+  protected EntityManager $entityManager;
+
+  /**
    * @var UrlParameterManagement|null
    */
   protected ?UrlParameterManagement $urlParameterManagement;
@@ -64,10 +80,19 @@ class ContentBlockSubscriber implements EventSubscriberInterface
    *
    * @param ContentBlockContainer $contentBlockContainer
    * @param EventDispatcherInterface $dispatcher
+   * @param Mapping $mapping
+   * @param EntityManager $entityManager
    * @param UrlParameterManagement|null $urlParameterManagement
    */
-  public function __construct(ContentBlockContainer $contentBlockContainer, EventDispatcherInterface $dispatcher, ?UrlParameterManagement $urlParameterManagement = null)
+  public function __construct(ContentBlockContainer $contentBlockContainer,
+    EventDispatcherInterface $dispatcher,
+    Mapping $mapping,
+    EntityManager $entityManager,
+    ?UrlParameterManagement $urlParameterManagement = null
+  )
   {
+    $this->mapping = $mapping;
+    $this->entityManager = $entityManager;
     $this->dispatcher = $dispatcher;
     $this->contentBlockContainer = $contentBlockContainer;
     $this->urlParameterManagement = $urlParameterManagement;
@@ -231,6 +256,19 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       if($editorComponent->getType() == "textarea")
       {
         $values[$componentValueObject->getEditorComponentType()->getKeyname()]['isWysiwyg'] = $editorComponent->getParameterByKey("isWysiwyg");
+      }
+      if($editorComponent->getType() == "object")
+      {
+        if($objectId = $componentValueObject->getOptionsByKey("objectId"))
+        {
+          $entityClass = $editorComponent->getParameterByKey("entityClass");
+          if($entityClass === "all")
+          {
+            list($entityClass, $objectId) = explode("::", $objectId);
+          }
+          $values[$componentValueObject->getEditorComponentType()->getKeyname()]['objectId'] = "{$entityClass}::{$objectId}";
+          $values[$componentValueObject->getEditorComponentType()->getKeyname()]['object'] = $this->getObjectsByEntityClassAndId($entityClass, $objectId);
+        }
       }
       if($editorComponent->getType() == "movie")
       {
@@ -724,5 +762,78 @@ class ContentBlockSubscriber implements EventSubscriberInterface
     }
     return $keys;
   }
+
+  /**
+   * @var array
+   */
+  protected array $objectsRelations = array();
+
+  /**
+   * getObjectsByEntityClassAndId
+   * @param string $entityClass
+   * @param string $objectId
+   * @return EntityInterface|null
+   */
+  protected function getObjectsByEntityClassAndId(string $entityClass, string $objectId): ?EntityInterface
+  {
+    if(!$this->objectsRelations)
+    {
+      $this->initialiseObjectsRelations();
+    }
+    return AustralTools::getValueByKey(AustralTools::getValueByKey($this->objectsRelations, $entityClass), $objectId, null);
+  }
+
+  /**
+   * initialiseObjectsRelations
+   * @return ContentBlockSubscriber
+   */
+  protected function initialiseObjectsRelations(): ContentBlockSubscriber
+  {
+    /** @var EntityMapping $entityMapping */
+    foreach ($this->mapping->getEntitiesMapping() as $entityMapping) {
+      if ($entityMapping->getEntityClassMapping(ObjectContentBlockMapping::class)) {
+        $this->objectsRelations[$entityMapping->entityClass] = array();
+        $objects = $this->selectObjectsRelations($entityMapping->entityClass);
+        foreach ($objects as $object) {
+          $this->objectsRelations[$entityMapping->entityClass][$object->getId()] = $object;
+        }
+      }
+    }
+    return $this;
+  }
+
+  /**
+   * selectObjectsRelations
+   * @param string $entityClass
+   * @return array
+   */
+  protected function selectObjectsRelations(string $entityClass): array
+  {
+    $objects = array();
+    $repository = $this->entityManager->getRepository($entityClass);
+    $translateMapping = $this->mapping->getEntityClassMapping($entityClass, EntityTranslateMapping::class);
+    /** @var ObjectContentBlockMapping $objectContentBlock */
+    $objectContentBlock = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlockMapping::class);
+    if($objectContentBlock && ($repositoryFunction = $objectContentBlock->getRepositoryFunction()))
+    {
+      if(method_exists($repository, $repositoryFunction))
+      {
+        $objects = $repository->$repositoryFunction();
+      }
+    }
+    if(!$objects && $objectContentBlock)
+    {
+      $objects = $repository->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder) use($translateMapping){
+        if($translateMapping)
+        {
+          $australQueryBuilder->leftJoin("root.translates", "translates")->addSelect("translates");
+        }
+        $australQueryBuilder->indexBy("root", "root.id");
+      });
+    }
+    return $objects;
+  }
+
+
 
 }

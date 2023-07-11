@@ -1056,7 +1056,9 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
     elseif($choiceKey === "object" || $choiceKey === "objects")
     {
       $mapping = $this->container->get("austral.entity.mapping");
-      $objectsContentBlockChoice = array();
+      $objectsContentBlockChoice = array(
+        "all"   =>  "all"
+      );
 
       /** @var EntityMapping $entityMapping */
       foreach($mapping->getEntitiesMapping() as $entityMapping)

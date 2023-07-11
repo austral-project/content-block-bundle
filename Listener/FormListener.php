@@ -1214,39 +1214,33 @@ class FormListener
       {
         if($entityClass = $editorComponentType->getParameterByKey("entityClass", null))
         {
-          $objects = array();
-          $repository = $this->container->get('austral.entity_manager')
-            ->getRepository($entityClass);
-
-          $translateMapping = $this->mapping->getEntityClassMapping($entityClass, EntityTranslateMapping::class);
-          /** @var ObjectContentBlockMapping $objectContentBlock */
-          $objectContentBlock = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlockMapping::class);
-          if($objectContentBlock && ($repositoryFunction = $objectContentBlock->getRepositoryFunction()))
+          $choices = array();
+          if($entityClass === "all")
           {
-            if(method_exists($repository, $repositoryFunction))
+            $mapping = $this->container->get("austral.entity.mapping");
+            /** @var EntityMapping $entityMapping */
+            foreach($mapping->getEntitiesMapping() as $entityMapping)
             {
-              $objects = $repository->$repositoryFunction();
+              /** @var ObjectContentBlockMapping $objectContentBlock */
+              if($objectContentBlock = $entityMapping->getEntityClassMapping(ObjectContentBlockMapping::class))
+              {
+                $choices[$objectContentBlock->getName()] = array();
+                $objects = $this->selectObjects($entityMapping->entityClass);
+                foreach ($objects as $object)
+                {
+                  $choices[$objectContentBlock->getName()][$object->__toString()] = "{$entityMapping->entityClass}::{$object->getId()}";
+                }
+              }
             }
           }
-          if(!$objects)
+          else
           {
-            $objects = $this->container->get('austral.entity_manager')
-              ->getRepository($entityClass)
-              ->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder) use($translateMapping){
-                if($translateMapping)
-                {
-                  $australQueryBuilder->leftJoin("root.translates", "translates")->addSelect("translates");
-                }
-                $australQueryBuilder->indexBy("root", "root.id");
-              });
+            $objects = $this->selectObjects($entityClass);
+            foreach ($objects as $object)
+            {
+              $choices[$object->__toString()] = $object->getId();
+            }
           }
-
-          $choices = array();
-          foreach ($objects as $object)
-          {
-            $choices[$object->__toString()] = $object->getId();
-          }
-
           $group->add(Field\SelectField::create("choices", $choices,
               array(
                 "entitled"    =>  $editorComponentType->getEntitled(),
@@ -1614,6 +1608,36 @@ class FormListener
         }
       },
     ));
+  }
+
+  protected function selectObjects($entityClass)
+  {
+    $objects = array();
+    $repository = $this->container->get('austral.entity_manager')->getRepository($entityClass);
+    $translateMapping = $this->mapping->getEntityClassMapping($entityClass, EntityTranslateMapping::class);
+    /** @var ObjectContentBlockMapping $objectContentBlock */
+    $objectContentBlock = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlockMapping::class);
+    if($objectContentBlock && ($repositoryFunction = $objectContentBlock->getRepositoryFunction()))
+    {
+      if(method_exists($repository, $repositoryFunction))
+      {
+        $objects = $repository->$repositoryFunction();
+      }
+    }
+    if(!$objects && $objectContentBlock)
+    {
+      $objects = $this->container->get('austral.entity_manager')
+        ->getRepository($entityClass)
+        ->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder) use($translateMapping){
+          if($translateMapping)
+          {
+            $australQueryBuilder->leftJoin("root.translates", "translates")->addSelect("translates");
+          }
+          $australQueryBuilder->indexBy("root", "root.id");
+        });
+    }
+    return $objects;
+
   }
 
   /**
