@@ -776,10 +776,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
    */
   protected function getObjectsByEntityClassAndId(string $entityClass, string $objectId): ?EntityInterface
   {
-    if(!$this->objectsRelations)
-    {
-      $this->initialiseObjectsRelations();
-    }
+    $this->initialiseObjectsRelationsByEntityClass($entityClass);
     return AustralTools::getValueByKey(AustralTools::getValueByKey($this->objectsRelations, $entityClass), $objectId, null);
   }
 
@@ -792,11 +789,25 @@ class ContentBlockSubscriber implements EventSubscriberInterface
     /** @var EntityMapping $entityMapping */
     foreach ($this->mapping->getEntitiesMapping() as $entityMapping) {
       if ($entityMapping->getEntityClassMapping(ObjectContentBlockMapping::class)) {
-        $this->objectsRelations[$entityMapping->entityClass] = array();
-        $objects = $this->selectObjectsRelations($entityMapping->entityClass);
-        foreach ($objects as $object) {
-          $this->objectsRelations[$entityMapping->entityClass][$object->getId()] = $object;
-        }
+        $this->initialiseObjectsRelationsByEntityClass($entityMapping->entityClass);
+      }
+    }
+    return $this;
+  }
+
+  /**
+   * initialiseObjectsRelations
+   * @param $entityClass
+   * @return ContentBlockSubscriber
+   */
+  protected function initialiseObjectsRelationsByEntityClass($entityClass): ContentBlockSubscriber
+  {
+    if($entityClass and !array_key_exists($entityClass, $this->objectsRelations))
+    {
+      $this->objectsRelations[$entityClass] = array();
+      $objects = $this->selectObjectsRelations($entityClass);
+      foreach ($objects as $object) {
+        $this->objectsRelations[$entityClass][$object->getId()] = $object;
       }
     }
     return $this;
