@@ -273,6 +273,62 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       if($editorComponent->getType() == "movie")
       {
         $values[$componentValueObject->getEditorComponentType()->getKeyname()]['isIframe'] = $editorComponent->getParameterByKey("isIframe");
+        if($videoUrl = $componentValueObject->getContent())
+        {
+          if(strpos($videoUrl, "youtube") || str_contains($videoUrl, "youtu."))
+          {
+            if(str_contains($videoUrl, "youtu."))
+            {
+              preg_match('/youtu.[\w]{0,}\/([\w|-]{0,})/', $videoUrl, $matches);
+            }
+            else
+            {
+              preg_match('/v=([\w|-]{0,})/', $videoUrl, $matches);
+            }
+            $videoId = AustralTools::getValueByKey($matches, 1, null);
+            $videoInfos = array(
+              "type"              =>  "youtube",
+              "key"               =>  $videoId,
+              "url"               =>  "https://www.youtube.com/embed/{$videoId}",
+              "title"             =>  "Video Youtube {$videoId}",
+              "thumbnail"         =>  array(
+                "path"              =>  "https://img.youtube.com/vi/{$videoId}/",
+                "default"           =>  "https://img.youtube.com/vi/{$videoId}/maxresdefault.jpg",
+              )
+
+            );
+          }
+          elseif(str_contains($videoUrl, "https://vimeo.com"))
+          {
+            preg_match('/vimeo.com\/([\d]{0,})/', $videoUrl, $matches);
+            $videoId = AustralTools::getValueByKey($matches, 1, null);
+
+            $vimeoInfos = unserialize(file_get_contents("http://vimeo.com/api/v2/video/{$videoId}.php"));
+            $vimeoInfos = AustralTools::first($vimeoInfos);
+            if($thumbnailPath = AustralTools::getValueByKey($vimeoInfos, "thumbnail_small", null))
+            {
+              $thumbnailPath = preg_replace("/-d_(.*)/", "-d_", $thumbnailPath);
+            }
+            $videoInfos = array(
+              "type"              =>  "vimeo",
+              "key"               =>  $videoId,
+              "url"               =>  "https://player.vimeo.com/video/{$videoId}",
+              "title"             =>  AustralTools::getValueByKey($vimeoInfos, "title"),
+              "thumbnail"         =>  array(
+                "path"              =>  $thumbnailPath,
+                "default"           =>  "{$thumbnailPath}1980",
+              )
+            );
+          }
+          else
+          {
+            $videoInfos = array(
+              "type"              =>  "default",
+              "url"               =>  $videoUrl
+            );
+          }
+          $values[$componentValueObject->getEditorComponentType()->getKeyname()]['video'] = $videoInfos;
+        }
       }
       
       if($linkType = $componentValueObject->getLinkType())
