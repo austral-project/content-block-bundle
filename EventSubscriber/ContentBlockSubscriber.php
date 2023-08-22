@@ -330,6 +330,10 @@ class ContentBlockSubscriber implements EventSubscriberInterface
           $values[$componentValueObject->getEditorComponentType()->getKeyname()]['video'] = $videoInfos;
         }
       }
+      if($editorComponent->getType() == "button")
+      {
+        $values[$componentValueObject->getEditorComponentType()->getKeyname()]["linkPicto"] = $componentValueObject->getLinkPicto();
+      }
       
       if($linkType = $componentValueObject->getLinkType())
       {
@@ -373,7 +377,6 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         {
           $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['url'] = "mailto:{$componentValueObject->getLinkemail()}";
         }
-
       }
       if($editorComponent->getType() == "list" || $editorComponent->getType() == "group")
       {
