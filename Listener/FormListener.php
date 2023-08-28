@@ -499,7 +499,8 @@ class FormListener
 
             $image = $this->fileLinkGenerator->image($editorComponent, "image") ?? $this->contentBlockConfiguration->get('editor_component.image_default');
             $picto = null;
-            if($this->container->get("kernel")->getBundle("AustralGraphicItemsBundle"))
+
+            if(array_key_exists("AustralGraphicItemsBundle", $this->container->get('kernel')->getBundles()))
             {
               if($editorComponent->getGraphicItem())
               {
@@ -1443,7 +1444,7 @@ class FormListener
       }
       elseif($editorComponentType->getType() == "graphicItem")
       {
-        if($this->container->get("kernel")->getBundle("AustralGraphicItemsBundle"))
+        if(array_key_exists("AustralGraphicItemsBundle", $this->container->get('kernel')->getBundles()))
         {
           $group->add(GraphicItemField::create("content", array(
                 "entitled"        =>  false,
@@ -1541,7 +1542,7 @@ class FormListener
       }
       elseif($editorComponentType->getType() == "button")
       {
-        if($this->container->get("kernel")->getBundle("AustralGraphicItemsBundle") && $editorComponentType->getParameterByKey("hasPicto", false))
+        if(array_key_exists("AustralGraphicItemsBundle", $this->container->get('kernel')->getBundles()) && $editorComponentType->getParameterByKey("hasPicto", false))
         {
           $group->setDirection(GroupFields::DIRECTION_ROW);
           $group->add(GraphicItemField::create("linkPicto", array(
