@@ -62,7 +62,7 @@ class ComponentEntityManager extends EntityManager
    * @return Collection|array
    * @throws QueryException
    */
-  public function selectComponentsByObjectIdAndClassname($objectId, string $classname, bool $full = true)
+  public function selectComponentsByObjectIdAndClassname($objectId, string $classname, bool $full = false)
   {
     if($full && $this->repository->isPgsql())
     {
