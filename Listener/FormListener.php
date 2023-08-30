@@ -1257,6 +1257,10 @@ class FormListener
                 "group"       =>  array(
                   'size'  => GroupFields::SIZE_COL_12
                 ),
+                "fieldOptions"  =>  array(
+                  "translation_domain"  =>  false,
+                  "choice_translation_domain"  =>  false,
+                )
               )
             )->setConstraints($contraints)
           );
@@ -1303,7 +1307,7 @@ class FormListener
                   "class"           =>  "animate"
                 ),
                 "fieldOptions"  =>  array(
-                  "translation_domain"  =>  false,
+                  "translation_domain"  =>  false
                 )
               )
             )->setConstraints($contraints)
@@ -1318,7 +1322,7 @@ class FormListener
                   "class"           =>  "animate"
                 ),
                 "fieldOptions"  =>  array(
-                  "translation_domain"  =>  false,
+                  "translation_domain"  =>  false
                 )
               )
             )->setConstraints($contraints)
@@ -1332,7 +1336,7 @@ class FormListener
                   "class"           =>  "animate"
                 ),
                 "fieldOptions"  =>  array(
-                  "translation_domain"  =>  false,
+                  "translation_domain"  =>  false
                 )
               )
             )->setConstraints($contraints)
