@@ -79,7 +79,7 @@ Class ContentBlockContainer
   /**
    * @var array
    */
-  protected array $componentsByObjectsIds = array();
+  protected array $componentsByObjectsInitialise = array();
 
   /**
    * Page constructor.
@@ -113,12 +113,12 @@ Class ContentBlockContainer
       foreach($metadata as $classMeta)
       {
         $className = $classMeta->getName();
-        if(strpos($className,"Entity\Base") === false)
+        if(!str_contains($className, "Entity\Base"))
         {
           if(AustralTools::usedImplements($className, ComponentsInterface::class))
           {
             $entityName = trim(str_replace($classMeta->namespace, "", $className), "\\");
-            if(strpos($className,"Translate") === false)
+            if(!str_contains($className, "Translate"))
             {
               if(!array_key_exists($entityName, $this->entities))
               {
@@ -153,6 +153,7 @@ Class ContentBlockContainer
   {
     $this->debug->stopWatchStart("content_block_container.init_component_by_objects_ids", $this->debugContainer);
     $contentBlockContainerObjectsIds = array();
+    $componentsByObjectsIds = array();
 
     /** @var EntityInterface $object */
     foreach ($contentBlockContainerObjects as $object)
@@ -165,22 +166,35 @@ Class ContentBlockContainer
         "id"        =>  $object->getId(),
         "classname" =>  $object->getClassname()
       );
+      $objectKey = "{$object->getClassname()}:{$object->getId()}";
+      $componentsByObjectsIds[$objectKey] = array();
     }
     $components = $this->entityManager->getRepository("App\Entity\Austral\ContentBlockBundle\Component")->selectComponentsByObjectsIds($contentBlockContainerObjectsIds);
+
     /** @var Component $component */
     foreach($components as $component)
     {
       $objectKey = "{$component->getObjectClassname()}:{$component->getObjectId()}";
-      if(!array_key_exists($objectKey, $this->componentsByObjectsIds))
+      if(!array_key_exists($component->getObjectContainerName(), $componentsByObjectsIds[$objectKey]))
       {
-        $this->componentsByObjectsIds[$objectKey] = array();
+        $componentsByObjectsIds[$objectKey][$component->getObjectContainerName()] = array();
       }
-      if(!array_key_exists($component->getObjectContainerName(), $this->componentsByObjectsIds[$objectKey]))
-      {
-        $this->componentsByObjectsIds[$objectKey][$component->getObjectContainerName()] = array();
-      }
-      $this->componentsByObjectsIds[$objectKey][$component->getObjectContainerName()][$component->getId()] = $component;
+      $componentsByObjectsIds[$objectKey][$component->getObjectContainerName()][$component->getId()] = $component;
     }
+
+    /** @var EntityInterface $object */
+    foreach ($contentBlockContainerObjects as $object)
+    {
+      if(AustralTools::usedImplements(get_class($object), "Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface"))
+      {
+        $object = $object->getTranslateCurrent();
+      }
+
+      $objectKey = "{$object->getClassname()}:{$object->getId()}";
+      $object->setComponents($componentsByObjectsIds[$objectKey], false);
+      $this->componentsByObjectsInitialise[$objectKey] = true;
+    }
+
     $this->debug->stopWatchStop("content_block_container.init_component_by_objects_ids");
     return $this;
   }
@@ -310,31 +324,6 @@ Class ContentBlockContainer
   }
 
   /**
-   * getComponentByObject
-   *
-   * @param EntityInterface $object
-   *
-   * @return array
-   */
-  public function getComponentByObject(EntityInterface $object): array
-  {
-    return $this->getComponentByObjectClassnameAndObjectId($object->getClassname(), $object->getId());
-  }
-
-  /**
-   * getComponentByObjectClassnameAndObjectId
-   *
-   * @param string $classname
-   * @param $objectId
-   *
-   * @return array
-   */
-  public function getComponentByObjectClassnameAndObjectId(string $classname, $objectId): array
-  {
-    return AustralTools::getValueByKey($this->componentsByObjectsIds, "{$classname}:{$objectId}", array());
-  }
-
-  /**
    * @param EntityInterface|ComponentsInterface $object
    * @param bool $updated
    */
@@ -347,16 +336,14 @@ Class ContentBlockContainer
     }
     if($object && $object->getId())
     {
-      $componentInit = false;
-      if(count($this->componentsByObjectsIds) > 0)
+      $objectKey = "{$object->getClassname()}:{$object->getId()}";
+      if(array_key_exists($objectKey, $this->componentsByObjectsInitialise) && $this->componentsByObjectsInitialise[$objectKey] === true)
       {
-        if($componentsByContainerName = $this->getComponentByObject($object))
-        {
-          $componentInit = true;
-          $object->setComponents($componentsByContainerName, $updated);
+        if($updated) {
+          $object->setComponentsUpdated(new \DateTime());
         }
       }
-      if(!$componentInit)
+      else
       {
         $componentsByContainerName = array();
         $components = $this->entityManager->getRepository("App\Entity\Austral\ContentBlockBundle\Component")->selectComponentsByObjectIdAndClassname($object->getId(), $object->getClassname());
