@@ -140,11 +140,13 @@ class ContentBlockSubscriber implements EventSubscriberInterface
     {
       $blockName = "default-0";
       $finalComponentsByContainer = array($blockName => array(
-        "keyname"   =>  "default",
-        "children"  => array()
+        "keyname"             =>  "default",
+        "containerKeyname"    =>  "default",
+        "children"            => array()
       ));
       $finalComponentsByContainerByTypes = array($blockName => array(
         "keyname"   =>  "default",
+        "containerKeyname"   =>  "default",
         "children"  => array()
       ));
       foreach($componentObjects as $componentObject)
@@ -177,13 +179,15 @@ class ContentBlockSubscriber implements EventSubscriberInterface
                 $keynameTemplate = $componentObject->getThemeKeyname() ?? $componentObject->getKeyname();
                 $blockName = "{$keynameTemplate}-{$componentObject->getId()}";
                 $finalComponentsByContainer[$blockName] = array(
-                  "id"        =>  $componentObject->getId(),
-                  "theme"     =>  $componentObject->getThemeKeyname(),
-                  "option"    =>  $componentObject->getOptionKeyname(),
-                  "type"      =>  "default",
-                  "keyname"   =>  $componentObject->getKeyname(),
-                  "children"  =>  array(),
-                  "vars"      =>  $componentEvent->getVars()
+                  "id"          =>  $componentObject->getId(),
+                  "theme"       =>  $componentObject->getThemeKeyname(),
+                  "option"      =>  $componentObject->getOptionKeyname(),
+                  "type"        =>  "default",
+                  "isContainer" =>  true,
+                  "containerKeyname"  =>  $componentObject->getEditorComponent()->getKeyname(),
+                  "keyname"     =>  $componentObject->getKeyname(),
+                  "children"    =>  array(),
+                  "vars"        =>  $componentEvent->getVars()
                 );
               }
               else
