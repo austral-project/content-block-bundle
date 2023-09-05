@@ -27,11 +27,6 @@ interface LibraryInterface
   public function __construct();
 
   /**
-   * @return array
-   */
-  public function getFieldsToDelete(): array;
-
-  /**
    * @return int|string|null
    */
   public function __toString();
@@ -85,6 +80,21 @@ interface LibraryInterface
    * @return $this
    */
   public function setKeyname(?string $keyname): LibraryInterface;
+
+  /**
+   * getGraphicItem
+   *
+   * @return string|null
+   */
+  public function getGraphicItem(): ?string;
+
+  /**
+   * setGraphicItem
+   *
+   * @param string|null $graphicItem
+   * @return $this
+   */
+  public function setGraphicItem(?string $graphicItem): LibraryInterface;
 
   /**
    * @return bool

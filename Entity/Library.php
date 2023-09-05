@@ -73,6 +73,12 @@ abstract class Library extends Entity implements LibraryInterface,
    * @ORM\Column(name="keyname", type="string", length=255, nullable=false)
    */
   protected ?string $keyname = null;
+
+  /**
+   * @var string|null
+   * @ORM\Column(name="graphicItem", type="string", length=255, nullable=true )
+   */
+  protected ?string $graphicItem = null;
   
   /**
    * @var boolean
@@ -120,14 +126,6 @@ abstract class Library extends Entity implements LibraryInterface,
     $this->translates = new ArrayCollection();
     $this->componentsLibrary = new ArrayCollection();
     $this->cssClass=null;
-  }
-
-  /**
-   * @return array
-   */
-  public function getFieldsToDelete(): array
-  {
-    return array("image");
   }
 
   /**
@@ -213,6 +211,28 @@ abstract class Library extends Entity implements LibraryInterface,
   public function setKeyname(?string $keyname): Library
   {
     $this->keyname = $this->keynameGenerator($keyname);
+    return $this;
+  }
+
+  /**
+   * getGraphicItem
+   *
+   * @return string|null
+   */
+  public function getGraphicItem(): ?string
+  {
+    return $this->graphicItem;
+  }
+
+  /**
+   * setGraphicItem
+   *
+   * @param string|null $graphicItem
+   * @return $this
+   */
+  public function setGraphicItem(?string $graphicItem): Library
+  {
+    $this->graphicItem = $graphicItem;
     return $this;
   }
 

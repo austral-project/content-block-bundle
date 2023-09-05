@@ -82,21 +82,22 @@ class LibraryForm
       ->add(Field\TextField::create("keyname", array("autoConstraints" => false)))
     ->end()
     ->addFieldset("fieldset.generalInformation")
-      ->addGroup("generalInformation")
-        ->addGroup("left", null)
-          ->setSize(GroupFields::SIZE_COL_6)
-          ->setDirection(GroupFields::DIRECTION_COLUMN)
-          ->add(Field\TextField::create("name"))
-          ->add(Field\TextField::create("templatePath"))
-          ->add(Field\TextField::create("css_class"))
-        ->end()
-        ->addGroup("right")
-          ->setSize(GroupFields::SIZE_COL_6)
-          ->setDirection(GroupFields::DIRECTION_COLUMN)
-          ->add(Field\UploadField::create("image"))
-        ->end()
+      ->add(Field\TextField::create("name"))
+      ->add(Field\TextField::create("templatePath"))
+      ->add(Field\TextField::create("css_class"))
+      ->addGroup("imagePicto")
+        ->add(Field\UploadField::create("image"))
       ->end()
     ->end();
+
+    if($this->container->get("kernel")->getBundle("AustralGraphicItemsBundle"))
+    {
+      $this->formMapper->getFieldset("fieldset.generalInformation")
+        ->addGroup("imagePicto")
+          ->add(\Austral\GraphicItemsBundle\Field\GraphicItemField::create("graphicItem"))
+        ->end();
+    }
+
 
     if($this->formType !== "navigation")
     {
@@ -129,7 +130,6 @@ class LibraryForm
     );
     foreach($contentBlockContainer->getObjectsByEntity() as $entityName => $objects)
     {
-
       if($entityName === "Library")
       {
         $contentBlockContainerData["{$entityName}Navigation"] = "element-view-{$entityName}";
@@ -140,7 +140,7 @@ class LibraryForm
 
       $contentBlockContainerData["{$entityName}"] = "element-view-{$entityName}";
       $contentBlockContainerSelect[$entityName] = array(
-        $this->translator->trans("choices.restriction.all", array('%element%'=>$entityName), $this->formMapper->getTranslateDomain())    =>  "{$entityName}:all"
+        $this->translator->trans("choices.restriction.all", array('%element%'=>$entityName),$this->formMapper->getTranslateDomain())    =>  "{$entityName}:all"
       );
       foreach($objects as $object)
       {
@@ -166,7 +166,6 @@ class LibraryForm
     $containerNameByEntities = array();
     foreach($contentBlockContainer->getEntitiesWithReelName() as $entityName => $classname)
     {
-
       $containerNameByEntities[$entityName] = $this->container->get('austral.entity_manager.component')->selectArrayComponentsContainerNameByClassname($classname);
       if(array_key_exists($entityName, $configContainerByEntity)) {
         $containerNameByEntities[$entityName] = array_merge($containerNameByEntities[$entityName], $configContainerByEntity[$entityName]);
@@ -179,8 +178,6 @@ class LibraryForm
           $containerNameByEntities["{$entityName}Navigation"] = array_merge($containerNameByEntities["{$entityName}Navigation"], $configContainerByEntity[$entityName]);
         }
       }
-
-      $containerNameByEntities[$entityName] = $this->container->get('austral.entity_manager.component')->selectArrayComponentsContainerNameByClassname($classname);
     }
 
 

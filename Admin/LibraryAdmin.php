@@ -49,6 +49,7 @@ class LibraryAdmin extends Admin implements AdminModuleInterface
   {
     $listAdminEvent->getListMapper()
       ->addColumn(new Column\Value("name"))
+      ->addColumn(new Column\Template("restriction","fields.restrictions.entitled", "@AustralContentBlock/Admin/Library/restrictions.html.twig"))
       ->addColumn(new Column\SwitchValue("isEnabled", null, 0, 1,
           $listAdminEvent->getCurrentModule()->generateUrl("change"),
           $listAdminEvent->getCurrentModule()->isGranted("edit")
