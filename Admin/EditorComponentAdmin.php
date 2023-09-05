@@ -638,6 +638,10 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
     $allContainerNames = array();
     foreach ($containerNameByEntities as $entityName => $containerNames)
     {
+      $allContainerNames = array(
+        $this->translator->trans("choices.restriction.containerName.all", array('%element%'=>$entityName),$formAdminEvent->getFormMapper()->getTranslateDomain())    =>  "all",
+        "master"  =>  "master"
+      );
       foreach($containerNames as $containerName)
       {
         $allContainerNames[$containerName] = $containerName;
