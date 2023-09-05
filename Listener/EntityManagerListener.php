@@ -170,7 +170,12 @@ class EntityManagerListener
         {
           $entityMapping = new EntityMapping($entityAnnotation->getClassname(), $entityAnnotation->getSlugger());
         }
-        $objectContentBlockMapping = new ObjectContentBlockMapping($entityAnnotation->getClassAnnotations()[ObjectContentBlock::class]->name);
+        $objectContentBlockMapping = new ObjectContentBlockMapping(
+          $entityAnnotation->getClassAnnotations()[ObjectContentBlock::class]->name,
+          $entityAnnotation->getClassAnnotations()[ObjectContentBlock::class]->orderBy,
+          $entityAnnotation->getClassAnnotations()[ObjectContentBlock::class]->orderType,
+          $entityAnnotation->getClassAnnotations()[ObjectContentBlock::class]->repositoryFunction,
+        );
         $entityMapping->addEntityClassMapping($objectContentBlockMapping);
         $entityAnnotationEvent->getMapping()->addEntityMapping($entityAnnotation->getClassname(), $entityMapping);
       }
