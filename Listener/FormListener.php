@@ -643,10 +643,20 @@ class FormListener
 
             $collectionFormFieldname = "{$field->getFieldname()}_library-{$library->getKeyname()}";
 
+            $picto = null;
+            if(array_key_exists("AustralGraphicItemsBundle", $this->container->get('kernel')->getBundles()))
+            {
+              if($library->getGraphicItem())
+              {
+                $picto = $this->container->get('twig.extension.graphic_items')->render($library->getGraphicItem());
+              }
+            }
+
             $contentBlockTypeChoices[$collectionFormFieldname] = array(
               "entitled"    =>  $library->getName(),
               "category"    =>  "library",
-              "image"       =>  $this->fileLinkGenerator->image($library, "image") ?? $this->contentBlockConfiguration->get('editor_component.image_default')
+              "image"       =>  $this->fileLinkGenerator->image($library, "image") ?? $this->contentBlockConfiguration->get('editor_component.image_default'),
+              "graphicItem" =>  $picto
             );
 
             $componentFormMapper = new FormMapper();
