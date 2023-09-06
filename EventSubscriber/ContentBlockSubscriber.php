@@ -142,6 +142,9 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       $finalComponentsByContainer = array($blockName => array(
         "keyname"             =>  "default",
         "containerKeyname"    =>  "default",
+        "theme"               =>  "",
+        "option"              =>  "",
+        "layout"              =>  "",
         "children"            => array()
       ));
       $finalComponentsByContainerByTypes = array($blockName => array(
@@ -182,6 +185,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
                   "id"          =>  $componentObject->getId(),
                   "theme"       =>  $componentObject->getThemeKeyname(),
                   "option"      =>  $componentObject->getOptionKeyname(),
+                  "layout"            =>  $componentObject->getLayoutKeyname(),
                   "type"        =>  "default",
                   "isContainer" =>  true,
                   "containerKeyname"  =>  $componentObject->getEditorComponent()->getKeyname(),
