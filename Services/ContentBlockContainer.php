@@ -155,25 +155,28 @@ Class ContentBlockContainer
     /** @var EntityInterface $object */
     foreach ($contentBlockContainerObjects as $object)
     {
-      $objectKey = "{$object->getClassname()}:{$object->getId()}";
-      if(AustralTools::usedImplements(get_class($object), "Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface"))
+      if($object instanceof ComponentsInterface)
       {
-        $object = $object->getTranslateCurrent();
-      }
-      $this->debug->stopWatchStart("content_block_container.init_component_by_objects_ids.components.select.{$objectKey}", $this->debugContainer);
-      $componentsByObject =  $this->entityManager->getRepository("App\Entity\Austral\ContentBlockBundle\Component")->selectComponentsByObjectIdAndClassname($object->getId(), $object->getClassname());
-      $this->debug->stopWatchStop("content_block_container.init_component_by_objects_ids.components.select.{$objectKey}");
-      $componentsByObjectHydrate = array();
-      foreach($componentsByObject as $component)
-      {
-        if(!array_key_exists($component->getObjectContainerName(), $componentsByObjectHydrate))
+        $objectKey = "{$object->getClassname()}:{$object->getId()}";
+        if(AustralTools::usedImplements(get_class($object), "Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface"))
         {
-          $componentsByObjectHydrate[$component->getObjectContainerName()] = array();
+          $object = $object->getTranslateCurrent();
         }
-        $componentsByObjectHydrate[$component->getObjectContainerName()][$component->getId()] = $component;
+        $this->debug->stopWatchStart("content_block_container.init_component_by_objects_ids.components.select.{$objectKey}", $this->debugContainer);
+        $componentsByObject =  $this->entityManager->getRepository("App\Entity\Austral\ContentBlockBundle\Component")->selectComponentsByObjectIdAndClassname($object->getId(), $object->getClassname());
+        $this->debug->stopWatchStop("content_block_container.init_component_by_objects_ids.components.select.{$objectKey}");
+        $componentsByObjectHydrate = array();
+        foreach($componentsByObject as $component)
+        {
+          if(!array_key_exists($component->getObjectContainerName(), $componentsByObjectHydrate))
+          {
+            $componentsByObjectHydrate[$component->getObjectContainerName()] = array();
+          }
+          $componentsByObjectHydrate[$component->getObjectContainerName()][$component->getId()] = $component;
+        }
+        $object->setComponents($componentsByObjectHydrate, false);
+        $this->componentsByObjectsInitialise["{$object->getClassname()}:{$object->getId()}"] = true;
       }
-      $object->setComponents($componentsByObjectHydrate, false);
-      $this->componentsByObjectsInitialise["{$object->getClassname()}:{$object->getId()}"] = true;
     }
 
     $this->debug->stopWatchStop("content_block_container.init_component_by_objects_ids");
