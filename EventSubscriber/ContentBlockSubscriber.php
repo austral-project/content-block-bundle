@@ -253,6 +253,10 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       else if ($editorComponent->getType() == "choice") {
         $values[$componentValueObject->getEditorComponentType()->getKeyname()]['value'] = $componentValueObject->getOptionsByKey("choice");
       }
+      else if ($editorComponent->getType() == "text" && $editorComponent->getParameterByKey("type") === "date") {
+        $values[$componentValueObject->getEditorComponentType()->getKeyname()]['value'] = "";
+        $values[$componentValueObject->getEditorComponentType()->getKeyname()]['date'] = $componentValueObject->getDate();
+      }
       else
       {
         $values[$componentValueObject->getEditorComponentType()->getKeyname()]['value'] = $componentValueObject->getContent();
