@@ -584,7 +584,6 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
           $containerNameByEntities["{$entityName}Navigation"] = array_merge($containerNameByEntities["{$entityName}Navigation"], $configContainerByEntity[$entityName]);
         }
       }
-
     }
 
     $restrictionFormMapper = new FormMapper();
@@ -635,13 +634,12 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
       ->setSize(GroupFields::SIZE_COL_3)
       ->setDirection(GroupFields::DIRECTION_COLUMN);
 
-    $allContainerNames = array();
-    foreach ($containerNameByEntities as $entityName => $containerNames)
+    $allContainerNames = array(
+      $this->translator->trans("choices.restriction.containerName.all", array(),$formAdminEvent->getFormMapper()->getTranslateDomain())    =>  "all",
+      "master"  =>  "master"
+    );
+    foreach ($containerNameByEntities as $containerNames)
     {
-      $allContainerNames = array(
-        $this->translator->trans("choices.restriction.containerName.all", array('%element%'=>$entityName),$formAdminEvent->getFormMapper()->getTranslateDomain())    =>  "all",
-        "master"  =>  "master"
-      );
       foreach($containerNames as $containerName)
       {
         $allContainerNames[$containerName] = $containerName;

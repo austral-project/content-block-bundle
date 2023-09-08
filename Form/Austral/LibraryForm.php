@@ -230,7 +230,10 @@ class LibraryForm
       ->setDirection(GroupFields::DIRECTION_COLUMN);
 
 
-    $allContainerNames = array();
+    $allContainerNames = array(
+      $this->translator->trans("choices.restriction.containerName.all", array(), $restrictionFormMapper->getTranslateDomain())    =>  "all",
+      "master"  =>  "master"
+    );
     foreach ($containerNameByEntities as $entityName => $containerNames)
     {
       foreach($containerNames as $containerName)
