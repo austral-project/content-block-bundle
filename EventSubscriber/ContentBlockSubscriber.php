@@ -292,16 +292,17 @@ class ContentBlockSubscriber implements EventSubscriberInterface
             if(str_contains($videoUrl, "youtu."))
             {
               preg_match('/youtu.[\w]{0,}\/([\w|-]{0,})/', $videoUrl, $matches);
+              $videoId = AustralTools::getValueByKey($matches, 1, null);
             }
             else
             {
-              preg_match('/v=([\w|-]{0,})/', $videoUrl, $matches);
+              preg_match('/(v=|embed\/)([\w|-]{0,})/', $videoUrl, $matches);
+              $videoId = AustralTools::getValueByKey($matches, 2, null);
             }
-            $videoId = AustralTools::getValueByKey($matches, 1, null);
             $videoInfos = array(
               "type"              =>  "youtube",
               "key"               =>  $videoId,
-              "url"               =>  "https://www.youtube.com/embed/{$videoId}",
+              "url"               =>  "https://www.youtube-nocookie.com/embed/{$videoId}",
               "title"             =>  "Video Youtube {$videoId}",
               "thumbnail"         =>  array(
                 "path"              =>  "https://img.youtube.com/vi/{$videoId}/",
