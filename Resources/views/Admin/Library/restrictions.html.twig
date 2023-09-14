@@ -1,7 +1,6 @@
 <div class="value-content">
   <ul>
     {% for restriction in object.restrictions %}
-      {% dump(restriction) %}
       {% if listRestrictions[restriction.value] is defined %}
         <li>
           <span class="value">{{ listRestrictions[restriction.value] }}:{{ restriction.containerName }} -> {{ restriction.condition }}</span>
