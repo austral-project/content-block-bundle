@@ -628,8 +628,9 @@ class FormListener
       $libraries = $libraryManager->selectAccessibleInContent(function(QueryBuilder $queryBuilder) use($filterByDomain) {
         if($filterByDomain)
         {
-          $queryBuilder->andWhere("root.domainId = :domainId")
-          ->setParameter("domainId", $filterByDomain);
+          $queryBuilder->andWhere("root.domainId = :domainId or root.domainId = :domainAll")
+            ->setParameter("domainId", $filterByDomain)
+            ->setParameter("domainAll", "for-all-domains");
         }
       });
 

@@ -34,8 +34,9 @@ class LibraryRepository extends EntityRepository
     $queryBuilder->indexBy("root", "root.{$indexBy}");
     if($domainId)
     {
-      $queryBuilder->where("root.domainId = :domainId")
-        ->setParameter("domainId", $domainId);
+      $queryBuilder->where("root.domainId = :domainId or root.domainId = :domainAll")
+        ->setParameter("domainId", $domainId)
+        ->setParameter("domainAll", "for-all-domains");
     }
     $query = $queryBuilder->getQuery();
     try {
