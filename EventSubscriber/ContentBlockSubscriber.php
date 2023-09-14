@@ -289,8 +289,12 @@ class ContentBlockSubscriber implements EventSubscriberInterface
           {
             list($entityClass, $objectId) = explode("::", $objectId);
           }
+          elseif (str_contains($entityClass, "::"))
+          {
+            list($objectContentBlockName, $entityClass) = explode("::", $entityClass);
+          }
           $values[$componentValueObject->getEditorComponentType()->getKeyname()]['objectId'] = "{$entityClass}::{$objectId}";
-          $values[$componentValueObject->getEditorComponentType()->getKeyname()]['object'] = $this->getObjectsByEntityClassAndId($entityClass, $objectId);
+          $values[$componentValueObject->getEditorComponentType()->getKeyname()]['object'] = $this->getObjectsByEntityClassAndId($entityClass, $objectId, $objectContentBlockName);
         }
       }
       if($editorComponent->getType() == "movie")
@@ -858,13 +862,15 @@ class ContentBlockSubscriber implements EventSubscriberInterface
 
   /**
    * getObjectsByEntityClassAndId
+   *
    * @param string $entityClass
    * @param string $objectId
+   * @param string|null $objectContentBlockName
    * @return EntityInterface|null
    */
-  protected function getObjectsByEntityClassAndId(string $entityClass, string $objectId): ?EntityInterface
+  protected function getObjectsByEntityClassAndId(string $entityClass, string $objectId, ?string $objectContentBlockName = null): ?EntityInterface
   {
-    $this->initialiseObjectsRelationsByEntityClass($entityClass);
+    $this->initialiseObjectsRelationsByEntityClass($entityClass, $objectContentBlockName);
     return AustralTools::getValueByKey(AustralTools::getValueByKey($this->objectsRelations, $entityClass), $objectId, null);
   }
 
@@ -876,7 +882,16 @@ class ContentBlockSubscriber implements EventSubscriberInterface
   {
     /** @var EntityMapping $entityMapping */
     foreach ($this->mapping->getEntitiesMapping() as $entityMapping) {
-      if($entityMapping->getEntityClassMapping(ObjectContentBlocksMapping::class) || $entityMapping->getEntityClassMapping(ObjectContentBlockMapping::class))
+      /** @var ObjectContentBlocksMapping $objectContentBlocks */
+      if($objectContentBlocks = $entityMapping->getEntityClassMapping(ObjectContentBlocksMapping::class) )
+      {
+        /** @var ObjectContentBlockMapping $objectContentBlockMapping */
+        foreach ($objectContentBlocks->getObjectContentBlocksMapping() as $objectContentBlockMapping)
+        {
+          $this->initialiseObjectsRelationsByEntityClass($entityMapping->entityClass, $objectContentBlockMapping->getName());
+        }
+      }
+      elseif($entityMapping->getEntityClassMapping(ObjectContentBlockMapping::class))
       {
         $this->initialiseObjectsRelationsByEntityClass($entityMapping->entityClass);
       }
@@ -886,15 +901,17 @@ class ContentBlockSubscriber implements EventSubscriberInterface
 
   /**
    * initialiseObjectsRelations
+   *
    * @param $entityClass
+   * @param string|null $objectContentBlockName
    * @return ContentBlockSubscriber
    */
-  protected function initialiseObjectsRelationsByEntityClass($entityClass): ContentBlockSubscriber
+  protected function initialiseObjectsRelationsByEntityClass($entityClass, ?string $objectContentBlockName = null): ContentBlockSubscriber
   {
     if($entityClass and !array_key_exists($entityClass, $this->objectsRelations))
     {
       $this->objectsRelations[$entityClass] = array();
-      $objects = $this->selectObjectsRelations($entityClass);
+      $objects = $this->selectObjectsRelations($entityClass, $objectContentBlockName);
       foreach ($objects as $object) {
         $this->objectsRelations[$entityClass][$object->getId()] = $object;
       }
@@ -904,16 +921,35 @@ class ContentBlockSubscriber implements EventSubscriberInterface
 
   /**
    * selectObjectsRelations
+   *
    * @param string $entityClass
+   * @param string|null $objectContentBlockName
    * @return array
    */
-  protected function selectObjectsRelations(string $entityClass): array
+  protected function selectObjectsRelations(string $entityClass, ?string $objectContentBlockName = null): array
   {
     $objects = array();
     $repository = $this->entityManager->getRepository($entityClass);
     $translateMapping = $this->mapping->getEntityClassMapping($entityClass, EntityTranslateMapping::class);
-    /** @var ObjectContentBlockMapping $objectContentBlock */
-    $objectContentBlock = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlockMapping::class);
+
+    /** @var ObjectContentBlocksMapping $objectContentBlocks */
+    if($objectContentBlocks = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlocksMapping::class))
+    {
+      if($objectContentBlockName)
+      {
+        /** @var ObjectContentBlockMapping $objectContentBlock */
+        $objectContentBlock = $objectContentBlocks->getObjectContentBlockMapping($objectContentBlockName);
+      }
+      else
+      {
+        $objectContentBlock = AustralTools::first($objectContentBlocks->getObjectContentBlocksMapping());
+      }
+    }
+    else
+    {
+      /** @var ObjectContentBlockMapping $objectContentBlock */
+      $objectContentBlock = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlockMapping::class);
+    }
     if($objectContentBlock && ($repositoryFunction = $objectContentBlock->getRepositoryFunction()))
     {
       if(method_exists($repository, $repositoryFunction))
