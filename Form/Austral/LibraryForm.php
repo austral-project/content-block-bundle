@@ -11,9 +11,12 @@
 namespace Austral\ContentBlockBundle\Form\Austral;
 
 
+use Austral\AdminBundle\Module\Modules;
+use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\ContentBlockBundle\Field\ContentBlockField;
 use Austral\ContentBlockBundle\Form\Type\RestrictionFormType;
 use Austral\ContentBlockBundle\Model\Editor\Restriction;
+use Austral\ContentBlockBundle\Services\ContentBlockContainer;
 use Austral\FormBundle\Field as Field;
 use Austral\FormBundle\Mapper\Fieldset;
 use Austral\FormBundle\Mapper\FormMapper;
@@ -108,8 +111,58 @@ class LibraryForm
     $this->formMapper->addFieldset("fieldset.contentBlock")
       ->add(ContentBlockField::create())
     ->end();
+
+    if($this->formType !== "navigation")
+    {
+
+      $this->formMapper
+        ->addFieldset("fieldset.editorComponent.usedBy")
+        ->setIsView($this->container->get("security.authorization_checker")->isGranted("ROLE_ROOT"))
+        ->add(Field\TemplateField::create("usedBy", "@AustralContentBlock/Admin/EditorComponent/used-by.html.twig", array(), array(
+          'componentsUsed'  =>  $this->componentsUsed()
+        )))
+        ->end();
+    }
   }
 
+
+  protected function componentsUsed()
+  {
+    /** @var LibraryInterface $library */
+    $library = $this->formMapper->getObject();
+    $allComponentsUsed = $this->container->get("austral.entity_manager.component")->selectArrayComponentsByLibrary($library);
+
+    /** @var ContentBlockContainer $contentBlockContainer */
+    $contentBlockContainer = $this->container->get('austral.content_block.content_block_container');
+
+    $objectsByEntity = $contentBlockContainer->getObjectsByEntity(true);
+
+    /** @var Modules $australModules */
+    $australModules = $this->container->get('austral.admin.modules');
+    $componentsUsed = array();
+    foreach($allComponentsUsed as $component)
+    {
+      if(!array_key_exists($component['objectLiaison'], $componentsUsed))
+      {
+        $objectClassname = $component['objectClassname'];
+        if(array_key_exists($objectClassname, $objectsByEntity))
+        {
+          $objects = $objectsByEntity[$objectClassname];
+          if(array_key_exists($component['objectId'], $objects))
+          {
+            $objectId = strpos($objectClassname, "Translate") !== false ? $objects[$component['objectId']]->getMaster()->getId(): $objects[$component['objectId']]->getId();
+            $objectClassname = str_replace("Translate", "", $objectClassname);
+            $componentsUsed[$component['objectLiaison']] = array(
+              "objectClassname"     =>  $objectClassname,
+              "objectId"            =>  $objectId,
+              "module"              =>  ""//$australModules->getModuleByEntityClassname($objectClassname)[0]
+            );
+          }
+        }
+      }
+    }
+    return $componentsUsed;
+  }
 
   /**
    * @return Field\CollectionEmbedField

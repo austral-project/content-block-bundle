@@ -16,6 +16,7 @@ use App\Entity\Austral\ContentBlockBundle\EditorComponent;
 use App\Entity\Austral\ContentBlockBundle\EditorComponentType;
 
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentInterface;
+use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\EntityBundle\ORM\AustralQueryBuilder;
 use Austral\EntityBundle\Repository\EntityRepository;
 use Doctrine\Common\Collections\Collection;
@@ -160,6 +161,31 @@ class ComponentRepository extends EntityRepository
       ->where("editorComponent.id = :editorComponentId")
       ->setParameters(array(
         "editorComponentId"        =>  $editorComponent->getId(),
+      ));
+    $queryBuilder->indexBy("root", "root.id");
+    $query = $queryBuilder->getQuery();
+    try {
+      $results = $query->getArrayResult();
+    } catch (NoResultException $e) {
+      $results = array();
+    }
+    return $results;
+  }
+
+  /**
+   * @param LibraryInterface $library
+   *
+   * @return array
+   * @throws QueryException
+   */
+  public function selectArrayComponentsByLibrary(LibraryInterface $library): array
+  {
+    $queryBuilder = $this->createQueryBuilder('root')
+      ->select("root.id, root.objectClassname, root.objectId, library.id, CONCAT(root.objectClassname, '_',root.objectId) as objectLiaison");
+    $queryBuilder->leftJoin("root.library", "library")
+      ->where("library.id = :libraryId")
+      ->setParameters(array(
+        "libraryId"        =>  $library->getId(),
       ));
     $queryBuilder->indexBy("root", "root.id");
     $query = $queryBuilder->getQuery();

@@ -11,6 +11,7 @@
 namespace Austral\ContentBlockBundle\EntityManager;
 
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentInterface;
+use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\ContentBlockBundle\Repository\ComponentRepository;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentInterface;
 
@@ -80,6 +81,17 @@ class ComponentEntityManager extends EntityManager
   public function selectArrayComponentsByEditorComponent(EditorComponentInterface $editorComponent): array
   {
     return $this->repository->selectArrayComponentsByEditorComponent($editorComponent);
+  }
+
+  /**
+   * @param LibraryInterface $library
+   *
+   * @return array
+   * @throws QueryException
+   */
+  public function selectArrayComponentsByLibrary(LibraryInterface $library): array
+  {
+    return $this->repository->selectArrayComponentsByLibrary($library);
   }
 
 }
