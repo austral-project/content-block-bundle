@@ -284,6 +284,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       {
         if($objectId = $componentValueObject->getOptionsByKey("objectId"))
         {
+          $objectContentBlockName = null;
           $entityClass = $editorComponent->getParameterByKey("entityClass");
           if($entityClass === "all")
           {
