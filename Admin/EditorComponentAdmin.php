@@ -549,23 +549,37 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
       $contentBlockContainerSelect[$entityName] = array(
         $this->translator->trans("choices.restriction.all", array('%element%'=>$entityName),$formAdminEvent->getFormMapper()->getTranslateDomain())    =>  "{$entityName}:all"
       );
+
+      $domains = array();
+      if($this->container->has("austral.http.domains.management"))
+      {
+        $domains = $this->container->get("austral.http.domains.management")
+          ->getDomainsWithoutVirtual();
+      }
+
       foreach($objects as $object)
       {
+        $groupName = $entityName;
+        $objectName = $object->__toString();
+        $objectValue = "{$entityName}:{$object->getId()}";
         if($entityName === "Library")
         {
           if($object->getIsNavigationMenu())
           {
-            $contentBlockContainerSelect["{$entityName}Navigation"][$object->__toString()] = "{$entityName}Navigation:{$object->getId()}";
+            $groupName = "Navigation";
+            $objectValue = "{$entityName}Navigation:{$object->getId()}";
           }
-          else
+        }
+
+        if(count($domains) > 1 && method_exists($object, "getDomainId")) {
+          if($domain = AustralTools::getValueByKey($domains, $object->getDomainId()))
           {
-            $contentBlockContainerSelect[$entityName][$object->__toString()] = "{$entityName}:{$object->getId()}";
+            $domainKeyname = strtoupper($domain->getKeyname());
+            $objectName = "[{$domainKeyname}] - {$objectName}";
           }
         }
-        else
-        {
-          $contentBlockContainerSelect[$entityName][$object->__toString()] = "{$entityName}:{$object->getId()}";
-        }
+
+        $contentBlockContainerSelect[$groupName][$objectName] = $objectValue;
       }
     }
 
