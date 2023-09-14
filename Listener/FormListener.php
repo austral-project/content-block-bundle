@@ -23,6 +23,7 @@ use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValuesInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentTypeInterface;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
+use Austral\ContentBlockBundle\Mapping\ObjectContentBlocksMapping;
 use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\ContentBlockBundle\Entity\Traits\EntityComponentsTrait;
@@ -44,6 +45,7 @@ use Austral\EntityTranslateBundle\Mapping\EntityTranslateMapping;
 use Austral\FormBundle\Mapper\Base\MapperElementInterface;
 use Austral\GraphicItemsBundle\Field\GraphicItemField;
 use Austral\ToolsBundle\AustralTools;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\QueryBuilder;
@@ -1232,8 +1234,22 @@ class FormListener
             /** @var EntityMapping $entityMapping */
             foreach($mapping->getEntitiesMapping() as $entityMapping)
             {
+              /** @var ObjectContentBlocksMapping $objectContentsBlock */
+              if($objectContentsBlock = $entityMapping->getEntityClassMapping(ObjectContentBlocksMapping::class))
+              {
+                /** @var ObjectContentBlockMapping $objectContentBlock */
+                foreach ($objectContentsBlock->getObjectContentBlocksMapping() as $objectContentBlock)
+                {
+                  $choices[$objectContentBlock->getName()] = array();
+                  $objects = $this->selectObjects($entityMapping->entityClass, $objectContentBlock->getName());
+                  foreach ($objects as $object)
+                  {
+                    $choices[$objectContentBlock->getName()][$object->__toString()] = "{$entityMapping->entityClass}::{$object->getId()}";
+                  }
+                }
+              }
               /** @var ObjectContentBlockMapping $objectContentBlock */
-              if($objectContentBlock = $entityMapping->getEntityClassMapping(ObjectContentBlockMapping::class))
+              elseif($objectContentBlock = $entityMapping->getEntityClassMapping(ObjectContentBlockMapping::class))
               {
                 $choices[$objectContentBlock->getName()] = array();
                 $objects = $this->selectObjects($entityMapping->entityClass);
@@ -1246,7 +1262,12 @@ class FormListener
           }
           else
           {
-            $objects = $this->selectObjects($entityClass);
+            $objectContentBlockName = null;
+            if(str_contains($entityClass, "::"))
+            {
+              list($objectContentBlockName, $entityClass) = explode("::", $entityClass);
+            }
+            $objects = $this->selectObjects($entityClass, $objectContentBlockName);
             foreach ($objects as $object)
             {
               $choices[$object->__toString()] = $object->getId();
@@ -1625,20 +1646,49 @@ class FormListener
     ));
   }
 
-  protected function selectObjects($entityClass)
+  /**
+   * selectObjects
+   *
+   * @param string $entityClass
+   * @param string|null $objectContentBlockName
+   * @return array
+   * @throws ContainerExceptionInterface
+   * @throws NotFoundExceptionInterface
+   * @throws QueryException
+   */
+  protected function selectObjects(string $entityClass, ?string $objectContentBlockName = null): array
   {
     $objects = array();
-    $repository = $this->container->get('austral.entity_manager')->getRepository($entityClass);
     $translateMapping = $this->mapping->getEntityClassMapping($entityClass, EntityTranslateMapping::class);
-    /** @var ObjectContentBlockMapping $objectContentBlock */
-    $objectContentBlock = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlockMapping::class);
+
+    /** @var ObjectContentBlocksMapping $objectContentBlocks */
+    if($objectContentBlocks = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlocksMapping::class))
+    {
+      if($objectContentBlockName)
+      {
+        /** @var ObjectContentBlockMapping $objectContentBlock */
+        $objectContentBlock = $objectContentBlocks->getObjectContentBlockMapping($objectContentBlockName);
+      }
+      else
+      {
+        $objectContentBlock = AustralTools::first($objectContentBlocks->getObjectContentBlocksMapping());
+      }
+    }
+    else
+    {
+      /** @var ObjectContentBlockMapping $objectContentBlock */
+      $objectContentBlock = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlockMapping::class);
+    }
+
     if($objectContentBlock && ($repositoryFunction = $objectContentBlock->getRepositoryFunction()))
     {
+      $repository = $this->container->get('austral.entity_manager')->getRepository($entityClass);
       if(method_exists($repository, $repositoryFunction))
       {
         $objects = $repository->$repositoryFunction();
       }
     }
+
     if(!$objects && $objectContentBlock)
     {
       $objects = $this->container->get('austral.entity_manager')

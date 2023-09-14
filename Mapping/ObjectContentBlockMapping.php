@@ -1,6 +1,6 @@
 <?php
 /*
- * This file is part of the Austral ElasticSearch Bundle package.
+ * This file is part of the Austral ContentBlock Bundle package.
  *
  * (c) Austral <support@austral.dev>
  *

@@ -22,6 +22,7 @@ use Austral\ContentBlockBundle\Event\ComponentEvent;
 use Austral\ContentBlockBundle\Event\ContentBlockEvent;
 use Austral\ContentBlockBundle\Event\GuidelineEvent;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
+use Austral\ContentBlockBundle\Mapping\ObjectContentBlocksMapping;
 use Austral\ContentBlockBundle\Model\Editor\Layout;
 use Austral\ContentBlockBundle\Model\Editor\Option;
 use Austral\ContentBlockBundle\Model\Editor\Theme;
@@ -32,6 +33,7 @@ use Austral\EntityBundle\EntityManager\EntityManager;
 use Austral\EntityBundle\Mapping\EntityMapping;
 use Austral\EntityBundle\Mapping\Mapping;
 use Austral\EntityBundle\ORM\AustralQueryBuilder;
+use Austral\EntityFileBundle\File\Link\Generator;
 use Austral\EntityTranslateBundle\Mapping\EntityTranslateMapping;
 use Austral\SeoBundle\Services\UrlParameterManagement;
 use Austral\ToolsBundle\AustralTools;
@@ -71,6 +73,11 @@ class ContentBlockSubscriber implements EventSubscriberInterface
   protected EntityManager $entityManager;
 
   /**
+   * @var Generator|null
+   */
+  protected ?Generator $fileLinkGenerator;
+
+  /**
    * @var UrlParameterManagement|null
    */
   protected ?UrlParameterManagement $urlParameterManagement;
@@ -82,12 +89,14 @@ class ContentBlockSubscriber implements EventSubscriberInterface
    * @param EventDispatcherInterface $dispatcher
    * @param Mapping $mapping
    * @param EntityManager $entityManager
+   * @param Generator|null $fileLinkGenerator
    * @param UrlParameterManagement|null $urlParameterManagement
    */
   public function __construct(ContentBlockContainer $contentBlockContainer,
     EventDispatcherInterface $dispatcher,
     Mapping $mapping,
     EntityManager $entityManager,
+    ?Generator $fileLinkGenerator,
     ?UrlParameterManagement $urlParameterManagement = null
   )
   {
@@ -95,6 +104,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
     $this->entityManager = $entityManager;
     $this->dispatcher = $dispatcher;
     $this->contentBlockContainer = $contentBlockContainer;
+    $this->fileLinkGenerator = $fileLinkGenerator;
     $this->urlParameterManagement = $urlParameterManagement;
   }
 
@@ -233,6 +243,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
    * @param Collection $componentValues
    *
    * @return array
+   * @throws \Exception
    */
   protected function componentValues(Collection $componentValues): array
   {
@@ -380,6 +391,11 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         }
         elseif($linkType == "file")
         {
+          if($this->fileLinkGenerator)
+          {
+            $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['url'] = $this->fileLinkGenerator
+              ->download($componentValueObject, "file");
+          }
           $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['file'] = $componentValueObject;
         }
         elseif($linkType == "phone")
@@ -860,7 +876,8 @@ class ContentBlockSubscriber implements EventSubscriberInterface
   {
     /** @var EntityMapping $entityMapping */
     foreach ($this->mapping->getEntitiesMapping() as $entityMapping) {
-      if ($entityMapping->getEntityClassMapping(ObjectContentBlockMapping::class)) {
+      if($entityMapping->getEntityClassMapping(ObjectContentBlocksMapping::class) || $entityMapping->getEntityClassMapping(ObjectContentBlockMapping::class))
+      {
         $this->initialiseObjectsRelationsByEntityClass($entityMapping->entityClass);
       }
     }

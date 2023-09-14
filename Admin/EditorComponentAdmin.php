@@ -29,6 +29,7 @@ use Austral\ContentBlockBundle\Form\Type\OptionFormType;
 use Austral\ContentBlockBundle\Form\Type\RestrictionFormType;
 use Austral\ContentBlockBundle\Form\Type\ThemeFormType;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
+use Austral\ContentBlockBundle\Mapping\ObjectContentBlocksMapping;
 use Austral\ContentBlockBundle\Model\Editor\Layout;
 use Austral\ContentBlockBundle\Model\Editor\Option;
 use Austral\ContentBlockBundle\Model\Editor\Restriction;
@@ -1065,8 +1066,17 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
       /** @var EntityMapping $entityMapping */
       foreach($mapping->getEntitiesMapping() as $entityMapping)
       {
+        /** @var ObjectContentBlocksMapping $objectContentsBlock */
+        if($objectContentsBlock = $entityMapping->getEntityClassMapping(ObjectContentBlocksMapping::class))
+        {
+          /** @var ObjectContentBlockMapping $objectContentBlock */
+          foreach ($objectContentsBlock->getObjectContentBlocksMapping() as $objectContentBlock)
+          {
+            $objectsContentBlockChoice[$objectContentBlock->getName()] = "{$objectContentBlock->getName()}::{$entityMapping->entityClass}";
+          }
+        }
         /** @var ObjectContentBlockMapping $objectContentBlock */
-        if($objectContentBlock = $entityMapping->getEntityClassMapping(ObjectContentBlockMapping::class))
+        elseif($objectContentBlock = $entityMapping->getEntityClassMapping(ObjectContentBlockMapping::class))
         {
           $objectsContentBlockChoice[$objectContentBlock->getName()] = $entityMapping->entityClass;
         }

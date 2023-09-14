@@ -1,6 +1,6 @@
 <?php
 /*
- * This file is part of the Austral EntityTranslate Bundle package.
+ * This file is part of the Austral ContentBlock Bundle package.
  *
  * (c) Austral <support@austral.dev>
  *
@@ -15,7 +15,7 @@ use Doctrine\Common\Annotations\Annotation\NamedArgumentConstructor;
 /**
  * @Annotation
  * @NamedArgumentConstructor()
- * @Target({"CLASS"})
+ * @Target({"CLASS", "ANNOTATION"})
  */
 final class ObjectContentBlock extends AustralEntityAnnotation
 {

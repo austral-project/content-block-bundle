@@ -25,6 +25,7 @@ services:
       - "@event_dispatcher"
       - "@austral.entity.mapping"
       - "@austral.entity_manager"
+      - "@?austral.entity_file.link.generator"
       - "@?austral.seo.url_parameter.management"
     tags:
       - { name: kernel.event_subscriber }

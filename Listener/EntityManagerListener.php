@@ -11,12 +11,14 @@
 namespace Austral\ContentBlockBundle\Listener;
 
 use Austral\ContentBlockBundle\Annotation\ObjectContentBlock;
+use Austral\ContentBlockBundle\Annotation\ObjectContentBlocks;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValueInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValuesInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentTypeInterface;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
+use Austral\ContentBlockBundle\Mapping\ObjectContentBlocksMapping;
 use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Austral\ContentBlockBundle\EntityManager\ComponentEntityManager;
 use Austral\EntityBundle\EntityAnnotation\EntityAnnotations;
@@ -164,7 +166,32 @@ class EntityManagerListener
      */
     foreach($initialiseEntitesAnnotations->all() as $entityAnnotation)
     {
-      if(array_key_exists(ObjectContentBlock::class, $entityAnnotation->getClassAnnotations()))
+
+      if(array_key_exists(ObjectContentBlocks::class, $entityAnnotation->getClassAnnotations()))
+      {
+        if(!$entityMapping = $entityAnnotationEvent->getMapping()->getEntityMapping($entityAnnotation->getClassname()))
+        {
+          $entityMapping = new EntityMapping($entityAnnotation->getClassname(), $entityAnnotation->getSlugger());
+        }
+
+        $objectContentBlocksMapping = array();
+        /** @var ObjectContentBlock $objectContentBlock */
+        foreach($entityAnnotation->getClassAnnotations()[ObjectContentBlocks::class]->objectContentBlocks as $objectContentBlock)
+        {
+          $objectContentBlockMapping = new ObjectContentBlockMapping(
+            $objectContentBlock->name,
+            $objectContentBlock->orderBy,
+            $objectContentBlock->orderType,
+            $objectContentBlock->repositoryFunction,
+          );
+          $objectContentBlockMapping->setEntityMapping($entityMapping);
+          $objectContentBlocksMapping[$objectContentBlock->name] = $objectContentBlockMapping;
+        }
+        $objectContentBlocksMapping = new ObjectContentBlocksMapping($objectContentBlocksMapping);
+        $entityMapping->addEntityClassMapping($objectContentBlocksMapping);
+        $entityAnnotationEvent->getMapping()->addEntityMapping($entityAnnotation->getClassname(), $entityMapping);
+      }
+      elseif(array_key_exists(ObjectContentBlock::class, $entityAnnotation->getClassAnnotations()))
       {
         if(!$entityMapping = $entityAnnotationEvent->getMapping()->getEntityMapping($entityAnnotation->getClassname()))
         {
