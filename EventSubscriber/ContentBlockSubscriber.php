@@ -389,7 +389,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         elseif($linkType == "external")
         {
           $linkUrl = $componentValueObject->getLinkUrl();
-          if (!u($componentValueObject->getLinkUrl())->ignoreCase()->startsWith(array("https://", "http://"))) {
+          if (!u($componentValueObject->getLinkUrl())->ignoreCase()->startsWith(array("https://", "http://", "javascript:"))) {
             $linkUrl = "//{$linkUrl}";
           }
           $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['url'] = $linkUrl;
