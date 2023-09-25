@@ -6,12 +6,14 @@ services:
 
 
 ##### Listener #####
+  Austral\ContentBlockBundle\Listener\DoctrineListener: "@austral.content_block.doctrine.listener"
   austral.content_block.doctrine.listener:
     class:        Austral\ContentBlockBundle\Listener\DoctrineListener
     arguments:    [ "@austral.entity_manager.component" ]
     tags:
       - { name: doctrine.event_subscriber, connection: default }
 
+  Austral\ContentBlockBundle\Listener\EntityManagerListener:  "@austral.content_block.entity_manager.listener"
   austral.content_block.entity_manager.listener:
     class:          Austral\ContentBlockBundle\Listener\EntityManagerListener
     arguments:      ["@austral.entity_manager.component"]
@@ -20,6 +22,7 @@ services:
       - { name: kernel.event_listener, event: "austral.event.entity.initialise.mapping", method: mapping }
 
 ##### Event Subscriber
+  Austral\ContentBlockBundle\EventSubscriber\ContentBlockSubscriber:  "@austral.content_block.event_subscriber"
   austral.content_block.event_subscriber:
     class:        Austral\ContentBlockBundle\EventSubscriber\ContentBlockSubscriber
     arguments:
