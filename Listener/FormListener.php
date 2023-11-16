@@ -1681,26 +1681,26 @@ class FormListener
       $objectContentBlock = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlockMapping::class);
     }
 
-    if($objectContentBlock && ($repositoryFunction = $objectContentBlock->getRepositoryFunction()))
-    {
-      $repository = $this->container->get('austral.entity_manager')->getRepository($entityClass);
-      if(method_exists($repository, $repositoryFunction))
-      {
-        $objects = $repository->$repositoryFunction();
-      }
-    }
-
+    $repository = $this->container->get('austral.entity_manager')->getRepository($entityClass);
     if(!$objects && $objectContentBlock)
     {
-      $objects = $this->container->get('austral.entity_manager')
-        ->getRepository($entityClass)
-        ->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder) use($translateMapping){
+      if($repositoryFunction = $objectContentBlock->getRepositoryFunction())
+      {
+        if(method_exists($repository, $repositoryFunction))
+        {
+          $objects = $repository->$repositoryFunction();
+        }
+      }
+      if(!$objects)
+      {
+        $objects = $repository->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder) use($translateMapping){
           if($translateMapping)
           {
             $australQueryBuilder->leftJoin("root.translates", "translates")->addSelect("translates");
           }
           $australQueryBuilder->indexBy("root", "root.id");
         });
+      }
     }
     return $objects;
 

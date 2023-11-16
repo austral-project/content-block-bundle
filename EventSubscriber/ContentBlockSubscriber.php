@@ -951,22 +951,25 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       /** @var ObjectContentBlockMapping $objectContentBlock */
       $objectContentBlock = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlockMapping::class);
     }
-    if($objectContentBlock && ($repositoryFunction = $objectContentBlock->getRepositoryFunction()))
-    {
-      if(method_exists($repository, $repositoryFunction))
-      {
-        $objects = $repository->$repositoryFunction();
-      }
-    }
     if(!$objects && $objectContentBlock)
     {
-      $objects = $repository->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder) use($translateMapping){
-        if($translateMapping)
+      if($repositoryFunction = $objectContentBlock->getRepositoryFunction())
+      {
+        if(method_exists($repository, $repositoryFunction))
         {
-          $australQueryBuilder->leftJoin("root.translates", "translates")->addSelect("translates");
+          $objects = $repository->$repositoryFunction();
         }
-        $australQueryBuilder->indexBy("root", "root.id");
-      });
+      }
+      if(!$objects)
+      {
+        $objects = $repository->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder) use($translateMapping){
+          if($translateMapping)
+          {
+            $australQueryBuilder->leftJoin("root.translates", "translates")->addSelect("translates");
+          }
+          $australQueryBuilder->indexBy("root", "root.id");
+        });
+      }
     }
     return $objects;
   }
