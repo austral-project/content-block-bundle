@@ -369,6 +369,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"] = array(
           "anchor"  =>  $componentValueObject->getOptionsByKey("anchor", null),
           "target"  =>  $componentValueObject->getOptionsByKey("target", null),
+          "title"   =>  $componentValueObject->getOptionsByKey("title", null),
           "url"     =>  $linkType == "internal" ? "" : $componentValueObject->getLinkUrl(),
           "type"    =>  $linkType,
         );

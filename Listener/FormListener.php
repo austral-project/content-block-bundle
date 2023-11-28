@@ -1784,6 +1784,19 @@ class FormListener
         return $componentValue->setOptionsByKey("target", $value == true ? "_blank" : null);
       }
     )));
+    $popin->add(Field\SymfonyField::create("title", TextType::class, array(
+      "entitled"    =>  false,
+      "attr"        =>  array(
+        "autocomplete"            => "off",
+        "data-popin-update-input" => "field-title"
+      ),
+      "getter"      =>  function(ComponentValue $componentValue){
+        return $componentValue->getOptionsByKey("title", "");
+      },
+      "setter"      =>  function(ComponentValue $componentValue, $value) {
+        return $componentValue->setOptionsByKey("title", $value);
+      }
+    )));
     $popin->add(Field\SymfonyField::create("anchor", TextType::class, array(
       "entitled"    =>  false,
       "attr"        =>  array(
