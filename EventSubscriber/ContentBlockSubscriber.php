@@ -932,7 +932,6 @@ class ContentBlockSubscriber implements EventSubscriberInterface
   {
     $objects = array();
     $repository = $this->entityManager->getRepository($entityClass);
-    $translateMapping = $this->mapping->getEntityClassMapping($entityClass, EntityTranslateMapping::class);
 
     /** @var ObjectContentBlocksMapping $objectContentBlocks */
     if($objectContentBlocks = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlocksMapping::class))
@@ -963,11 +962,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       }
       if(!$objects)
       {
-        $objects = $repository->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder) use($translateMapping){
-          if($translateMapping)
-          {
-            $australQueryBuilder->leftJoin("root.translates", "translates")->addSelect("translates");
-          }
+        $objects = $repository->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder){
           $australQueryBuilder->indexBy("root", "root.id");
         });
       }

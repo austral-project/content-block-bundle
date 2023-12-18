@@ -1660,7 +1660,6 @@ class FormListener
   protected function selectObjects(string $entityClass, ?string $objectContentBlockName = null): array
   {
     $objects = array();
-    $translateMapping = $this->mapping->getEntityClassMapping($entityClass, EntityTranslateMapping::class);
 
     /** @var ObjectContentBlocksMapping $objectContentBlocks */
     if($objectContentBlocks = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlocksMapping::class))
@@ -1693,7 +1692,7 @@ class FormListener
       }
       if(!$objects)
       {
-        $objects = $repository->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder) use($translateMapping){
+        $objects = $repository->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder){
           $australQueryBuilder->indexBy("root", "root.id");
         });
       }
