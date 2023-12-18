@@ -1694,10 +1694,6 @@ class FormListener
       if(!$objects)
       {
         $objects = $repository->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder) use($translateMapping){
-          if($translateMapping)
-          {
-            $australQueryBuilder->leftJoin("root.translates", "translates")->addSelect("translates");
-          }
           $australQueryBuilder->indexBy("root", "root.id");
         });
       }
