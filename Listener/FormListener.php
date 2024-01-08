@@ -1899,6 +1899,10 @@ class FormListener
     {
       $isInclude = $restrictionsByKey["{$object->getClassname()}{$classnamePrefix}:all_{$field->getFieldname()}"];
     }
+    elseif(array_key_exists("all:all_all", $restrictionsByKey))
+    {
+      $isInclude = $restrictionsByKey["all:all_all"];
+    }
     else
     {
       $isInclude = $restrictionsByKey["all"];
