@@ -1245,7 +1245,14 @@ class FormListener
                   $objects = $this->selectObjects($entityMapping->entityClass, $objectContentBlock->getName());
                   foreach ($objects as $object)
                   {
-                    $choices[$objectContentBlock->getName()][$object->__toString()] = "{$entityMapping->entityClass}::{$object->getId()}";
+                    if(method_exists($object, "stringToContentBlockChoice"))
+                    {
+                      $choices[$objectContentBlock->getName()][$object->stringToContentBlockChoice()] = "{$entityMapping->entityClass}::{$object->getId()}";
+                    }
+                    else
+                    {
+                      $choices[$objectContentBlock->getName()][$object->__toString()] = "{$entityMapping->entityClass}::{$object->getId()}";
+                    }
                   }
                 }
               }
@@ -1256,7 +1263,14 @@ class FormListener
                 $objects = $this->selectObjects($entityMapping->entityClass);
                 foreach ($objects as $object)
                 {
-                  $choices[$objectContentBlock->getName()][$object->__toString()] = "{$entityMapping->entityClass}::{$object->getId()}";
+                  if(method_exists($object, "stringToContentBlockChoice"))
+                  {
+                    $choices[$objectContentBlock->getName()][$object->stringToContentBlockChoice()] = "{$entityMapping->entityClass}::{$object->getId()}";
+                  }
+                  else
+                  {
+                    $choices[$objectContentBlock->getName()][$object->__toString()] = "{$entityMapping->entityClass}::{$object->getId()}";
+                  }
                 }
               }
             }
@@ -1271,7 +1285,14 @@ class FormListener
             $objects = $this->selectObjects($entityClass, $objectContentBlockName);
             foreach ($objects as $object)
             {
-              $choices[$object->__toString()] = $object->getId();
+              if(method_exists($object, "stringToContentBlockChoice"))
+              {
+                $choices[$object->stringToContentBlockChoice()] = $object->getId();
+              }
+              else
+              {
+                $choices[$object->__toString()] = $object->getId();
+              }
             }
           }
           $group->add(Field\SelectField::create("choices", $choices,
