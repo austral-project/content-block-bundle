@@ -1245,7 +1245,14 @@ class FormListener
                   $objects = $this->selectObjects($entityMapping->entityClass, $objectContentBlock->getName());
                   foreach ($objects as $object)
                   {
-                    $choices[$objectContentBlock->getName()][$object->__toString()] = "{$entityMapping->entityClass}::{$object->getId()}";
+                    if(method_exists($object, "stringToContentBlockChoice"))
+                    {
+                      $choices[$objectContentBlock->getName()][$object->stringToContentBlockChoice()] = "{$entityMapping->entityClass}::{$object->getId()}";
+                    }
+                    else
+                    {
+                      $choices[$objectContentBlock->getName()][$object->__toString()] = "{$entityMapping->entityClass}::{$object->getId()}";
+                    }
                   }
                 }
               }
@@ -1256,7 +1263,14 @@ class FormListener
                 $objects = $this->selectObjects($entityMapping->entityClass);
                 foreach ($objects as $object)
                 {
-                  $choices[$objectContentBlock->getName()][$object->__toString()] = "{$entityMapping->entityClass}::{$object->getId()}";
+                  if(method_exists($object, "stringToContentBlockChoice"))
+                  {
+                    $choices[$objectContentBlock->getName()][$object->stringToContentBlockChoice()] = "{$entityMapping->entityClass}::{$object->getId()}";
+                  }
+                  else
+                  {
+                    $choices[$objectContentBlock->getName()][$object->__toString()] = "{$entityMapping->entityClass}::{$object->getId()}";
+                  }
                 }
               }
             }
@@ -1271,7 +1285,14 @@ class FormListener
             $objects = $this->selectObjects($entityClass, $objectContentBlockName);
             foreach ($objects as $object)
             {
-              $choices[$object->__toString()] = $object->getId();
+              if(method_exists($object, "stringToContentBlockChoice"))
+              {
+                $choices[$object->stringToContentBlockChoice()] = $object->getId();
+              }
+              else
+              {
+                $choices[$object->__toString()] = $object->getId();
+              }
             }
           }
           $group->add(Field\SelectField::create("choices", $choices,
@@ -1660,7 +1681,6 @@ class FormListener
   protected function selectObjects(string $entityClass, ?string $objectContentBlockName = null): array
   {
     $objects = array();
-    $translateMapping = $this->mapping->getEntityClassMapping($entityClass, EntityTranslateMapping::class);
 
     /** @var ObjectContentBlocksMapping $objectContentBlocks */
     if($objectContentBlocks = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlocksMapping::class))
@@ -1681,26 +1701,22 @@ class FormListener
       $objectContentBlock = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlockMapping::class);
     }
 
-    if($objectContentBlock && ($repositoryFunction = $objectContentBlock->getRepositoryFunction()))
-    {
-      $repository = $this->container->get('austral.entity_manager')->getRepository($entityClass);
-      if(method_exists($repository, $repositoryFunction))
-      {
-        $objects = $repository->$repositoryFunction();
-      }
-    }
-
+    $repository = $this->container->get('austral.entity_manager')->getRepository($entityClass);
     if(!$objects && $objectContentBlock)
     {
-      $objects = $this->container->get('austral.entity_manager')
-        ->getRepository($entityClass)
-        ->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder) use($translateMapping){
-          if($translateMapping)
-          {
-            $australQueryBuilder->leftJoin("root.translates", "translates")->addSelect("translates");
-          }
+      if($repositoryFunction = $objectContentBlock->getRepositoryFunction())
+      {
+        if(method_exists($repository, $repositoryFunction))
+        {
+          $objects = $repository->$repositoryFunction();
+        }
+      }
+      if(!$objects)
+      {
+        $objects = $repository->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder){
           $australQueryBuilder->indexBy("root", "root.id");
         });
+      }
     }
     return $objects;
 
@@ -1782,6 +1798,19 @@ class FormListener
       },
       "setter"      =>  function(ComponentValue $componentValue, $value) {
         return $componentValue->setOptionsByKey("target", $value == true ? "_blank" : null);
+      }
+    )));
+    $popin->add(Field\SymfonyField::create("title", TextType::class, array(
+      "entitled"    =>  false,
+      "attr"        =>  array(
+        "autocomplete"            => "off",
+        "data-popin-update-input" => "field-title"
+      ),
+      "getter"      =>  function(ComponentValue $componentValue){
+        return $componentValue->getOptionsByKey("title", "");
+      },
+      "setter"      =>  function(ComponentValue $componentValue, $value) {
+        return $componentValue->setOptionsByKey("title", $value);
       }
     )));
     $popin->add(Field\SymfonyField::create("anchor", TextType::class, array(
@@ -1890,6 +1919,10 @@ class FormListener
     elseif(array_key_exists("{$object->getClassname()}{$classnamePrefix}:all_{$field->getFieldname()}", $restrictionsByKey))
     {
       $isInclude = $restrictionsByKey["{$object->getClassname()}{$classnamePrefix}:all_{$field->getFieldname()}"];
+    }
+    elseif(array_key_exists("all:all_all", $restrictionsByKey))
+    {
+      $isInclude = $restrictionsByKey["all:all_all"];
     }
     else
     {

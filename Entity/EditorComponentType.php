@@ -199,7 +199,7 @@ abstract class EditorComponentType extends Entity implements EditorComponentType
    */
   public function getParentId(): ?string
   {
-    return $this->parentId;
+    return $this->parentId !== $this->id ? $this->parentId : null;
   }
 
   /**

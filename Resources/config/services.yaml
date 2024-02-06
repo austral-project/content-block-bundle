@@ -21,6 +21,15 @@ services:
       - { name: kernel.event_listener, event: "austral.entity_manager.duplicate", method: duplicate }
       - { name: kernel.event_listener, event: "austral.event.entity.initialise.mapping", method: mapping }
 
+  Austral\ContentBlockBundle\Listener\ElasticSearchListener: "@austral.content_block.elastic_search.listener"
+  austral.content_block.elastic_search.listener:
+    class: Austral\ContentBlockBundle\Listener\ElasticSearchListener
+    arguments: [ "@event_dispatcher"]
+    calls:
+      - [ setTwig, [ "@twig" ] ]
+    tags:
+      - { name: kernel.event_listener, event: "austral.elastic_search.select.objects", method: objects }
+
 ##### Event Subscriber
   Austral\ContentBlockBundle\EventSubscriber\ContentBlockSubscriber:  "@austral.content_block.event_subscriber"
   austral.content_block.event_subscriber:

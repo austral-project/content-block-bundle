@@ -369,6 +369,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"] = array(
           "anchor"  =>  $componentValueObject->getOptionsByKey("anchor", null),
           "target"  =>  $componentValueObject->getOptionsByKey("target", null),
+          "title"   =>  $componentValueObject->getOptionsByKey("title", null),
           "url"     =>  $linkType == "internal" ? "" : $componentValueObject->getLinkUrl(),
           "type"    =>  $linkType,
         );
@@ -389,7 +390,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         elseif($linkType == "external")
         {
           $linkUrl = $componentValueObject->getLinkUrl();
-          if (!u($componentValueObject->getLinkUrl())->ignoreCase()->startsWith(array("https://", "http://", "javascript:"))) {
+          if (!u($componentValueObject->getLinkUrl())->ignoreCase()->startsWith(array("https://", "http://", "javascript:", "%"))) {
             $linkUrl = "//{$linkUrl}";
           }
           $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['url'] = $linkUrl;
@@ -931,7 +932,6 @@ class ContentBlockSubscriber implements EventSubscriberInterface
   {
     $objects = array();
     $repository = $this->entityManager->getRepository($entityClass);
-    $translateMapping = $this->mapping->getEntityClassMapping($entityClass, EntityTranslateMapping::class);
 
     /** @var ObjectContentBlocksMapping $objectContentBlocks */
     if($objectContentBlocks = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlocksMapping::class))
@@ -951,22 +951,21 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       /** @var ObjectContentBlockMapping $objectContentBlock */
       $objectContentBlock = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlockMapping::class);
     }
-    if($objectContentBlock && ($repositoryFunction = $objectContentBlock->getRepositoryFunction()))
-    {
-      if(method_exists($repository, $repositoryFunction))
-      {
-        $objects = $repository->$repositoryFunction();
-      }
-    }
     if(!$objects && $objectContentBlock)
     {
-      $objects = $repository->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder) use($translateMapping){
-        if($translateMapping)
+      if($repositoryFunction = $objectContentBlock->getRepositoryFunction())
+      {
+        if(method_exists($repository, $repositoryFunction))
         {
-          $australQueryBuilder->leftJoin("root.translates", "translates")->addSelect("translates");
+          $objects = $repository->$repositoryFunction();
         }
-        $australQueryBuilder->indexBy("root", "root.id");
-      });
+      }
+      if(!$objects)
+      {
+        $objects = $repository->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder){
+          $australQueryBuilder->indexBy("root", "root.id");
+        });
+      }
     }
     return $objects;
   }
