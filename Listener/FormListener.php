@@ -1205,7 +1205,7 @@ class FormListener
                 "container"   =>  array(
                   "class" =>  "animate"
                 ),
-                "required"  =>  true,
+                "required"  =>  $editorComponentType->getParameterByKey("isRequired", false),
                 "getter"    =>  function(ComponentValue $componentValue){
                   return $componentValue->getOptionsByKey("choice", null);
                 },
@@ -1220,7 +1220,7 @@ class FormListener
                   "choice_translation_domain"  =>  false,
                 )
               )
-            )->addConstraint(new Constraints\NotNull())
+            )->setConstraints($editorComponentType->getParameterByKey("isRequired", false) ? array(new Constraints\NotNull()) : array())
           );
         }
       }
