@@ -231,13 +231,10 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
     }
 
 
-    if(!$formAdminEvent->getFormMapper()->getObject()->getIsContainer())
-    {
-      $formAdminEvent->getFormMapper()
-        ->addFieldset("fieldset.contentBlockTypeEditor")
-          ->add($this->createCollectionEditorComponentTypeForms($formAdminEvent))
-        ->end();
-    }
+    $formAdminEvent->getFormMapper()
+      ->addFieldset("fieldset.contentBlockTypeEditor")
+        ->add($this->createCollectionEditorComponentTypeForms($formAdminEvent))
+      ->end();
 
     /** @var ComponentEntityManager $componentManager */
     $componentManager = $this->container->get('austral.entity_manager.component');
