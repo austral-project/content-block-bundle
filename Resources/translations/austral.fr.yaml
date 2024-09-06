@@ -172,6 +172,7 @@ choices:
       number:                   Nombre
       date:                     Date
       switch:                   Switch
+      color:                    Couleur
   collections:
     title:                      Ajouter un bloc
     blockType:
