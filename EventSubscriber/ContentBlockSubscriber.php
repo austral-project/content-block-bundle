@@ -333,7 +333,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
             preg_match('/vimeo.com\/([\d]{0,})/', $videoUrl, $matches);
             $videoId = AustralTools::getValueByKey($matches, 1, null);
 
-            $vimeoInfos = $this->retreiveVimeoInfo($videoId);
+            $vimeoInfos = $this->retrieveVimeoInfo($videoId);
             if($thumbnailPath = AustralTools::getValueByKey($vimeoInfos, "thumbnail_small", null))
             {
               $thumbnailPath = preg_replace("/-d_(.*)/", "-d_", $thumbnailPath);
@@ -438,12 +438,12 @@ class ContentBlockSubscriber implements EventSubscriberInterface
   }
 
   /**
-   * retreiveVimeoInfo
+   * retrieveVimeoInfo
    *
    * @param $videoId
    * @return array
    */
-  protected function retreiveVimeoInfo($videoId): array
+  protected function retrieveVimeoInfo($videoId): array
   {
     try {
       $ch = curl_init();
