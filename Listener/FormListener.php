@@ -1381,6 +1381,24 @@ class FormListener
             )->setConstraints($contraints)
           );
         }
+        elseif($typeField == "color")
+        {
+          $group->add(Field\ColorPicker::create("content", array(
+                "entitled"        =>  $editorComponentType->getEntitled(),
+                "fieldOptions"  =>  array(
+                  "translation_domain"  =>  false
+                ),
+                "colorpicker-options"   =>  array(
+                  "components"  => array(
+                    "palette"                 =>  true,
+                    "opacity"                 =>  false,
+                    "hue"                     =>  false
+                  ),
+                )
+              )
+            )->setConstraints($contraints)
+          );
+        }
         elseif($typeField == "date")
         {
           $group->add(Field\DatePicker::create("date", array(

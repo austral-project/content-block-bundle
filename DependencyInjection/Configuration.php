@@ -209,6 +209,7 @@ class Configuration implements ConfigurationInterface
       "choices.text.type.string"      =>  "string",
       "choices.text.type.integer"     =>  "integer",
       "choices.text.type.number"      =>  "number",
+      "choices.text.type.color"       =>  "color",
       "choices.text.type.date"        =>  "date"
     );
   }

@@ -201,7 +201,8 @@ class ContentBlockSubscriber implements EventSubscriberInterface
                   "containerKeyname"  =>  $componentObject->getEditorComponent()->getKeyname(),
                   "keyname"     =>  $componentObject->getKeyname(),
                   "children"    =>  array(),
-                  "vars"        =>  $componentEvent->getVars()
+                  "vars"        =>  $componentEvent->getVars(),
+                  "values"      =>  $this->componentValues($componentObject->getComponentValues()),
                 );
               }
               else
