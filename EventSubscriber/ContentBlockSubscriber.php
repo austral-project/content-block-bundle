@@ -332,8 +332,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
             preg_match('/vimeo.com\/([\d]{0,})/', $videoUrl, $matches);
             $videoId = AustralTools::getValueByKey($matches, 1, null);
 
-            $vimeoInfos = unserialize(file_get_contents("http://vimeo.com/api/v2/video/{$videoId}.php"));
-            $vimeoInfos = AustralTools::first($vimeoInfos);
+            $vimeoInfos = $this->retreiveVimeoInfo($videoId);
             if($thumbnailPath = AustralTools::getValueByKey($vimeoInfos, "thumbnail_small", null))
             {
               $thumbnailPath = preg_replace("/-d_(.*)/", "-d_", $thumbnailPath);
@@ -342,7 +341,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
               "type"              =>  "vimeo",
               "key"               =>  $videoId,
               "url"               =>  "https://player.vimeo.com/video/{$videoId}",
-              "title"             =>  AustralTools::getValueByKey($vimeoInfos, "title"),
+              "title"             =>  AustralTools::getValueByKey($vimeoInfos, "title", ""),
               "thumbnail"         =>  array(
                 "path"              =>  $thumbnailPath,
                 "default"           =>  "{$thumbnailPath}1980",
@@ -435,6 +434,31 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       }
     }
     return $values;
+  }
+
+  /**
+   * retreiveVimeoInfo
+   *
+   * @param $videoId
+   * @return array
+   */
+  protected function retreiveVimeoInfo($videoId): array
+  {
+    try {
+      $ch = curl_init();
+      curl_setopt($ch, CURLOPT_HEADER, 0);
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+      curl_setopt($ch, CURLOPT_URL, "https://vimeo.com/api/v2/video/{$videoId}.php");
+      $data = curl_exec($ch);
+      curl_close($ch);
+    } catch (\Exception $e) {
+      $data = "";
+    }
+    if($data) {
+      $vimeoInfos = unserialize($data);
+      return AustralTools::first($vimeoInfos);
+    }
+    return array();
   }
 
 
