@@ -1,14 +1,17 @@
 pages:
   names:
     contentBlock:
-      singular:                 Bloc de contenu
-      plural:                   Blocs de contenu
+      singular:                  Bloc de contenu
+      plural:                    Blocs de contenu
     contentBlockEditor:
-      singular:                 Éditeur de composant
-      plural:                   Éditeur de Composant
+      singular:                  Éditeur de composant
+      plural:                    Éditeur de Composant
     contentBlockLibrary:
-      singular:                 Librarie
-      plural:                   Libraries
+      singular:                  Librarie
+      plural:                    Libraries
+    contentBlockGuideline:
+      singular:                  Guideline
+      plural:                    Guidelines
     contentBlockLibraryByDomain:
       singular:                  "Librarie : %domainName%"
       plural:                    "Libraries : %domainName%"
@@ -35,6 +38,7 @@ fieldset:
     layouts:                    Layouts
     restrictions:               Restriction
     usedBy:                     Utilisé par
+  guidelineValue:               Contenu
 
 errors:
   component:
@@ -94,6 +98,8 @@ fields:
     entitled:                   Tags selectionnés
   isGuidelineView:
     entitled:                   Visible dans la guideline
+  guidelineCategory:
+    entitled:                   Categorie de la guideline
   addChoice:
     entitled:                   Ajouter un choix
   selectChoice:
@@ -133,6 +139,10 @@ fields:
     entitled:                   Valeur par défaut
   defaultEnabled:
     entitled:                   Activé par défaut
+  guidelineValue:
+    entitled:                   Guideline valeur de test
+  editorComponent:
+    entitled:                   Composant
 
 component:
   title:
@@ -143,9 +153,13 @@ component:
 choices:
   editor_component:
     category:
-      default: "Default"
-      custom:  "Custom"
-      library: "Library"
+      default:                  "Default"
+      custom:                   "Custom"
+      library:                  "Library"
+    guidelineCategory:
+      typo:                     "Typo"
+      media:                    "Media"
+      default:                  "Autre"
   restriction:
     all:                        "Tout les éléments : %element%"
     include:                    Inclus

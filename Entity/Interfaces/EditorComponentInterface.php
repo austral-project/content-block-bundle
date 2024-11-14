@@ -10,7 +10,6 @@
 
 namespace Austral\ContentBlockBundle\Entity\Interfaces;
 
-use Austral\ContentBlockBundle\Entity\EditorComponent;
 use Austral\ContentBlockBundle\Model\Editor\Layout;
 use Austral\ContentBlockBundle\Model\Editor\Option;
 use Austral\ContentBlockBundle\Model\Editor\Theme;

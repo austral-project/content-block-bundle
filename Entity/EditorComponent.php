@@ -64,10 +64,21 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
   protected Collection $editorComponentTypes;
 
   /**
+   * @ORM\OneToMany(targetEntity="Austral\ContentBlockBundle\Entity\Interfaces\GuidelineInterface", mappedBy="editorComponent", cascade={"persist", "remove"})
+   */
+  protected Collection $guidelines;
+
+  /**
    * @var string|null
    * @ORM\Column(name="category", type="string", length=255, nullable=false, options={"default" : "default"}  )
    */
   protected ?string $category = null;
+
+  /**
+   * @var string|null
+   * @ORM\Column(name="keyname", type="string", length=255, nullable=true )
+   */
+  protected ?string $keyname = null;
 
   /**
    * @var string|null
@@ -86,13 +97,7 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
    * @ORM\Column(name="is_guideline_view", type="boolean", nullable=true, options={"default" : true} )
    */
   protected bool $isGuidelineView = true;
-
-  /**
-   * @var string|null
-   * @ORM\Column(name="keyname", type="string", length=255, nullable=true )
-   */
-  protected ?string $keyname = null;
-
+  
   /**
    * @var string|null
    * @ORM\Column(name="image", type="string", length=255, nullable=true)
@@ -348,6 +353,26 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
       $child->setEditorComponent(null);
       $this->editorComponentTypes->removeElement($child);
     }
+    return $this;
+  }
+
+  /**
+   * getGuidelines
+   *
+   * @return Collection
+   */
+  public function getGuidelines(): Collection
+  {
+    return $this->guidelines;
+  }
+
+  /**
+   * @param Collection $guidelines
+   * @return $this
+   */
+  public function setGuidelines(Collection $guidelines): EditorComponent
+  {
+    $this->guidelines = $guidelines;
     return $this;
   }
 

@@ -49,6 +49,9 @@ class Configuration implements ConfigurationInterface
           ->arrayNode("categories")
             ->scalarPrototype()->end()
           ->end()
+          ->arrayNode("guideline_categories")
+            ->scalarPrototype()->end()
+          ->end()
         ->end()
       ->end()
 
@@ -196,6 +199,11 @@ class Configuration implements ConfigurationInterface
       "categories"  =>  array(
         "default",
         "custom"
+      ),
+      "guideline_categories"  =>  array(
+        "typo",
+        "media",
+        "default"
       )
     );
   }

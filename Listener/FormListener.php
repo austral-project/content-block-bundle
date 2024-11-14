@@ -458,17 +458,17 @@ class FormListener
               /** @var EditorComponent $editorComponent */
               $editorComponent = $editorComponents[$hydrate];
 
-              $component = new Component();
-              $component->setPosition($position);
-              $component->setObjectClassname($object->getClassname());
-              $component->setEditorComponent($editorComponent);
+              $componentHydrate = new Component();
+              $componentHydrate->setPosition($position);
+              $componentHydrate->setObjectClassname($object->getClassname());
+              $componentHydrate->setEditorComponent($editorComponent);
               if($object->getId())
               {
-                $component->setObjectId($object->getId());
+                $componentHydrate->setObjectId($object->getId());
               }
-              $this->generateAutoComponent($componentManager, $editorComponent->getEditorComponentTypes(), $component);
-              $componentManager->update($component, false);
-              $object->addComponents($field->getFieldname(), $component);
+              $this->generateAutoComponent($componentManager, $editorComponent->getEditorComponentTypes(), $componentHydrate);
+              $componentManager->update($componentHydrate, false);
+              $object->addComponents($field->getFieldname(), $componentHydrate);
             }
             $position++;
           }
@@ -540,7 +540,7 @@ class FormListener
             }
             $group = $componentFormMapper->addGroup("component-values-{$editorComponent->getId()}")
               ->setDirection(GroupFields::DIRECTION_COLUMN)
-              ->setAttr(array("class"=>"component-values ".($hasComponentChildren ? "component-values-with-children" : "")));
+              ->setAttr(array("class"=>"component-values editor-component-{$editorComponent->getKeyname()} ".($hasComponentChildren ? "component-values-with-children" : "")));
             $group->adds($componentValueCollectionForms);
 
             $collectionFormsChildren[$collectionFormFieldname] = Field\CollectionEmbedField::create($collectionFormFieldname, array(
@@ -554,7 +554,7 @@ class FormListener
                   "delete"              =>  true
                 ),
                 "attr"                =>  array(
-                  'class'             =>  $editorComponent->getIsContainer() ? "component-container" : ( $hasComponentInputFile ? " component-file-children" : "")
+                  'class'             =>  "collection-editor-component-{$editorComponent->getKeyname()} ".$editorComponent->getIsContainer() ? "component-container" : ( $hasComponentInputFile ? " component-file-children" : "")
                 ),
                 "prototype"           =>  array(
                   "data"                =>  $componentByEditor
@@ -798,11 +798,11 @@ class FormListener
   /**
    * @param EditorComponent $editorComponent
    * @param FormMapper $componentFormMapper
-   * @param Component $componentByEditor
+   * @param ComponentInterface $componentByEditor
    *
    * @throws ReflectionException
    */
-  protected function editorComponentParameters(EditorComponent $editorComponent, FormMapper $componentFormMapper, Component $componentByEditor)
+  protected function editorComponentParameters(EditorComponent $editorComponent, FormMapper $componentFormMapper, ComponentInterface $componentByEditor)
   {
     $themes = $editorComponent->getThemes();
     $options = $editorComponent->getOptions();
@@ -992,7 +992,8 @@ class FormListener
       $group = $componentValuesListFormMapper->addGroup(
         "component-values-block",
         ($editorComponentType->getParameterByKey("viewEntitled") && $editorComponentType->getType() != "list") ? $editorComponentType->getEntitled() : null
-        )->setStyle($editorComponentType->getType() != "list" ? GroupFields::STYLE_WHITE : GroupFields::STYLE_NONE)
+        )
+        ->setStyle($editorComponentType->getType() != "list" ? GroupFields::STYLE_WHITE : GroupFields::STYLE_NONE)
         ->setDirection($editorComponentType->getType() == "list" ? GroupFields::DIRECTION_ROW : $editorComponentType->getBlockDirection());
 
 
@@ -1006,7 +1007,8 @@ class FormListener
         }
       }
       $layoutChoiceViewKeynameGroupClass = implode(" ", $layoutChoiceViewKeynameGroupClass);
-      $group->setAttr(array("class"=>"content-{$editorComponentType->getType()} {$layoutChoiceViewKeynameGroupClass}"));
+      $group->setAttr(array("class"=>"content-{$editorComponentType->getType()} {$layoutChoiceViewKeynameGroupClass} editor-component-{$editorComponentType->getKeyname()}"));
+
 
       /** @var EditorComponentTypeInterface $editorComponentTypeChildren */
       foreach($editorComponentType->getChildren() as $editorComponentTypeChildren)
@@ -1145,7 +1147,7 @@ class FormListener
       $group = $componentValueFormMapper->addGroup('content-fields' )
         ->setStyle(GroupFields::STYLE_WHITE)
         ->setDirection(GroupFields::DIRECTION_COLUMN)
-        ->setAttr(array("class"=>"content-{$editorComponentType->getType()} {$layoutChoiceViewKeynameGroupClass}"));
+        ->setAttr(array("class"=>"content-{$editorComponentType->getType()} {$layoutChoiceViewKeynameGroupClass} editor-component-{$editorComponentType->getKeyname()}"));
       if($editorComponentType->getType() == "title")
       {
         $choicesTags = array();
@@ -1183,8 +1185,11 @@ class FormListener
           }
         }
         $group->add(Field\TextField::create("content", array(
-              "entitled"    =>  false,
-              "placeholder" =>  $editorComponentType->getEntitled()
+              "entitled"    =>  $editorComponentType->getEntitled(),
+              "required"    =>  $editorComponentType->getParameterByKey("isRequired") ?? false,
+              "container"   =>  array(
+                "class" =>  "animate"
+              )
             )
           )->setConstraints($contraints)
         );

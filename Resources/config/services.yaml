@@ -53,6 +53,12 @@ services:
 
 ##### Entities Manager #####
 
+  ##### Guideline EntityManager
+  Austral\ContentBlockBundle\EntityManager\GuidelineEntityManager:  "@austral.entity_manager.guideline"
+  austral.entity_manager.guideline:
+    class:        Austral\ContentBlockBundle\EntityManager\GuidelineEntityManager
+    arguments:    [ "@doctrine.orm.entity_manager",  "@event_dispatcher", "%austral.entity.guideline.class%" ]
+
   ##### Library EntityManager
   Austral\ContentBlockBundle\EntityManager\LibraryEntityManager:  "@austral.entity_manager.library"
   austral.entity_manager.library:

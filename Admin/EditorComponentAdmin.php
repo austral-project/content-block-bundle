@@ -10,6 +10,8 @@
 
 namespace Austral\ContentBlockBundle\Admin;
 
+use App\Entity\Austral\ContentBlockBundle\Component;
+use App\Entity\Austral\ContentBlockBundle\ComponentValue;
 use App\Entity\Austral\ContentBlockBundle\EditorComponentType;
 use Austral\AdminBundle\Admin\Admin;
 use Austral\AdminBundle\Admin\AdminModuleInterface;
@@ -17,7 +19,6 @@ use Austral\AdminBundle\Admin\Event\FormAdminEvent;
 use Austral\AdminBundle\Admin\Event\ListAdminEvent;
 use Austral\AdminBundle\Module\Modules;
 
-use Austral\ContentBlockBundle\Annotation\ObjectContentBlock;
 use Austral\ContentBlockBundle\Configuration\ContentBlockConfiguration;
 use Austral\ContentBlockBundle\Entity\EditorComponent;
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentInterface;
@@ -28,6 +29,7 @@ use Austral\ContentBlockBundle\Form\Type\LayoutFormType;
 use Austral\ContentBlockBundle\Form\Type\OptionFormType;
 use Austral\ContentBlockBundle\Form\Type\RestrictionFormType;
 use Austral\ContentBlockBundle\Form\Type\ThemeFormType;
+use Austral\ContentBlockBundle\Listener\FormListener;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlocksMapping;
 use Austral\ContentBlockBundle\Model\Editor\Layout;
@@ -39,6 +41,7 @@ use Austral\ContentBlockBundle\Services\ContentBlockContainer;
 use Austral\EntityBundle\Entity\EntityInterface;
 
 use Austral\EntityBundle\Mapping\EntityMapping;
+use Austral\EntityBundle\ORM\AustralQueryBuilder;
 use Austral\FormBundle\Mapper\GroupFields;
 use Austral\FormBundle\Field as Field;
 use Austral\FormBundle\Mapper\Fieldset;
@@ -48,8 +51,10 @@ use Austral\ListBundle\Column as Column;
 use Austral\ListBundle\DataHydrate\DataHydrateORM;
 
 use Austral\ToolsBundle\AustralTools;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
+use joshtronic\LoremIpsum;
 use ReflectionException;
 use Symfony\Component\Validator\Constraints as Constraints;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -165,9 +170,18 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
           "choices.status.yes"        =>  true,
         )))
         ->add(Field\ChoiceField::create("isGuidelineView", array(
-          "choices.status.no"         =>  false,
-          "choices.status.yes"        =>  true,
-        )))
+            "choices.status.no"         =>  0,
+            "choices.status.yes"        =>  1,
+          ), array(
+          "attr"        =>  array(
+            "data-view-by-choices-parent"   =>  ".form-container .right-container",
+            "data-view-by-choices-children" =>  ".guideline-category-choice",
+            'data-view-by-choices' =>  json_encode(array(
+              0       =>  "guideline-category-hide",
+              1       =>  "guideline-category-view",
+            ))
+          ))
+        ))
       ->end()
       ->addFieldset("fieldset.dev.config")
         ->setIsView($this->container->get("security.authorization_checker")->isGranted("ROLE_ROOT"))
@@ -212,7 +226,6 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
               1       =>  "layout-view-choice-view",
             ))
           )
-
         )))
         ->add($this->createCollectionLayout($formAdminEvent))
       ->end()
@@ -1447,8 +1460,6 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
             )
           ->end();
         }
-
-
       }
     }
   }
@@ -1471,5 +1482,101 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
       $object->setPosition($this->container->get('austral.entity_manager.editor_component')->countAll()+1);
     }
 
+    if($object->getIsGuidelineView())
+    {
+      $guidelineEntityManager = $this->container->get('austral.entity_manager.guideline');
+      $guidelines = $guidelineEntityManager->selectByClosure(function(AustralQueryBuilder $australQueryBuilder) use($object) {
+        $australQueryBuilder->leftJoin("root.editorComponent", "editorComponent")
+          ->where("editorComponent.id = :editorComponentId")
+          ->setParameter("editorComponentId", $object->getId());
+      });
+      $componentManager = $this->container->get('austral.entity_manager.component');
+      if(count($guidelines) <= 0)
+      {
+        $guideline = $guidelineEntityManager->create();
+        $guideline->setKeyname($object->getKeyname());
+        $guideline->setName($object->getName());
+        $guideline->setCategory("default");
+        $guideline->setEditorComponent($object);
+        if(!$guideline->getPosition())
+        {
+          $guideline->setPosition($guidelineEntityManager->countAll()+1);
+        }
+
+        $componentHydrate = new Component();
+        $componentHydrate->setPosition(1);
+        $componentHydrate->setObjectClassname($object->getClassname());
+        $componentHydrate->setEditorComponent($object);
+        if($object->getId())
+        {
+          $componentHydrate->setObjectId($object->getId());
+        }
+        $this->generateAutoComponent($componentManager, $object->getEditorComponentTypes(), $componentHydrate);
+        $componentManager->update($componentHydrate, false);
+        $guideline->addComponents("master", $componentHydrate);
+        $guidelineEntityManager->update($guideline, false);
+      }
+    }
+
   }
+
+  /**
+   * @param ComponentEntityManager $componentManager
+   * @param Collection $editorComponentTypes
+   * @param Component $component
+   *
+   * @return $this
+   */
+  protected function generateAutoComponent(ComponentEntityManager $componentManager, Collection $editorComponentTypes, Component $component): self
+  {
+    $lipsum = new LoremIpsum();
+    /** @var EditorComponentType $editorComponentType */
+    foreach ($editorComponentTypes as $editorComponentType)
+    {
+      if(!$editorComponentType->getParentId())
+      {
+        $componentValue = new ComponentValue();
+        $componentValue->setComponent($component);
+        $componentValue->setEditorComponentType($editorComponentType);
+        if($editorComponentType->getParameterByKey("isRequired"))
+        {
+          $value = $lipsum->words(5);
+          if($editorComponentType->getParameterByKey("isWysiwyg"))
+          {
+            $ulArray = array();
+            for($line = 1; $line <= rand(0, 12); $line++)
+            {
+              $ulArray[] = "<li>{$lipsum->words(rand(4, 6))}</li>";
+            }
+            $ul = "";
+            if(count($ulArray) > 0)
+            {
+              $ul = implode("", $ulArray);
+              $ul = "<ul>{$ul}</ul>";
+            }
+
+            $paragraphFirstArray = array();
+            for($p = 1; $p <= rand(1, 3); $p++)
+            {
+              $paragraphFirstArray[] = "<p>{$lipsum->words(rand(50, 100))}</p>";
+            }
+            $paragraphFirst = implode("", $paragraphFirstArray);
+
+            $paragraphSecondArray = array();
+            for($p = 1; $p <= rand(1, 2); $p++)
+            {
+              $paragraphSecondArray[] = "<p>{$lipsum->words(rand(50, 100))}</p>";
+            }
+            $paragraphSecond = implode("", $paragraphSecondArray);
+            $value = "{$paragraphFirst}{$ul}{$paragraphSecond}";
+          }
+          $componentValue->setContent($value);
+        }
+        $component->addComponentValues($componentValue);
+        $componentManager->update($componentValue, false);
+      }
+    }
+    return $this;
+  }
+
 }

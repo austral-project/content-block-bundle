@@ -20,11 +20,13 @@ parameters:
   austral.admin.class.editor_component.class:                             Austral\ContentBlockBundle\Admin\EditorComponentAdmin
   austral.admin.class.library.class:                                      Austral\ContentBlockBundle\Admin\LibraryAdmin
   austral.admin.class.navigation.class:                                   Austral\ContentBlockBundle\Admin\NavigationAdmin
+  austral.admin.class.guideline.class:                                    Austral\ContentBlockBundle\Admin\GuidelineAdmin
 
   austral.admin.modules.content_block_bundle.content-block.enabled:               true
   austral.admin.modules.content_block_bundle.config.editor_component.enabled:     true
   austral.admin.modules.content_block_bundle.config.library.enabled:              true
   austral.admin.modules.content_block_bundle.config.navigation.enabled:           true
+  austral.admin.modules.content_block_bundle.config.guideline.enabled:           true
 
   austral_admin.modules.content_block_bundle:
 
@@ -67,3 +69,12 @@ parameters:
           route:                  "library"
           class:                  "%austral.admin.class.library.class%"
           translate:              "male_c"
+        guideline:
+          enabled:                "%austral.admin.modules.content_block_bundle.config.guideline.enabled%"
+          name:                   "Guideline"
+          pictoTile:              "template"
+          picto:                  "austral-picto-content-left"
+          route:                  "guideline"
+          class:                  "%austral.admin.class.guideline.class%"
+          translate:              "female_c"
+          sortable:               true

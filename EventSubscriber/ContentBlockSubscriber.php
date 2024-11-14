@@ -117,7 +117,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       ContentBlockEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENTS_HYDRATE =>  ["componentsHydrate", 1024],
       ContentBlockEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENTS_INIT    =>  ["componentsInit", 1024],
       GuidelineEvent::EVENT_AUSTRAL_CONTENT_BLOCK_GUIDELINE_INIT        =>  ["guidelineInit", 1024],
-      ComponentEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_HYDRATE        =>  ["componentInit", 1024],
+      ComponentEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_HYDRATE     =>  ["componentInit", 1024],
     ];
   }
 
@@ -678,8 +678,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
 
   /**
    * @param GuidelineEvent $guidelineEvent
-   * @param EditorComponent $editorComponent
-   * @param array $combinations
+   * @param EditorComponentInterface $editorComponent
    * @param Layout|null $layout
    * @param Theme|null $theme
    * @param Option|null $option
@@ -688,15 +687,15 @@ class ContentBlockSubscriber implements EventSubscriberInterface
    * @return array
    * @throws \Exception
    */
-  protected function generateComponent(GuidelineEvent $guidelineEvent, EditorComponent $editorComponent, ?Layout $layout = null, ?Theme $theme = null, ?Option $option = null, array $optionsValue = array()): array
+  protected function generateComponent(GuidelineEvent $guidelineEvent, EditorComponentInterface $editorComponent, ?Layout $layout = null, ?Theme $theme = null, ?Option $option = null, array $optionsValue = array()): array
   {
     /** @var Component $componentObject */
     $componentObject = clone $guidelineEvent->getComponentObject();
     $componentObject->setId(Uuid::uuid4()->toString());
     $componentObject->setEditorComponent($editorComponent);
-    $componentObject->setLayoutId($layout ? $layout->getId() : null);
-    $componentObject->setOptionId($option ? $option->getId() : null);
-    $componentObject->setThemeId($theme ? $theme->getId() : null);
+    $componentObject->setLayoutId($layout?->getId());
+    $componentObject->setOptionId($option?->getId());
+    $componentObject->setThemeId($theme?->getId());
 
     $componentEvent = new ComponentEvent($guidelineEvent->getDefaultObjectPage(), $componentObject);
     $componentEvent->setIsGuideline(true);

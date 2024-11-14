@@ -9,6 +9,9 @@ pages:
     contentBlockLibrary:
       singular:                  Library
       plural:                    Libraries
+    contentBlockGuideline:
+      singular:                  Guideline
+      plural:                    Guidelines
     contentBlockLibraryByDomain:
       singular:                  "Library : %domainName%"
       plural:                    "Libraries : %domainName%"
@@ -91,6 +94,8 @@ fields:
     entitled:                   Tags selected
   isGuidelineView:
     entitled:                   View in guideline
+  guidelineCategory:
+    entitled:                   Guideline category
   addChoice:
     entitled:                   Add choice
   selectChoice:
@@ -130,6 +135,8 @@ fields:
     entitled:                   Default value
   defaultEnabled:
     entitled:                   Default enabled
+  guidelineValue:
+    entitled:                   Guideline test value
 
 component:
   title:
@@ -148,6 +155,10 @@ choices:
       default:                  "Default"
       custom:                   "Custom"
       library:                  "Library"
+    guidelineCategory:
+      typo:                     "Typo"
+      media:                    "Media"
+      default:                  "Other"
   restriction:
     all:                        "All elements : %element%"
     include:                    Include
