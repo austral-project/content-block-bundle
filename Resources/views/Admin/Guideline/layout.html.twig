@@ -1,0 +1,65 @@
+{% apply spaceless %}
+<!DOCTYPE html>
+<html lang="{{ app.request.locale }}">
+  <head>
+    <meta name="robots" content="noindex, follow">
+    <meta charset="utf-8">
+    <link type="image/x-icon" href="/bundles/australdesign/images/logo-app.png" rel="shortcut icon">
+    <meta content="&copy; Austral" name="copyright">
+    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="Austral">
+    <title>{% block head_title %}Austral{% endblock %}</title>
+    <meta name="description" content="{% block head_description %}Austral - Manager{% endblock %}" />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap" rel="stylesheet">
+    <script type="application/javascript">
+      const austral = {
+        "ping":       "{{ url('austral_admin_ping') }}",
+        "user":       "{{ user is defined ? user.id|default('undefined') : "" }}",
+        "userTabId":  "{{ mercure.userTabId|default('undefined') }}",
+      }
+    </script>
+    {% block stylesheets %}
+      {{ encore_entry_link_tags('austral', null, "austral-design") }}
+    {% endblock %}
+    {% block stylesheets_extends %}{% endblock %}
+    {% include 'Admin/Layout/head.html.twig' ignore missing %}
+    {% if user is defined %}<style type="text/css">:root { --color-user: {{ user.avatarColor ?? "#6FA8DC" }}; }</style>{% endif %}
+  </head>
+  <body id="body-master" class="{{ user is defined ? user.interfaceTheme : "" }} {% block body_class %}{% endblock %}" data-uri="{{ app.request.pathInfo }}" {% if app.debug is defined and app.debug %}data-debug{% endif%} data-reload-elements="{{ config.data_reload_js|json_encode }}" {% if mercure.url is defined -%}data-mercure="{{ mercure|json_encode }}"{% endif %}>
+
+    <div id="container-master">
+      {% block content %}{% endblock %}
+    </div>
+
+    <div id="flash-messages-content">
+      {% if flashMessages is defined %}
+        {% for key, messages in flashMessages %}
+          {% for message in messages %}
+            <div class="object-{{ key }}" data-message-text="{{ message }}" data-message-position="top" data-message-status="{{ key }}"></div>
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    </div>
+
+    {% if deployment is defined and deployment == "start" %}
+      <div class="deployment-message alert is-open">
+        <span class="picto austral-picto-caution"></span>
+        <div class="content">
+          {{ "austral.deployment.start"|trans({}, "austral") }}
+        </div>
+      </div>
+    {% endif %}
+
+    {% block javascripts %}
+      {{ encore_entry_script_tags('austral', null, "austral-design") }}
+    {% endblock %}
+    {% include 'Admin/Layout/script.html.twig' ignore missing %}
+
+    {% block javascripts_extends %}{% endblock %}
+  </body>
+</html>
+{% endapply %}

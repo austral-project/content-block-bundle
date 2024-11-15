@@ -10,8 +10,8 @@ pages:
       singular:                  Librarie
       plural:                    Libraries
     contentBlockGuideline:
-      singular:                  Guideline
-      plural:                    Guidelines
+      singular:                  Composant de Guideline
+      plural:                    Composants de Guideline
     contentBlockLibraryByDomain:
       singular:                  "Librarie : %domainName%"
       plural:                    "Libraries : %domainName%"

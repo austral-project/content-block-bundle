@@ -33,7 +33,6 @@ class AustralContentBlockExtension extends Extension
   {
     $configuration = new Configuration();
     $configs[0]["type_values"] = array_replace_recursive($configuration->blockTypeDefault(), AustralTools::getValueByKey($configs[0], "type_values", array()));
-    $configs[0]["editor_component"] = array_replace_recursive($configuration->getEditorComponentCategories(), AustralTools::getValueByKey($configs[0], "editor_component", array()));
     $config = $this->processConfiguration($configuration, $configs);
 
     $container->setParameter('austral_content_block', $config);

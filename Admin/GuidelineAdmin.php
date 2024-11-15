@@ -14,6 +14,7 @@ use App\Entity\Austral\ContentBlockBundle\Component;
 use App\Entity\Austral\ContentBlockBundle\EditorComponent;
 use Austral\AdminBundle\Admin\Admin;
 use Austral\AdminBundle\Admin\AdminModuleInterface;
+use Austral\AdminBundle\Admin\Event\ActionAdminEvent;
 use Austral\AdminBundle\Admin\Event\FormAdminEvent;
 use Austral\AdminBundle\Admin\Event\ListAdminEvent;
 use Austral\ContentBlockBundle\Entity\Guideline;
@@ -29,6 +30,7 @@ use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\EntityBundle\Entity\EntityInterface;
 
 use Austral\ListBundle\Column as Column;
+use Austral\ListBundle\Column\Action;
 use Austral\ListBundle\DataHydrate\DataHydrateORM;
 
 use Doctrine\ORM\QueryBuilder;
@@ -51,11 +53,39 @@ class GuidelineAdmin extends Admin implements AdminModuleInterface
   }
 
   /**
+   * @param ActionAdminEvent $actionAdminEvent
+   *
+   * @throws \ReflectionException
+   */
+  public function view(ActionAdminEvent $actionAdminEvent)
+  {
+
+    $actionAdminEvent->getAdminHandler()->getTemplateParameters()
+      ->addParameters("guidelineSizes",$this->container->get('austral.content_block.config')->getConfig("guideline")["sizes"])
+      ->setPath("@AustralContentBlock/Admin/Guideline/view.html.twig");
+  }
+
+  /**
    * @param ListAdminEvent $listAdminEvent
    */
   public function configureListMapper(ListAdminEvent $listAdminEvent)
   {
-    $listAdminEvent->getListMapper()->buildDataHydrate(function(DataHydrateORM $dataHydrate) {
+    $actions = new Action("guideline-view", "actions.guidelineComposants",
+      $this->module->generateUrl("view", array("id" => "list")),
+      null,
+      array(
+        "attr"                =>  array(
+          "target"    =>  "_blank",
+        ),
+        "translateParameters" => array(
+          "module_name"     =>  $this->module->translateSingular(),
+          "module_gender"   =>  $this->module->translateGenre()
+        )
+      )
+    );
+    $listAdminEvent->getListMapper()
+      ->addAction($actions, 4)
+      ->buildDataHydrate(function(DataHydrateORM $dataHydrate) {
         $dataHydrate->addQueryBuilderPaginatorClosure(function(QueryBuilder $queryBuilder) {
           return $queryBuilder->orderBy("root.position", "ASC");
         });
@@ -74,7 +104,7 @@ class GuidelineAdmin extends Admin implements AdminModuleInterface
   public function configureFormMapper(FormAdminEvent $formAdminEvent)
   {
     $categories = array();
-    foreach($this->container->get('austral.content_block.config')->get("editor_component.guideline_categories") as $value)
+    foreach($this->container->get('austral.content_block.config')->get("guideline.categories") as $value)
     {
       $categories["choices.editor_component.guidelineCategory.{$value}"] = $value;
     }

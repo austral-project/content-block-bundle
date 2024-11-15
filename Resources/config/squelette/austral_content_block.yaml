@@ -3,6 +3,13 @@ austral_content_block:
     image_default:        ""
     categories:
       - default
+  guideline:
+    categories:
+      - typo
+      - media
+      - default
+    sizes:
+      desktop:            [1440, 820]
   type_values:
     group:
       entitled:           "choices.collections.blockType.group"

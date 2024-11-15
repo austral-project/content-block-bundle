@@ -26,7 +26,7 @@ parameters:
   austral.admin.modules.content_block_bundle.config.editor_component.enabled:     true
   austral.admin.modules.content_block_bundle.config.library.enabled:              true
   austral.admin.modules.content_block_bundle.config.navigation.enabled:           true
-  austral.admin.modules.content_block_bundle.config.guideline.enabled:           true
+  austral.admin.modules.content_block_bundle.config.guideline.enabled:            true
 
   austral_admin.modules.content_block_bundle:
 
@@ -78,3 +78,6 @@ parameters:
           class:                  "%austral.admin.class.guideline.class%"
           translate:              "female_c"
           sortable:               true
+          extendActions:
+            view:                 view
+

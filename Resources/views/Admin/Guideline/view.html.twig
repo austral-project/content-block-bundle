@@ -1,0 +1,58 @@
+{% extends "@AustralContentBlock/Admin/Guideline/layout.html.twig" %}
+{% block body_class %}{{ currentPage.bodyClass|default("") }} guideline-components-container{% endblock %}
+{% block content %}
+  
+  {% set defaultWidth = "1440" %}
+  {% set defaultHeight = "820" %}
+  
+  <div class="guideline-components" data-guideline-components>
+    <div class="guideline-parameters form-container">
+      <div class="fields-content">
+        <div class="screen-select-content field-content field-content-entityField animate">
+          <div class="field field-entityType field-select-type">
+            <label for="screen">Device</label>
+            <select name="screen" id="screen" data-select autocomplete="off" data-guideline-screen data-screen-sizes="{{ guidelineSizes|json_encode }}">
+              <option value=""></option>
+              {% for guidelineSizeName, guidelineSizeValues in guidelineSizes %}
+                <option value="{{ guidelineSizeName }}" {{ guidelineSizeValues.isDefault ? "selected=selected" : "" }}>{{ guidelineSizeName }}</option>
+                {% if guidelineSizeValues.isDefault %}
+                  {% set defaultWidth = guidelineSizeValues.width %}
+                  {% set defaultHeight = guidelineSizeValues.height %}
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="group-sizes">
+          <div class="field-content field-content-textField animate">
+            <label for="width">Width</label>
+            <div class="field field-textType">
+              <input name="width" id="width" value="{{ defaultWidth }}" autocomplete="off" data-guideline-width>
+            </div>
+          </div>
+          <span class="separate-sizes"><span class="picto austral-picto-cross"></span></span>
+          <div class="field-content field-content-textField animate">
+            <label for="height">Height</label>
+            <div class="field field-textType">
+              <input name="height" id="height" value="{{ defaultHeight }}" autocomplete="off" data-guideline-height>
+            </div>
+          </div>
+        </div>
+        <div class="buttons">
+          <span class="button button-picto link switch" data-guideline-switch-size>
+            <span class="reverse austral-picto-corner-up-left"></span>
+            <span class="picto device austral-picto-tablet"></span>
+            <span class="normal austral-picto-corner-right-down"></span>
+          </span>
+          <span class="button button-picto link" data-guideline-full><span class="picto austral-picto-maximize"></span></span>
+        </div>
+      </div>
+    
+    </div>
+    <div class="guideline-container">
+      <iframe src="{{ path("austral_website_guideline") }}" frameborder="0" style="width:{{ defaultWidth }}px; height: {{ defaultHeight }}px;" data-guideline-container></iframe>
+    </div>
+  </div>
+  
+  
+{% endblock %}

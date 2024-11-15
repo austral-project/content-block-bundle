@@ -48,14 +48,19 @@ class Configuration implements ConfigurationInterface
           ->scalarNode('image_default')->isRequired()->end()
           ->arrayNode("categories")
             ->scalarPrototype()->end()
-          ->end()
-          ->arrayNode("guideline_categories")
-            ->scalarPrototype()->end()
+            ->defaultValue($this->getEditorComponentCategories())
           ->end()
         ->end()
-      ->end()
+      ->end();
 
-      ->arrayNode("title_tag_values")
+    $guidelineNode = $node->arrayNode("guideline")
+        ->children()
+          ->arrayNode("categories")
+            ->scalarPrototype()->end()
+            ->defaultValue($this->getGuidelineCategories())
+          ->end();
+
+      $node->arrayNode("title_tag_values")
         ->scalarPrototype()->end()
         ->defaultValue($this->titleTagsDefault())
       ->end()
@@ -67,8 +72,13 @@ class Configuration implements ConfigurationInterface
 
     ->end();
 
-    $node = $this->buildContainerByEntity($node
+    $this->buildContainerByEntity($node
       ->arrayNode('container_by_entity')
+      ->arrayPrototype()
+    );
+
+    $this->buildGuidelineSize($guidelineNode
+      ->arrayNode('sizes')->defaultValue($this->getGuidelineSizes())
       ->arrayPrototype()
     );
 
@@ -84,7 +94,22 @@ class Configuration implements ConfigurationInterface
    */
   protected function buildContainerByEntity(ArrayNodeDefinition $node)
   {
-    return $node->scalarPrototype()->end()->end()->end();
+    return $node->scalarPrototype();
+  }
+
+  /**
+   * @param ArrayNodeDefinition $node
+   *
+   * @return mixed
+   */
+  protected function buildGuidelineSize(ArrayNodeDefinition $node)
+  {
+    $node = $node
+      ->children()
+      ->booleanNode('isDefault')->defaultFalse()->end()
+      ->scalarNode('width')->isRequired()->cannotBeEmpty()->end()
+      ->scalarNode('height')->isRequired()->cannotBeEmpty()->end();
+    return $node;
   }
 
   /**
@@ -195,15 +220,32 @@ class Configuration implements ConfigurationInterface
   public function getEditorComponentCategories(): array
   {
     return array(
-      "image_default" =>  "",
-      "categories"  =>  array(
-        "default",
-        "custom"
-      ),
-      "guideline_categories"  =>  array(
-        "typo",
-        "media",
-        "default"
+      "default",
+      "custom"
+    );
+  }
+
+  /**
+   * @return array
+   */
+  public function getGuidelineCategories(): array
+  {
+    return array(
+      "typo",
+      "media",
+      "default"
+    );
+  }
+
+  /**
+   * @return array
+   */
+  public function getGuidelineSizes(): array
+  {
+    return array(
+      "desktop"   =>array(
+        "width"   =>  "1440px",
+        "height"  =>  "820px",
       )
     );
   }
