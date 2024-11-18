@@ -25,11 +25,11 @@ class GuidelineRepository extends EntityRepository
   /**
    * @param string $indexBy
    * @param string|null $domainId
-   *
+   * @param \Closure|null $closure
    * @return array
    * @throws QueryException
    */
-  public function selectAllIndexBy(string $indexBy = "keyname", ?string $domainId = null): array
+  public function selectAllIndexBy(string $indexBy = "keyname", ?string $domainId = null, \Closure $closure = null): array
   {
     $queryBuilder = $this->createQueryBuilder('root');
     $queryBuilder->indexBy("root", "root.{$indexBy}");
@@ -38,6 +38,10 @@ class GuidelineRepository extends EntityRepository
       $queryBuilder->where("root.domainId = :domainId or root.domainId = :domainAll")
         ->setParameter("domainId", $domainId)
         ->setParameter("domainAll", "for-all-domains");
+    }
+    if($closure instanceof \Closure)
+    {
+      $closure->call($this, $queryBuilder);
     }
     $query = $queryBuilder->getQuery();
     try {

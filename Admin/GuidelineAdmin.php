@@ -20,6 +20,7 @@ use Austral\AdminBundle\Admin\Event\ListAdminEvent;
 use Austral\ContentBlockBundle\Entity\Guideline;
 use Austral\ContentBlockBundle\Entity\Interfaces\GuidelineInterface;
 use Austral\ContentBlockBundle\Field\ContentBlockField;
+use Austral\EntityBundle\ORM\AustralQueryBuilder;
 use Austral\FormBundle\Mapper\GroupFields;
 use Austral\FormBundle\Field as Field;
 use Austral\FormBundle\Mapper\Fieldset;
@@ -33,6 +34,7 @@ use Austral\ListBundle\Column as Column;
 use Austral\ListBundle\Column\Action;
 use Austral\ListBundle\DataHydrate\DataHydrateORM;
 
+use Austral\NotifyBundle\Notification\Push;
 use Doctrine\ORM\QueryBuilder;
 
 /**
@@ -59,8 +61,100 @@ class GuidelineAdmin extends Admin implements AdminModuleInterface
    */
   public function view(ActionAdminEvent $actionAdminEvent)
   {
+    $guidelines = $this->container->get('austral.entity_manager.guideline')->selectAllIndexBy("id", null, function(AustralQueryBuilder $australQueryBuilder){
+      $australQueryBuilder->leftJoin("root.editorComponent", "editorComponent")->addSelect("editorComponent");
+    });
+
+    $guidelinesByCateg = array();
+    foreach($this->container->get('austral.content_block.config')->get("guideline.categories") as $value)
+    {
+      $guidelinesByCateg[$value] = array();
+    }
+
+    $guidelinesParameters = $actionAdminEvent->getAdminHandler()->getSession()->get("guidelines-parameters", array());
+    /** @var Guideline $guideline */
+    foreach($guidelines as $guideline)
+    {
+      if(!array_key_exists($guideline->getCategory(), $guidelinesByCateg))
+      {
+        $guidelinesByCateg[$guideline->getCategory()] = array();
+      }
+      if($guideline->getEditorComponent()->getThemes() || $guideline->getEditorComponent()->getLayouts() || $guideline->getEditorComponent()->getOptions())
+      {
+        $guidelinesByCateg[$guideline->getCategory()][] = $guideline;
+        if(!array_key_exists($guideline->getId(), $guidelinesParameters))
+        {
+          $guidelinesParameters[$guideline->getId()] = array();
+        }
+
+        if($guideline->getEditorComponent()->getThemes() && (!array_key_exists("theme", $guidelinesParameters[$guideline->getId()]) || !$guidelinesParameters[$guideline->getId()]["theme"]))
+        {
+          $guidelinesParameters[$guideline->getId()]["theme"] = "";
+          foreach($guideline->getEditorComponent()->getThemes() as $theme)
+          {
+            if($theme->getKeyname() === "default")
+            {
+              $guidelinesParameters[$guideline->getId()]["theme"] = $theme->getId();
+            }
+          }
+        }
+        if($guideline->getEditorComponent()->getLayouts() && (!array_key_exists("layout", $guidelinesParameters[$guideline->getId()]) || !$guidelinesParameters[$guideline->getId()]["layout"]))
+        {
+          $guidelinesParameters[$guideline->getId()]["layout"] = "";
+          foreach($guideline->getEditorComponent()->getLayouts() as $layout)
+          {
+            if($layout->getKeyname() === "default")
+            {
+              $guidelinesParameters[$guideline->getId()]["layout"] = $layout->getId();
+            }
+          }
+        }
+        if($guideline->getEditorComponent()->getOptions() && (!array_key_exists("option", $guidelinesParameters[$guideline->getId()]) || !$guidelinesParameters[$guideline->getId()]["option"]))
+        {
+          $guidelinesParameters[$guideline->getId()]["option"] = "";
+          foreach($guideline->getEditorComponent()->getOptions() as $option)
+          {
+            if($option->getKeyname() === "default")
+            {
+              $guidelinesParameters[$guideline->getId()]["option"] = $option->getId();
+            }
+          }
+        }
+      }
+    }
+    foreach($guidelinesByCateg as $key => $value)
+    {
+      if(!$value)
+      {
+        unset($guidelinesByCateg[$key]);
+      }
+    }
+
+    if($actionAdminEvent->getAdminHandler()->getRequest()->getMethod() === "POST")
+    {
+      $reloadElements = array();
+      $guidelineParameters = $actionAdminEvent->getAdminHandler()->getRequest()->get("guideline");
+      foreach($guidelineParameters as $key => $values)
+      {
+        $reloadElements[] = "#guideline-{$key}";
+        $guidelinesParameters[$key] = $values;
+      }
+      $actionAdminEvent->getAdminHandler()->getSession()->set("guidelines-parameters", $guidelinesParameters);
+      if($this->container->has('austral.notify.push'))
+      {
+        /** @var Push $push */
+        $push = $this->container->get('austral.notify.push');
+        $push->add(Push::TYPE_MERCURE, array('topics'=>array("guidelines"), "values" => array(
+          'type'            =>  "refresh",
+          "url"             =>  "current",
+          "reloadElements"  =>  $reloadElements,
+        )))->push(true, false);
+      }
+    }
 
     $actionAdminEvent->getAdminHandler()->getTemplateParameters()
+      ->addParameters("guidelinesByCateg", $guidelinesByCateg)
+      ->addParameters("guidelinesParameters", $guidelinesParameters)
       ->addParameters("guidelineSizes",$this->container->get('austral.content_block.config')->getConfig("guideline")["sizes"])
       ->setPath("@AustralContentBlock/Admin/Guideline/view.html.twig");
   }
@@ -178,6 +272,19 @@ class GuidelineAdmin extends Admin implements AdminModuleInterface
         $componentEntityManager->delete($component, false);
         $object->removeComponents("master", $component);
       }
+    }
+
+    if($this->container->has('austral.notify.push'))
+    {
+      $reloadElements = array();
+      $reloadElements[] = "#guideline-{$object->getId()}";
+      /** @var Push $push */
+      $push = $this->container->get('austral.notify.push');
+      $push->add(Push::TYPE_MERCURE, array('topics'=>array("guidelines"), "values" => array(
+        'type'            =>  "refresh",
+        "url"             =>  "current",
+        "reloadElements"  =>  $reloadElements,
+      )))->push(true, false);
     }
 
   }

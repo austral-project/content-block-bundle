@@ -45,15 +45,6 @@
       {% endif %}
     </div>
 
-    {% if deployment is defined and deployment == "start" %}
-      <div class="deployment-message alert is-open">
-        <span class="picto austral-picto-caution"></span>
-        <div class="content">
-          {{ "austral.deployment.start"|trans({}, "austral") }}
-        </div>
-      </div>
-    {% endif %}
-
     {% block javascripts %}
       {{ encore_entry_script_tags('austral', null, "austral-design") }}
     {% endblock %}

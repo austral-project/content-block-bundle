@@ -6,7 +6,7 @@
   {% set defaultHeight = "820" %}
   
   <div class="guideline-components" data-guideline-components>
-    <div class="guideline-parameters form-container">
+    <div class="guideline-sizes form-container">
       <div class="fields-content">
         <div class="screen-select-content field-content field-content-entityField animate">
           <div class="field field-entityType field-select-type">
@@ -45,14 +45,77 @@
             <span class="normal austral-picto-corner-right-down"></span>
           </span>
           <span class="button button-picto link" data-guideline-full><span class="picto austral-picto-maximize"></span></span>
+          <span class="button button-picto link" data-modal-open><span class="picto austral-picto-cog"></span></span>
         </div>
       </div>
-    
+    </div>
+    <div class="guideline-components-parameters-container">
+      <div class="height">
+        <div class="top">
+          <span class="close-modal" data-modal-close><span class="picto austral-picto-cross"></span></span>
+        </div>
+        <div class="guideline-component-parameters">
+          {% for categ, guidelines in guidelinesByCateg %}
+            {% for guideline in guidelines %}
+              <div id="guideline-component-parameters-{{ guideline.id }}" class="guideline-component-parameters">
+                <span class="title">{{ guideline.editorComponent.name }}</span>
+                <div class="parameters">
+                  <form action="" class="form-container auto-send" method="post" data-form-actions="reload" data-reload-elements="#guideline-component-parameters-{{ guideline.id }}" >
+                    <div class="fields-content">
+                      {% if guideline.editorComponent.themes %}
+                        <div class="field-content">
+                          <label for="guideline_{{ guideline.id }}_theme">Theme</label>
+                          <div class="field field-entityType field-select-type">
+                            <select name="guideline[{{ guideline.id }}][theme]" id="guideline_{{ guideline.id }}_theme" data-select autocomplete="off">
+                              <option value=""></option>
+                              {% for theme in guideline.editorComponent.themes %}
+                                <option {% if guidelinesParameters[guideline.id].theme is defined and guidelinesParameters[guideline.id].theme == theme.id %}selected="selected"{% endif %} value="{{ theme.id }}">{{ theme.title }}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                        </div>
+                      {% endif %}
+                      {% if guideline.editorComponent.layouts %}
+                        <div class="field-content">
+                          <label for="guideline_{{ guideline.id }}_layout">Layout</label>
+                          <div class="field field-entityType field-select-type">
+                            <select name="guideline[{{ guideline.id }}][layout]" id="guideline_{{ guideline.id }}_layout" data-select autocomplete="off">
+                              <option value=""></option>
+                              {% for layout in guideline.editorComponent.layouts %}
+                                <option {% if guidelinesParameters[guideline.id].layout is defined and guidelinesParameters[guideline.id].layout == layout.id %}selected="selected"{% endif %} value="{{ layout.id }}">{{ layout.title }}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                        </div>
+                      {% endif %}
+                      {% if guideline.editorComponent.options %}
+                        <div class="field-content">
+                          <label for="guideline_{{ guideline.id }}_option">Option</label>
+                          <div class="field field-entityType field-select-type">
+                            <select name="guideline[{{ guideline.id }}][option]" id="guideline_{{ guideline.id }}_option" data-select autocomplete="off">
+                              <option value=""></option>
+                              {% for option in guideline.editorComponent.options %}
+                                <option {% if guidelinesParameters[guideline.id].option is defined and guidelinesParameters[guideline.id].option == option.id %}selected="selected"{% endif %} value="{{ option.id }}">{{ option.title }}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                        </div>
+                      {% endif %}
+                    </div>
+                  </form>
+                </div>
+              </div>
+            {% endfor %}
+          {% endfor %}
+        </div>
+      </div>
     </div>
     <div class="guideline-container">
       <iframe src="{{ path("austral_website_guideline") }}" frameborder="0" style="width:{{ defaultWidth }}px; height: {{ defaultHeight }}px;" data-guideline-container></iframe>
     </div>
+    <div class="guideline-overlay" data-modal-close></div>
   </div>
+  
   
   
 {% endblock %}

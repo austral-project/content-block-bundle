@@ -47,13 +47,13 @@ class GuidelineEntityManager extends EntityManager
   /**
    * @param string $indexBy
    * @param string|null $domainId
-   *
+   * @param \Closure|null $closure
    * @return array
    * @throws QueryException
    */
-  public function selectAllIndexBy(string $indexBy = "keyname", ?string $domainId = null): array
+  public function selectAllIndexBy(string $indexBy = "keyname", ?string $domainId = null, \Closure $closure = null): array
   {
-    return $this->repository->selectAllIndexBy($indexBy, $domainId);
+    return $this->repository->selectAllIndexBy($indexBy, $domainId, $closure);
   }
 
 }
