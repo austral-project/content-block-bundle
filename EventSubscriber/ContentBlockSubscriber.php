@@ -130,6 +130,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       foreach($componentObjects as $componentObject)
       {
         $componentEvent = new ComponentEvent($contentBlockEvent->getObject(), $componentObject);
+        $componentEvent->setIsGuideline($contentBlockEvent->getIsGuidelineBuild());
         $this->dispatcher->dispatch($componentEvent, ComponentEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_INIT);
       }
     }
@@ -182,6 +183,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         else
         {
           $componentEvent = new ComponentEvent($contentBlockEvent->getObject(), $componentObject);
+          $componentEvent->setIsGuideline($contentBlockEvent->getIsGuidelineBuild());
           $this->dispatcher->dispatch($componentEvent, ComponentEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_HYDRATE);
           if(!$componentEvent->getIsDisabled())
           {

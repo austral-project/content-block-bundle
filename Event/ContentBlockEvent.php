@@ -46,6 +46,11 @@ class ContentBlockEvent extends Event
   private string $rootTemplateDir;
 
   /**
+   * @var bool
+   */
+  private bool $isGuidelineBuild = false;
+
+  /**
    * FormEvent constructor.
    *
    * @param ComponentsInterface|null $object
@@ -130,6 +135,26 @@ class ContentBlockEvent extends Event
   public function setComponentObject(?ComponentInterface $componentObject): ContentBlockEvent
   {
     $this->componentObject = $componentObject;
+    return $this;
+  }
+
+  /**
+   * getisGuidelineBuild
+   *
+   * @return bool
+   */
+  public function getIsGuidelineBuild(): bool
+  {
+    return $this->isGuidelineBuild;
+  }
+
+  /**
+   * @param bool $isGuidelineBuild
+   * @return $this
+   */
+  public function setIsGuidelineBuild(bool $isGuidelineBuild): ContentBlockEvent
+  {
+    $this->isGuidelineBuild = $isGuidelineBuild;
     return $this;
   }
 
