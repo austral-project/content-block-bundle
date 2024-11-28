@@ -13,6 +13,7 @@ namespace Austral\ContentBlockBundle\Entity;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValueInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValuesInterface;
 
+use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentTypeInterface;
 use Austral\EntityBundle\Entity\Entity;
 use Austral\EntityBundle\Entity\EntityInterface;
 use Austral\EntityBundle\Entity\Traits\EntityTimestampableTrait;
@@ -119,11 +120,11 @@ abstract class ComponentValues extends Entity implements ComponentValuesInterfac
   }
 
   /**
-   * @param EditorComponentType $editorComponentType
+   * @param EditorComponentTypeInterface $editorComponentType
    *
    * @return \App\Entity\Austral\ContentBlockBundle\ComponentValue|ComponentValueInterface
    */
-  public function getChildrenByEditorComponentType(EditorComponentType $editorComponentType)
+  public function getChildrenByEditorComponentType(EditorComponentTypeInterface $editorComponentType)
   {
     /** @var ComponentValueInterface $componentValue */
     foreach($this->children as $componentValue)

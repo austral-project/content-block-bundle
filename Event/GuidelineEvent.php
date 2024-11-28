@@ -10,8 +10,7 @@
 
 namespace Austral\ContentBlockBundle\Event;
 
-use Austral\ContentBlockBundle\Entity\Interfaces\ComponentInterface;
-use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
+use Austral\ContentBlockBundle\Model\Guideline\GuidelineExtend;
 use Symfony\Contracts\EventDispatcher\Event;
 
 /**
@@ -22,209 +21,45 @@ use Symfony\Contracts\EventDispatcher\Event;
 class GuidelineEvent extends Event
 {
 
-  const EVENT_AUSTRAL_CONTENT_BLOCK_GUIDELINE_INIT = "austral.event.content_block.guideline_init";
+  const EVENT_AUSTRAL_GUIDELINE_EXTEND = "austral.event.guideline.extend";
 
   /**
    * @var array
    */
-  private array $editorComponents = array();
+  protected array $guidelinesExtendByCategory;
 
   /**
-   * @var array
-   */
-  private array $guidelineFormValues = array();
-
-  /**
-   * @var ComponentInterface|null
-   */
-  private ?ComponentInterface $componentObject = null;
-
-  /**
-   * @var ComponentsInterface|null
-   */
-  private ?ComponentsInterface $defaultObjectPage = null;
-
-  /**
-   * @var string
-   */
-  private string $containerKey;
-
-  /**
-   * @var array
-   */
-  private array $containers = array();
-
-  /**
-   * @var array
-   */
-  private array $finalComponents = array();
-
-  /**
-   * @var string
-   */
-  private string $rootTemplateDir;
-
-  /**
-   * FormEvent constructor.
+   * ContentBlock constructor.
    *
-   * @param string $containerKey
-   * @param string $rootTemplateDir
    */
-  public function __construct(string $containerKey = "all", string $rootTemplateDir = "Front")
+  public function __construct(array $guidelinesExtendByCategory = array())
   {
-    $this->containerKey = $containerKey;
-    $this->rootTemplateDir = $rootTemplateDir;
+    $this->guidelinesExtendByCategory = $guidelinesExtendByCategory;
   }
 
   /**
-   * @return string
-   */
-  public function getContainerKey(): string
-  {
-    return $this->containerKey;
-  }
-
-  /**
-   * @param string $containerKey
+   * getGuidelinesExtendByCategory
    *
-   * @return $this
-   */
-  public function setContainerKey(string $containerKey): GuidelineEvent
-  {
-    $this->containerKey = $containerKey;
-    return $this;
-  }
-
-  /**
-   * @return string
-   */
-  public function getRootTemplateDir(): string
-  {
-    return $this->rootTemplateDir;
-  }
-
-  /**
-   * @param string $rootTemplateDir
-   *
-   * @return GuidelineEvent
-   */
-  public function setRootTemplateDir(string $rootTemplateDir): GuidelineEvent
-  {
-    $this->rootTemplateDir = $rootTemplateDir;
-    return $this;
-  }
-
-  /**
    * @return array
    */
-  public function getEditorComponents(): array
+  public function getGuidelinesExtendByCategory(): array
   {
-    return $this->editorComponents;
+    return $this->guidelinesExtendByCategory;
   }
 
   /**
-   * @param array $editorComponents
-   *
+   * @param GuidelineExtend $guidelineExtend
    * @return $this
    */
-  public function setEditorComponents(array $editorComponents): GuidelineEvent
+  public function addGuidelinesExtendByCategory(GuidelineExtend $guidelineExtend): GuidelineEvent
   {
-    $this->editorComponents = $editorComponents;
-    return $this;
-  }
-
-  /**
-   * @return ComponentInterface|null
-   */
-  public function getComponentObject(): ?ComponentInterface
-  {
-    return $this->componentObject;
-  }
-
-  /**
-   * @param ComponentInterface|null $componentObject
-   *
-   * @return $this
-   */
-  public function setComponentObject(?ComponentInterface $componentObject): GuidelineEvent
-  {
-    $this->componentObject = $componentObject;
-    return $this;
-  }
-
-  /**
-   * @return ComponentsInterface|null
-   */
-  public function getDefaultObjectPage(): ?ComponentsInterface
-  {
-    return $this->defaultObjectPage;
-  }
-
-  /**
-   * @param ComponentsInterface|null $defaultObjectPage
-   *
-   * @return $this
-   */
-  public function setDefaultObjectPage(?ComponentsInterface $defaultObjectPage): GuidelineEvent
-  {
-    $this->defaultObjectPage = $defaultObjectPage;
-    return $this;
-  }
-
-  /**
-   * @return array
-   */
-  public function getFinalComponents(): array
-  {
-    return $this->finalComponents;
-  }
-
-  /**
-   * @param array $finalComponents
-   *
-   * @return $this
-   */
-  public function setFinalComponents(array $finalComponents): GuidelineEvent
-  {
-    $this->finalComponents = $finalComponents;
-    return $this;
-  }
-
-  /**
-   * @return array
-   */
-  public function getContainers(): array
-  {
-    return $this->containers;
-  }
-
-  /**
-   * @param array $containers
-   *
-   * @return $this
-   */
-  public function setContainers(array $containers): GuidelineEvent
-  {
-    $this->containers = $containers;
-    return $this;
-  }
-
-  /**
-   * @return array
-   */
-  public function getGuidelineFormValues(): array
-  {
-    return $this->guidelineFormValues;
-  }
-
-  /**
-   * @param array $guidelineFormValues
-   *
-   * @return $this
-   */
-  public function setGuidelineFormValues(array $guidelineFormValues = array()): GuidelineEvent
-  {
-    $this->guidelineFormValues = $guidelineFormValues;
+    if(!$category = $guidelineExtend->getCategory()) {
+      $category = "other";
+    }
+    if(!array_key_exists($category, $this->guidelinesExtendByCategory)) {
+      $this->guidelinesExtendByCategory[$category] = array();
+    }
+    $this->guidelinesExtendByCategory[$category][] = $guidelineExtend;
     return $this;
   }
 

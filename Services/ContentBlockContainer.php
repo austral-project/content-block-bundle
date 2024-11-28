@@ -10,11 +10,17 @@
 
 namespace Austral\ContentBlockBundle\Services;
 use Austral\ContentBlockBundle\Entity\Component;
+use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
+use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
+use Austral\ContentBlockBundle\Mapping\ObjectContentBlocksMapping;
 use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\EntityBundle\Mapping\Mapping;
+use Austral\EntityBundle\ORM\AustralQueryBuilder;
 use Austral\ToolsBundle\AustralTools;
 use Austral\ToolsBundle\Services\Debug;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query\QueryException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -39,6 +45,11 @@ Class ContentBlockContainer
    * @var Request|null
    */
   protected ?Request $request;
+
+  /**
+   * @var Mapping
+   */
+  protected Mapping $mapping;
 
   /**
    * @var string|null
@@ -84,17 +95,29 @@ Class ContentBlockContainer
   /**
    * Page constructor.
    *
-   * @param RequestStack $request
    * @param EntityManagerInterface $entityManager
+   * @param Mapping $mapping
    * @param Debug $debug
    */
-  public function __construct(RequestStack $request, EntityManagerInterface $entityManager, Debug $debug)
+  public function __construct(EntityManagerInterface $entityManager, Mapping $mapping, Debug $debug)
   {
     $this->entityManager = $entityManager;
-    $this->request = $request->getCurrentRequest();
-    $this->currentLanguage = $this->request ? $this->request->attributes->get('language', $this->request->getLocale()) : null;
     $this->debug = $debug;
+    $this->mapping = $mapping;
     $this->initEntity();
+  }
+
+  /**
+   * setRequest
+   *
+   * @param RequestStack $request
+   * @return ContentBlockContainer
+   */
+  public function setRequest(RequestStack $request): static
+  {
+    $this->request = $request->getCurrentRequest();
+    $this->currentLanguage = $this->request?->attributes->get('language', $this->request->getLocale());
+    return $this;
   }
 
   /**
@@ -284,6 +307,56 @@ Class ContentBlockContainer
   }
 
   /**
+   * selectObjectsRelations
+   *
+   * @param string $entityClass
+   * @param string|null $objectContentBlockName
+   * @return array
+   * @throws QueryException
+   */
+  public function selectObjectsRelations(string $entityClass, ?string $objectContentBlockName = null): array
+  {
+    $objects = array();
+    $repository = $this->entityManager->getRepository($entityClass);
+
+    /** @var ObjectContentBlocksMapping $objectContentBlocks */
+    if($objectContentBlocks = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlocksMapping::class))
+    {
+      if($objectContentBlockName)
+      {
+        /** @var ObjectContentBlockMapping $objectContentBlock */
+        $objectContentBlock = $objectContentBlocks->getObjectContentBlockMapping($objectContentBlockName);
+      }
+      else
+      {
+        $objectContentBlock = AustralTools::first($objectContentBlocks->getObjectContentBlocksMapping());
+      }
+    }
+    else
+    {
+      /** @var ObjectContentBlockMapping $objectContentBlock */
+      $objectContentBlock = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlockMapping::class);
+    }
+    if(!$objects && $objectContentBlock)
+    {
+      if($repositoryFunction = $objectContentBlock->getRepositoryFunction())
+      {
+        if(method_exists($repository, $repositoryFunction))
+        {
+          $objects = $repository->$repositoryFunction();
+        }
+      }
+      if(!$objects)
+      {
+        $objects = $repository->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder){
+          $australQueryBuilder->indexBy("root", "root.id");
+        });
+      }
+    }
+    return $objects;
+  }
+
+  /**
    * @return array
    */
   public function getObjects(): array
@@ -310,8 +383,9 @@ Class ContentBlockContainer
   /**
    * @param EntityInterface|ComponentsInterface $object
    * @param bool $updated
+   * @return ContentBlockContainer
    */
-  public function initComponentByObject(EntityInterface $object, bool $updated = true)
+  public function initComponentByObject(EntityInterface $object, bool $updated = true): static
   {
     $this->debug->stopWatchStart("content_block_container.init_component_by_object", $this->debugContainer);
     if(AustralTools::usedImplements(get_class($object), "Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface"))
@@ -343,6 +417,7 @@ Class ContentBlockContainer
       }
     }
     $this->debug->stopWatchStop("content_block_container.init_component_by_object");
+    return $this;
   }
 
 }

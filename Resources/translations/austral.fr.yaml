@@ -160,6 +160,7 @@ choices:
       typo:                     "Typo"
       media:                    "Media"
       default:                  "Autre"
+      library:                  "Library"
   restriction:
     all:                        "Tout les éléments : %element%"
     include:                    Inclus

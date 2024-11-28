@@ -9,13 +9,15 @@ services:
     class:          Austral\ContentBlockBundle\Listener\FormListener
     arguments:
       - "@service_container"
-      - "@request_stack"
       - "@austral.content_block.config"
       - "@austral.entity_file.uploader"
       - "@austral.entity_file.uploads.config"
       - "@austral.entity_file.link.generator"
       - "@austral.entity.mapping"
+      - "@austral.content_block.content_block_container"
     tags:
       - { name: kernel.event_listener, event: "austral.event.form.validate", method: validate }
       - { name: kernel.event_listener, event: "austral.event.form.update_before", method: uploads }
       - { name: kernel.event_listener, event: "austral.event.form.field.configuration", method: fieldConfiguration }
+    calls:
+      - [ setRequest, [ "@request_stack" ] ]

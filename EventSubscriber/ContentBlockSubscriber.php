@@ -14,19 +14,12 @@ namespace Austral\ContentBlockBundle\EventSubscriber;
 use Austral\ContentBlockBundle\Entity\Component;
 use Austral\ContentBlockBundle\Entity\ComponentValue;
 use Austral\ContentBlockBundle\Entity\ComponentValues;
-use Austral\ContentBlockBundle\Entity\EditorComponent;
-use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentInterface;
-use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentTypeInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\ContentBlockBundle\Event\ComponentEvent;
 use Austral\ContentBlockBundle\Event\ContentBlockEvent;
 use Austral\ContentBlockBundle\Event\GuidelineEvent;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlocksMapping;
-use Austral\ContentBlockBundle\Model\Editor\Layout;
-use Austral\ContentBlockBundle\Model\Editor\Option;
-use Austral\ContentBlockBundle\Model\Editor\Theme;
-use Austral\ContentBlockBundle\Model\Guideline\GuidelineComponent;
 use Austral\ContentBlockBundle\Services\ContentBlockContainer;
 use Austral\EntityBundle\Entity\EntityInterface;
 use Austral\EntityBundle\EntityManager\EntityManager;
@@ -34,10 +27,10 @@ use Austral\EntityBundle\Mapping\EntityMapping;
 use Austral\EntityBundle\Mapping\Mapping;
 use Austral\EntityBundle\ORM\AustralQueryBuilder;
 use Austral\EntityFileBundle\File\Link\Generator;
-use Austral\EntityTranslateBundle\Mapping\EntityTranslateMapping;
 use Austral\SeoBundle\Services\UrlParameterManagement;
 use Austral\ToolsBundle\AustralTools;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Query\QueryException;
 use joshtronic\LoremIpsum;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -116,11 +109,16 @@ class ContentBlockSubscriber implements EventSubscriberInterface
     return [
       ContentBlockEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENTS_HYDRATE =>  ["componentsHydrate", 1024],
       ContentBlockEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENTS_INIT    =>  ["componentsInit", 1024],
-      GuidelineEvent::EVENT_AUSTRAL_CONTENT_BLOCK_GUIDELINE_INIT        =>  ["guidelineInit", 1024],
       ComponentEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_HYDRATE     =>  ["componentInit", 1024],
     ];
   }
 
+  /**
+   * componentsInit
+   *
+   * @param ContentBlockEvent $contentBlockEvent
+   * @return void
+   */
   public function componentsInit(ContentBlockEvent $contentBlockEvent)
   {
     $this->contentBlockContainer->initComponentByObject($contentBlockEvent->getObject(), false);
@@ -380,7 +378,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
           if($this->urlParameterManagement && $componentValueObject->getLinkEntityKey()) {
             $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['url'] = "#INTERNAL_LINK_{$componentValueObject->getLinkEntityKey()}#";
             $separator = ":";
-            if(strpos($componentValueObject->getLinkEntityKey(), "::") !== false)
+            if(str_contains($componentValueObject->getLinkEntityKey(), "::"))
             {
               $separator = "::";
             }
@@ -464,425 +462,6 @@ class ContentBlockSubscriber implements EventSubscriberInterface
     return array();
   }
 
-
-  /**
-   * @param GuidelineEvent $guidelineEvent
-   *
-   * @throws \Exception
-   */
-  public function guidelineInit(GuidelineEvent $guidelineEvent)
-  {
-    $containerName = "default-0";
-    $containersListe = array($containerName => array(
-      "keyname"   =>  "default",
-      "children"  => array()
-    ));
-
-    /** @var EditorComponentInterface $editorComponent */
-    foreach($guidelineEvent->getEditorComponents() as $editorComponent)
-    {
-      if($editorComponent->getIsContainer())
-      {
-        $hasThemeDefault = false;
-        if($editorComponent->getThemes())
-        {
-          foreach($editorComponent->getThemes() as $theme)
-          {
-            $keynameTemplate = $theme->getKeyname();
-            if($keynameTemplate === "default")
-            {
-              $hasThemeDefault = true;
-            }
-            $containersListe["{$keynameTemplate}-{$editorComponent->getId()}"] = $this->generateContainer($editorComponent, $theme);
-          }
-        }
-        if(!$hasThemeDefault)
-        {
-          $keynameTemplate = $editorComponent->getKeyname();
-          $containersListe["{$keynameTemplate}-{$editorComponent->getId()}"] = $this->generateContainer($editorComponent);
-        }
-      }
-    }
-
-    $containersChoice = array();
-    if($guidelineEvent->getContainerKey() != "all")
-    {
-      if(array_key_exists($guidelineEvent->getContainerKey(), $containersListe))
-      {
-        $containersChoice[$guidelineEvent->getContainerKey()] = $containersListe[$guidelineEvent->getContainerKey()];
-      }
-    }
-    else
-    {
-      $containersChoice = $containersListe;
-    }
-
-    $finalComponents = array();
-    $guidelineFormValues = $guidelineEvent->getGuidelineFormValues();
-    foreach($containersChoice as $containerName => $container)
-    {
-      $guidelineComponents = array();
-      /** @var EditorComponentInterface $editorComponent */
-      foreach($guidelineEvent->getEditorComponents() as $editorComponent)
-      {
-        if(!$editorComponent->getIsContainer() && $editorComponent->getIsGuidelineView())
-        {
-          $guidelineComponent = new GuidelineComponent();
-          $guidelineComponent->setCombinaisons($this->combinaisons($editorComponent));
-          $guidelineComponent->setCombinaisonChoices($this->combinaisonDefaultValues($editorComponent));
-          $guidelineComponent->setLayouts($editorComponent->getLayouts());
-          $guidelineComponent->setThemes($editorComponent->getThemes());
-          $guidelineComponent->setOptions($editorComponent->getOptions());
-
-          if($editorComponent->getLayouts())
-          {
-            /** @var Layout $firstLayout */
-            $firstLayout = AustralTools::first($editorComponent->getLayouts());
-            $guidelineComponent->setLayout($firstLayout);
-          }
-
-          if(AustralTools::getValueByKey($guidelineFormValues, "id") === $editorComponent->getId())
-          {
-            $guidelineComponent->setLayout(AustralTools::getValueByKey($editorComponent->getLayouts(), AustralTools::getValueByKey($guidelineFormValues, "layout")));
-            $guidelineComponent->setTheme(AustralTools::getValueByKey($editorComponent->getThemes(), AustralTools::getValueByKey($guidelineFormValues, "theme")));
-            $guidelineComponent->setOption(AustralTools::getValueByKey($editorComponent->getOptions(), AustralTools::getValueByKey($guidelineFormValues, "option")));
-            $guidelineComponent->setCombinaisonChoices(AustralTools::getValueByKey($guidelineFormValues, "combinaisons", array()));
-          }
-
-          if($component = $this->generateComponent($guidelineEvent, $editorComponent, $guidelineComponent->getLayout(), $guidelineComponent->getTheme(), $guidelineComponent->getOption(), $guidelineComponent->getCombinaisonChoices()))
-          {
-            $guidelineComponent->setComponent($component);
-            $guidelineComponents[] = $guidelineComponent;
-          }
-        }
-      }
-      $finalComponents["master"][$containerName] = $container;
-      $finalComponents["master"][$containerName]["children"] = $guidelineComponents;
-    }
-    $guidelineEvent->setFinalComponents($finalComponents);
-    $guidelineEvent->setContainers($containersListe);
-  }
-
-  /**
-   * combinaisons
-   *
-   * @param EditorComponentInterface $editorComponent
-   *
-   * @return array
-   */
-  protected function combinaisons(EditorComponentInterface $editorComponent): array
-  {
-    $combinaisons = array();
-    /** @var EditorComponentTypeInterface $type */
-    foreach ($editorComponent->getEditorComponentTypes() as $type)
-    {
-      if($type->getType() === "title")
-      {
-        $combinaisons[$type->getKeyname()] = array();
-        foreach($type->getParameterByKey("tags") as $tag)
-        {
-          $combinaisons[$type->getKeyname()][] = $tag;
-        }
-        if($type->getCanHasLink())
-        {
-          $combinaisons["link"] = array(
-            "noLink",
-            "internal",
-            "external",
-            "file"
-          );
-        }
-      }
-      elseif($type->getType() === "button")
-      {
-        $combinaisons[$type->getKeyname()] = array(
-          "internal",
-          "external",
-          "file"
-        );
-        $combinaisons["graphicItem"] = null;
-      }
-      elseif($type->getType() === "switch")
-      {
-        $combinaisons[$type->getKeyname()] = array(
-          true,
-          false
-        );
-      }
-    }
-    return $combinaisons;
-  }
-
-  /**
-   * combinaisons
-   *
-   * @param EditorComponentInterface $editorComponent
-   *
-   * @return array
-   */
-  protected function combinaisonDefaultValues(EditorComponentInterface $editorComponent): array
-  {
-    $defaultValues = array();
-    /** @var EditorComponentTypeInterface $type */
-    foreach ($editorComponent->getEditorComponentTypes() as $type)
-    {
-      if($type->getType() === "title")
-      {
-        $tags = array();
-        foreach($type->getParameterByKey("tags") as $tag)
-        {
-          $tags[] = $tag;
-        }
-        if(count($tags) > 1 && in_array("h2", $tags))
-        {
-          $defaultValues[$type->getKeyname()] = "h2";
-        }
-        else
-        {
-          $defaultValues[$type->getKeyname()] = AustralTools::first($tags);
-        }
-        if($type->getCanHasLink())
-        {
-          $defaultValues[$type->getKeyname()] = "internal";
-        }
-      }
-      elseif($type->getType() === "button")
-      {
-        $defaultValues[$type->getKeyname()] = "internal";
-      }
-      elseif($type->getType() === "switch")
-      {
-        $defaultValues[$type->getKeyname()] = true;
-      }
-    }
-    return $defaultValues;
-  }
-
-
-
-  /**
-   * @param EditorComponentInterface $editorComponent
-   * @param null $theme
-   *
-   * @return array
-   */
-  protected function generateContainer(EditorComponentInterface $editorComponent, $theme = null): array
-  {
-    return array(
-      "id"        =>  $editorComponent->getId(),
-      "type"      =>  "default",
-      "theme"     =>  $theme ? $theme->getKeyname() : "default",
-      "keyname"   =>  $editorComponent->getKeyname(),
-      "children"  =>  array(),
-      "vars"      =>  array()
-    );
-  }
-
-  /**
-   * @param GuidelineEvent $guidelineEvent
-   * @param EditorComponentInterface $editorComponent
-   * @param Layout|null $layout
-   * @param Theme|null $theme
-   * @param Option|null $option
-   * @param array $optionsValue
-   *
-   * @return array
-   * @throws \Exception
-   */
-  protected function generateComponent(GuidelineEvent $guidelineEvent, EditorComponentInterface $editorComponent, ?Layout $layout = null, ?Theme $theme = null, ?Option $option = null, array $optionsValue = array()): array
-  {
-    /** @var Component $componentObject */
-    $componentObject = clone $guidelineEvent->getComponentObject();
-    $componentObject->setId(Uuid::uuid4()->toString());
-    $componentObject->setEditorComponent($editorComponent);
-    $componentObject->setLayoutId($layout?->getId());
-    $componentObject->setOptionId($option?->getId());
-    $componentObject->setThemeId($theme?->getId());
-
-    $componentEvent = new ComponentEvent($guidelineEvent->getDefaultObjectPage(), $componentObject);
-    $componentEvent->setIsGuideline(true);
-    $this->dispatcher->dispatch($componentEvent, ComponentEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_HYDRATE);
-
-    if(!$componentEvent->getIsDisabled())
-    {
-      return array(
-        "id"                =>  $editorComponent->getId(),
-        "keyname"           =>  $editorComponent->getKeyname(),
-        "type"              =>  "default",
-        "theme"             =>  $theme ? $theme->getKeyname() : "",
-        "option"            =>  $option ? $option->getKeyname() : "",
-        "layout"            =>  $layout ? $layout->getKeyname() : "",
-        "templatePath"      =>  "Front\\{$editorComponent->getTemplatePathOrDefault()}",
-        "values"            =>  $this->generateValues($editorComponent->getEditorComponentTypesWithChild(), $componentObject, $optionsValue),
-        "vars"              =>  $componentEvent->getVars()
-      );
-    }
-    return array();
-  }
-
-  /**
-   * @param array $editorComponentTypes
-   * @param Component $componentObject
-   * @param array $optionsValue
-   *
-   * @return array
-   */
-  protected function generateValues(array $editorComponentTypes, Component $componentObject, array $optionsValue = array()): array
-  {
-    $lipsum = new LoremIpsum();
-    $values = array();
-    /** @var EditorComponentTypeInterface $type */
-    foreach($editorComponentTypes as $type)
-    {
-      $values[$type->getKeyname()] = array(
-        "type"      =>  $type->getType(),
-        "classCss"  =>  $type->getCssClass(),
-        "value"     =>  $lipsum->words(5),
-      );
-
-      $linkType = null;
-      if($type->getType() == "title")
-      {
-        $values[$type->getKeyname()]['tag'] = AustralTools::getValueByKey($optionsValue, $type->getKeyname(), null);
-        $values[$type->getKeyname()]['value'] = $lipsum->words(4);
-        if(array_key_exists("link", $optionsValue))
-        {
-          if(AustralTools::getValueByKey($optionsValue, "link", null) !== "noLink")
-          {
-            $linkType = AustralTools::getValueByKey($optionsValue, "link", null);
-          }
-        }
-      }
-      elseif($type->getType() == "image" || $type->getType() == "file")
-      {
-        $componentValue = new \App\Entity\Austral\ContentBlockBundle\ComponentValue();
-        $componentValue->setComponent($componentObject);
-        $values[$type->getKeyname()] = $componentValue;
-      }
-      elseif($type->getType() == "textarea")
-      {
-        $values[$type->getKeyname()]['value'] = $lipsum->sentence();
-        $values[$type->getKeyname()]['isWysiwyg'] = $type->getParameterByKey("isWysiwyg");
-        if($type->getParameterByKey("isWysiwyg"))
-        {
-          $ulArray = array();
-          for($line = 1; $line <= rand(0, 12); $line++)
-          {
-            $ulArray[] = "<li>{$lipsum->words(rand(4, 6))}</li>";
-          }
-          $ul = "";
-          if(count($ulArray) > 0)
-          {
-            $ul = implode("", $ulArray);
-            $ul = "<ul>{$ul}</ul>";
-          }
-
-          $paragraphFirstArray = array();
-          for($p = 1; $p <= rand(1, 3); $p++)
-          {
-            $paragraphFirstArray[] = "<p>{$lipsum->words(rand(50, 100))}</p>";
-          }
-          $paragraphFirst = implode("", $paragraphFirstArray);
-
-          $paragraphSecondArray = array();
-          for($p = 1; $p <= rand(1, 2); $p++)
-          {
-            $paragraphSecondArray[] = "<p>{$lipsum->words(rand(50, 100))}</p>";
-          }
-          $paragraphSecond = implode("", $paragraphSecondArray);
-
-          $values[$type->getKeyname()]['value'] = "{$paragraphFirst}{$ul}{$paragraphSecond}";
-        }
-      }
-      elseif($type->getType() == "movie")
-      {
-        $values[$type->getKeyname()]['isIframe'] = $type->getParameterByKey("isIframe", false);
-      }
-      elseif($type->getType() == "button")
-      {
-        $values[$type->getKeyname()]['value'] = $lipsum->words(2);
-        $linkType = AustralTools::getValueByKey($optionsValue, $type->getKeyname(), null);
-
-        $values[$type->getKeyname()]["linkPicto"] = AustralTools::getValueByKey($optionsValue, "graphicItem", null);
-      }
-      elseif($type->getType() == "list" || $type->getType() == "group")
-      {
-        $values[$type->getKeyname()]['children'] = array();
-      }
-      elseif($type->getType() === "switch")
-      {
-        $values[$type->getKeyname()]["value"] =  (bool) AustralTools::getValueByKey($optionsValue, $type->getKeyname(), false);
-      }
-      elseif($type->getType() === "switch")
-      {
-        $values[$type->getKeyname()]["value"] = "austral-picto-company";
-      }
-
-      if($linkType)
-      {
-        if($linkType == "internal")
-        {
-          $url = "/";
-        }
-        elseif($linkType == "external")
-        {
-          $url = "https://austral.dev";
-        }
-        else
-        {
-          $url = "https://austral.dev";
-        }
-        $values[$type->getKeyname()]['link'] = array(
-          "url"       =>  $url,
-          "anchor"    =>  "",
-          "target"    =>  "",
-          "type"      =>  $linkType
-        );
-      }
-
-      if($type->getChildren())
-      {
-        if($type->getType() == "list")
-        {
-          for($i = 0; $i < 5; $i++)
-          {
-            $values[$type->getKeyname()]['children'][] = $this->generateValues($type->getChildren(), $componentObject, $optionsValue);
-          }
-        }
-        else
-        {
-          $values[$type->getKeyname()]['children'] = $this->generateValues($type->getChildren(), $componentObject, $optionsValue);
-        }
-      }
-    }
-    return $values;
-  }
-
-  /**
-   * @param $loopCreateTmp
-   * @param $loopCreateTmpKeys
-   * @param int $index
-   * @param string $keyTmp
-   *
-   * @return array
-   */
-  protected function createAllCombinations($loopCreateTmp, $loopCreateTmpKeys, int $index, string &$keyTmp = ""): array
-  {
-    $keys = array();
-    foreach($loopCreateTmp[$loopCreateTmpKeys[$index]] as $key => $value)
-    {
-      if($index+1 < count($loopCreateTmpKeys))
-      {
-        $keys["$loopCreateTmpKeys[$index]@$value"] = $this->createAllCombinations($loopCreateTmp, $loopCreateTmpKeys, $index+1, $key);
-      }
-      else
-      {
-        $keys["$loopCreateTmpKeys[$index]@$value"] = $value;
-      }
-    }
-    return $keys;
-  }
-
   /**
    * @var array
    */
@@ -895,6 +474,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
    * @param string $objectId
    * @param string|null $objectContentBlockName
    * @return EntityInterface|null
+   * @throws QueryException
    */
   protected function getObjectsByEntityClassAndId(string $entityClass, string $objectId, ?string $objectContentBlockName = null): ?EntityInterface
   {
@@ -904,7 +484,9 @@ class ContentBlockSubscriber implements EventSubscriberInterface
 
   /**
    * initialiseObjectsRelations
+   *
    * @return ContentBlockSubscriber
+   * @throws QueryException
    */
   protected function initialiseObjectsRelations(): ContentBlockSubscriber
   {
@@ -933,69 +515,19 @@ class ContentBlockSubscriber implements EventSubscriberInterface
    * @param $entityClass
    * @param string|null $objectContentBlockName
    * @return ContentBlockSubscriber
+   * @throws QueryException
    */
   protected function initialiseObjectsRelationsByEntityClass($entityClass, ?string $objectContentBlockName = null): ContentBlockSubscriber
   {
     if($entityClass and !array_key_exists($entityClass, $this->objectsRelations))
     {
       $this->objectsRelations[$entityClass] = array();
-      $objects = $this->selectObjectsRelations($entityClass, $objectContentBlockName);
+      $objects = $this->contentBlockContainer->selectObjectsRelations($entityClass, $objectContentBlockName);
       foreach ($objects as $object) {
         $this->objectsRelations[$entityClass][$object->getId()] = $object;
       }
     }
     return $this;
   }
-
-  /**
-   * selectObjectsRelations
-   *
-   * @param string $entityClass
-   * @param string|null $objectContentBlockName
-   * @return array
-   */
-  protected function selectObjectsRelations(string $entityClass, ?string $objectContentBlockName = null): array
-  {
-    $objects = array();
-    $repository = $this->entityManager->getRepository($entityClass);
-
-    /** @var ObjectContentBlocksMapping $objectContentBlocks */
-    if($objectContentBlocks = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlocksMapping::class))
-    {
-      if($objectContentBlockName)
-      {
-        /** @var ObjectContentBlockMapping $objectContentBlock */
-        $objectContentBlock = $objectContentBlocks->getObjectContentBlockMapping($objectContentBlockName);
-      }
-      else
-      {
-        $objectContentBlock = AustralTools::first($objectContentBlocks->getObjectContentBlocksMapping());
-      }
-    }
-    else
-    {
-      /** @var ObjectContentBlockMapping $objectContentBlock */
-      $objectContentBlock = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlockMapping::class);
-    }
-    if(!$objects && $objectContentBlock)
-    {
-      if($repositoryFunction = $objectContentBlock->getRepositoryFunction())
-      {
-        if(method_exists($repository, $repositoryFunction))
-        {
-          $objects = $repository->$repositoryFunction();
-        }
-      }
-      if(!$objects)
-      {
-        $objects = $repository->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder){
-          $australQueryBuilder->indexBy("root", "root.id");
-        });
-      }
-    }
-    return $objects;
-  }
-
-
 
 }

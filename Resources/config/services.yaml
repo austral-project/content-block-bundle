@@ -44,11 +44,19 @@ services:
     tags:
       - { name: kernel.event_subscriber }
 
+  Austral\ContentBlockBundle\EventSubscriber\GuidelineSubscriber:  "@austral.guideline.event_subscriber"
+  austral.guideline.event_subscriber:
+    class:        Austral\ContentBlockBundle\EventSubscriber\GuidelineSubscriber
+    tags:
+      - { name: kernel.event_subscriber }
+
 ##### Services
   Austral\ContentBlockBundle\Services\ContentBlockContainer: "@austral.content_block.content_block_container"
   austral.content_block.content_block_container:
     class:        Austral\ContentBlockBundle\Services\ContentBlockContainer
-    arguments:    [ "@request_stack", "@doctrine.orm.entity_manager", "@austral.tools.debug" ]
+    arguments:    [ "@doctrine.orm.entity_manager", "@austral.entity.mapping","@austral.tools.debug" ]
+    calls:
+      - [ setRequest, [ "@request_stack" ] ]
 
 
 ##### Entities Manager #####

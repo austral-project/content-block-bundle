@@ -24,6 +24,7 @@ use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentTypeInterface;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlocksMapping;
+use Austral\ContentBlockBundle\Services\ContentBlockContainer;
 use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\ContentBlockBundle\Entity\Traits\EntityComponentsTrait;
@@ -37,6 +38,7 @@ use Austral\ContentBlockBundle\Model\Editor\Layout;
 use Austral\ContentBlockBundle\Model\Editor\Restriction;
 use Austral\ContentBlockBundle\Model\Editor\Theme;
 
+use Austral\EntityBundle\Entity\Interfaces\FileInterface;
 use Austral\EntityBundle\Mapping\EntityMapping;
 use Austral\EntityBundle\Mapping\Mapping;
 use Austral\EntityBundle\ORM\AustralQueryBuilder;
@@ -123,6 +125,11 @@ class FormListener
   protected Mapping $mapping;
 
   /**
+   * @var ContentBlockContainer
+   */
+  protected ContentBlockContainer $contentBlockContainer;
+
+  /**
    * @var array
    */
   protected array $libraries;
@@ -131,29 +138,41 @@ class FormListener
    * FormListener constructor.
    *
    * @param ContainerInterface $container
-   * @param RequestStack $requestStack
    * @param ContentBlockConfiguration $contentBlockConfiguration
    * @param FileUploader $fileUploader
    * @param UploadsConfiguration $uploadsConfiguration
    * @param Generator $fileLinkGenerator
    * @param Mapping $mapping
+   * @param ContentBlockContainer $contentBlockContainer
    */
   public function __construct(ContainerInterface $container,
-    RequestStack $requestStack,
     ContentBlockConfiguration $contentBlockConfiguration,
     FileUploader $fileUploader,
     UploadsConfiguration $uploadsConfiguration,
     Generator $fileLinkGenerator,
-    Mapping $mapping
+    Mapping $mapping,
+    ContentBlockContainer $contentBlockContainer
   )
   {
     $this->container = $container;
-    $this->request = $requestStack->getCurrentRequest();
     $this->fileUploader = $fileUploader;
     $this->uploadsConfiguration = $uploadsConfiguration;
     $this->fileLinkGenerator = $fileLinkGenerator;
     $this->contentBlockConfiguration = $contentBlockConfiguration;
     $this->mapping = $mapping;
+    $this->contentBlockContainer = $contentBlockContainer;
+  }
+
+  /**
+   * setRequest
+   *
+   * @param RequestStack $request
+   * @return FormListener
+   */
+  public function setRequest(RequestStack $request): static
+  {
+    $this->request = $request->getCurrentRequest();
+    return $this;
   }
 
   /**
@@ -237,7 +256,7 @@ class FormListener
             $loop = $componentObjectCurrent;
           }
     
-          /** @var LibraryInterface|EntityComponentsTrait $librarySelect */
+          /** @var LibraryInterface|EntityComponentsTrait|EntityInterface $librarySelect */
           if($librarySelect = AustralTools::getValueByKey($this->libraries, $libraryComponent->getKeyname()))
           {
             if(!$librarySelect->getComponents())
@@ -638,7 +657,7 @@ class FormListener
       {
         /** @var Modules $modules */
         $modules = $this->container->get('austral.admin.modules');
-        /** @var LibraryInterface $library */
+        /** @var LibraryInterface|FileInterface $library */
         foreach ($libraries as $library)
         {
           if($library->getIsEnabled() && $this->restrictionByObject($library, $object, $field))
@@ -699,8 +718,7 @@ class FormListener
                 ),
                 "sortable"            =>  array(
                   "value"               =>  function(ComponentInterface $object) {
-                    $position = ($object->getPosition() < 10 ? "0{$object->getPosition()}" : $object->getPosition());
-                    return $position;
+                    return ($object->getPosition() < 10 ? "0{$object->getPosition()}" : $object->getPosition());
                   },
                   "editable"            =>  true
                 ),
@@ -759,7 +777,6 @@ class FormListener
         $options['sortable']['value'] = function($object) {
           return ($object->getPosition() < 10 ? "0{$object->getPosition()}" : $object->getPosition());
         };
-        //$options['sortable']['editable'] = true;
         $field->setOptions($options);
         $field->addCollectionsForms($collectionFormsChildren);
       }
@@ -768,9 +785,7 @@ class FormListener
         $field->setUsedGeneratedForm(false);
       }
     }
-
   }
-
 
   /**
    * @param ComponentEntityManager $componentManager
@@ -944,6 +959,7 @@ class FormListener
    * @throws ContainerExceptionInterface
    * @throws NotFoundExceptionInterface
    * @throws ReflectionException
+   * @throws QueryException
    */
   protected function buildComponentValueForm(
       FormFieldEvent $formFieldEvent,
@@ -1246,37 +1262,13 @@ class FormListener
                 /** @var ObjectContentBlockMapping $objectContentBlock */
                 foreach ($objectContentsBlock->getObjectContentBlocksMapping() as $objectContentBlock)
                 {
-                  $choices[$objectContentBlock->getName()] = array();
-                  $objects = $this->selectObjects($entityMapping->entityClass, $objectContentBlock->getName());
-                  foreach ($objects as $object)
-                  {
-                    if(method_exists($object, "stringToContentBlockChoice"))
-                    {
-                      $choices[$objectContentBlock->getName()][$object->stringToContentBlockChoice()] = "{$entityMapping->entityClass}::{$object->getId()}";
-                    }
-                    else
-                    {
-                      $choices[$objectContentBlock->getName()][$object->__toString()] = "{$entityMapping->entityClass}::{$object->getId()}";
-                    }
-                  }
+                  $this->selectObjectsRelations($choices, $entityMapping->entityClass, $objectContentBlock->getName(), $objectContentBlock->getName());
                 }
               }
               /** @var ObjectContentBlockMapping $objectContentBlock */
               elseif($objectContentBlock = $entityMapping->getEntityClassMapping(ObjectContentBlockMapping::class))
               {
-                $choices[$objectContentBlock->getName()] = array();
-                $objects = $this->selectObjects($entityMapping->entityClass);
-                foreach ($objects as $object)
-                {
-                  if(method_exists($object, "stringToContentBlockChoice"))
-                  {
-                    $choices[$objectContentBlock->getName()][$object->stringToContentBlockChoice()] = "{$entityMapping->entityClass}::{$object->getId()}";
-                  }
-                  else
-                  {
-                    $choices[$objectContentBlock->getName()][$object->__toString()] = "{$entityMapping->entityClass}::{$object->getId()}";
-                  }
-                }
+                $this->selectObjectsRelations($choices, $entityMapping->entityClass, null, $objectContentBlock->getName());
               }
             }
           }
@@ -1287,18 +1279,7 @@ class FormListener
             {
               list($objectContentBlockName, $entityClass) = explode("::", $entityClass);
             }
-            $objects = $this->selectObjects($entityClass, $objectContentBlockName);
-            foreach ($objects as $object)
-            {
-              if(method_exists($object, "stringToContentBlockChoice"))
-              {
-                $choices[$object->stringToContentBlockChoice()] = $object->getId();
-              }
-              else
-              {
-                $choices[$object->__toString()] = $object->getId();
-              }
-            }
+            $this->selectObjectsRelations($choices, $entityClass, $objectContentBlockName, null);
           }
           $group->add(Field\SelectField::create("choices", $choices,
               array(
@@ -1306,7 +1287,7 @@ class FormListener
                 "container"   =>  array(
                   "class" =>  "animate"
                 ),
-                "getter"    =>  function(ComponentValue $componentValue) use($editorComponentType, $objects){
+                "getter"    =>  function(ComponentValue $componentValue) use($editorComponentType){
                   return $componentValue->getOptionsByKey("objectId", null);
                 },
                 "setter"    =>  function(ComponentValue $componentValue, ?string $value)  use($editorComponentType) {
@@ -1692,57 +1673,35 @@ class FormListener
   }
 
   /**
-   * selectObjects
+   * selectObjectsRelations
    *
+   * @param array $choicesFinal
    * @param string $entityClass
    * @param string|null $objectContentBlockName
+   * @param string|null $choiceParentKey
    * @return array
-   * @throws ContainerExceptionInterface
-   * @throws NotFoundExceptionInterface
    * @throws QueryException
    */
-  protected function selectObjects(string $entityClass, ?string $objectContentBlockName = null): array
+  protected function selectObjectsRelations(array &$choicesFinal, string $entityClass, ?string $objectContentBlockName = null, ?string $choiceParentKey = null): array
   {
-    $objects = array();
-
-    /** @var ObjectContentBlocksMapping $objectContentBlocks */
-    if($objectContentBlocks = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlocksMapping::class))
+    $objects = $this->contentBlockContainer->selectObjectsRelations($entityClass, $objectContentBlockName);
+    if($choiceParentKey)
     {
-      if($objectContentBlockName)
+      $choicesFinal[$choiceParentKey] = array();
+    }
+    foreach ($objects as $object)
+    {
+      $objectKey = method_exists($object, "stringToContentBlockChoice") ? $object->stringToContentBlockChoice() : $object->__toString();
+      if($choiceParentKey)
       {
-        /** @var ObjectContentBlockMapping $objectContentBlock */
-        $objectContentBlock = $objectContentBlocks->getObjectContentBlockMapping($objectContentBlockName);
+        $choicesFinal[$choiceParentKey][$objectKey] = "{$entityClass}::{$object->getId()}";
       }
       else
       {
-        $objectContentBlock = AustralTools::first($objectContentBlocks->getObjectContentBlocksMapping());
-      }
-    }
-    else
-    {
-      /** @var ObjectContentBlockMapping $objectContentBlock */
-      $objectContentBlock = $this->mapping->getEntityClassMapping($entityClass, ObjectContentBlockMapping::class);
-    }
-
-    $repository = $this->container->get('austral.entity_manager')->getRepository($entityClass);
-    if(!$objects && $objectContentBlock)
-    {
-      if($repositoryFunction = $objectContentBlock->getRepositoryFunction())
-      {
-        if(method_exists($repository, $repositoryFunction))
-        {
-          $objects = $repository->$repositoryFunction();
-        }
-      }
-      if(!$objects)
-      {
-        $objects = $repository->selectAll($objectContentBlock->getOrderBy(), $objectContentBlock->getOrderType(), function(AustralQueryBuilder $australQueryBuilder){
-          $australQueryBuilder->indexBy("root", "root.id");
-        });
+        $choicesFinal[$objectKey] = $object->getId();
       }
     }
     return $objects;
-
   }
 
   /**
