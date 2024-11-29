@@ -262,7 +262,7 @@ class GuidelineAdmin extends Admin implements AdminModuleInterface
     }
     if(!$object->getPosition())
     {
-      $object->setPosition($formAdminEvent->getAdminHandler()->getEntityManager()->countAll()+1);
+      $object->setPosition($formAdminEvent->getCurrentModule()->getEntityManager()->countAll()+1);
     }
     $componentEntityManager = $this->container->get('austral.entity_manager.component');
     /** @var Component $component */
