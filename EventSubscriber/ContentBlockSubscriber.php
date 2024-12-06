@@ -144,10 +144,13 @@ class ContentBlockSubscriber implements EventSubscriberInterface
     $finalComponents = array();
     $finalComponentsByTypes = array();
 
+    $blockDefaultKey = 0;
+    $currentContainerId = null;
     /** @var Component $componentObject */
     foreach($contentBlockEvent->getObject()->getComponents() as $containerName => $componentObjects)
     {
-      $blockName = "default-0";
+      $blockName = "default-{$blockDefaultKey}";
+
       $finalComponentsByContainer = array($blockName => array(
         "keyname"             =>  "default",
         "containerKeyname"    =>  "default",
@@ -189,13 +192,14 @@ class ContentBlockSubscriber implements EventSubscriberInterface
             {
               if($componentObject->getEditorComponent()->getIsContainer())
               {
+                $currentContainerId = $componentObject->getId();
                 $keynameTemplate = $componentObject->getThemeKeyname() ?? $componentObject->getKeyname();
                 $blockName = "{$keynameTemplate}-{$componentObject->getId()}";
                 $finalComponentsByContainer[$blockName] = array(
                   "id"          =>  $componentObject->getId(),
                   "theme"       =>  $componentObject->getThemeKeyname(),
                   "option"      =>  $componentObject->getOptionKeyname(),
-                  "layout"            =>  $componentObject->getLayoutKeyname(),
+                  "layout"      =>  $componentObject->getLayoutKeyname(),
                   "type"        =>  "default",
                   "isContainer" =>  true,
                   "containerKeyname"  =>  $componentObject->getEditorComponent()->getKeyname(),
@@ -207,6 +211,25 @@ class ContentBlockSubscriber implements EventSubscriberInterface
               }
               else
               {
+                if($currentContainerId && $componentObject->getContainerId() !== $currentContainerId)
+                {
+                  $blockDefaultKey++;
+                  $blockName = "default-{$blockDefaultKey}";
+
+                  $finalComponentsByContainer[$blockName] = array(
+                    "keyname"             =>  "default",
+                    "containerKeyname"    =>  "default",
+                    "theme"               =>  "",
+                    "option"              =>  "",
+                    "layout"              =>  "",
+                    "children"            => array()
+                  );
+                  $finalComponentsByContainerByTypes[$blockName] = array(
+                    "keyname"   =>  "default",
+                    "containerKeyname"   =>  "default",
+                    "children"  => array()
+                  );
+                }
                 $componentValues = array(
                   "id"                =>  $componentObject->getId(),
                   "keyname"           =>  $componentObject->getEditorComponent()->getKeyname(),

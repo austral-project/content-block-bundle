@@ -533,7 +533,8 @@ class FormListener
               "entitled"    =>  $editorComponent->getName(),
               "category"    =>  $editorComponent->getCategory(),
               "image"       =>  $image,
-              "graphicItem" =>  $picto
+              "graphicItem" =>  $picto,
+              "isContainer" =>  $editorComponent->getIsContainer(),
             );
 
             $componentFormMapper = new FormMapper();
@@ -545,6 +546,7 @@ class FormListener
             $componentFormMapper->setObject($componentByEditor);
 
             $componentFormMapper->add(Field\SymfonyField::create("id", HiddenType::class, array('entitled'=>false)));
+            $componentFormMapper->add(Field\SymfonyField::create("containerId", HiddenType::class, array('entitled'=>false, 'attr'=>array('data-editor-component-container-input-id'=>""))));
             $componentFormMapper->add(Field\SymfonyField::create("position", HiddenType::class, array('entitled'=>false, 'attr'=>array('data-collection-sortabled'=>""))));
             $this->editorComponentParameters($editorComponent, $componentFormMapper, $componentByEditor);
 
@@ -678,7 +680,8 @@ class FormListener
               "entitled"    =>  $library->getName(),
               "category"    =>  "library",
               "image"       =>  $this->fileLinkGenerator->image($library, "image") ?? $this->contentBlockConfiguration->get('editor_component.image_default'),
-              "graphicItem" =>  $picto
+              "graphicItem" =>  $picto,
+              "isLibrary"   =>  true,
             );
 
             $componentFormMapper = new FormMapper();

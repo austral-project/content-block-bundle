@@ -105,6 +105,12 @@ abstract class Component extends Entity implements ComponentInterface, EntityInt
   protected ?string $layoutId = null;
 
   /**
+   * @var string|null
+   * @ORM\Column(name="container_id", type="string", length=255, nullable=true )
+   */
+  protected ?string $containerId = null;
+
+  /**
    * @var int
    * @ORM\Column(name="position", type="integer", nullable=true, options={"default" : 0} )
    */
@@ -461,6 +467,26 @@ abstract class Component extends Entity implements ComponentInterface, EntityInt
   public function setOptionId(?string $optionId): Component
   {
     $this->optionId = $optionId;
+    return $this;
+  }
+
+  /**
+   * getContainerId
+   *
+   * @return string|null
+   */
+  public function getContainerId(): ?string
+  {
+    return $this->containerId;
+  }
+
+  /**
+   * @param string|null $containerId
+   * @return $this
+   */
+  public function setContainerId(?string $containerId): Component
+  {
+    $this->containerId = $containerId;
     return $this;
   }
 
