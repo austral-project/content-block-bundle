@@ -215,6 +215,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
                 {
                   $blockDefaultKey++;
                   $blockName = "default-{$blockDefaultKey}";
+                  $currentContainerId = null;
 
                   $finalComponentsByContainer[$blockName] = array(
                     "keyname"             =>  "default",
