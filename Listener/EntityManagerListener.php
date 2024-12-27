@@ -19,6 +19,7 @@ use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentTypeInterface;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlocksMapping;
+use Austral\EntityBundle\Entity\EntityInterface;
 use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Austral\ContentBlockBundle\EntityManager\ComponentEntityManager;
 use Austral\EntityBundle\EntityAnnotation\EntityAnnotations;
@@ -50,6 +51,8 @@ class EntityManagerListener
     $this->componentEntityManager = $componentEntityManager;
   }
 
+  protected array $componentContainerIds = array();
+
   /**
    * @param EntityManagerEvent $entityManagerEvent
    *
@@ -75,13 +78,23 @@ class EntityManagerListener
 
     if(AustralTools::usedImplements(get_class($entityManagerEvent->getObject()), ComponentInterface::class))
     {
+
+      if($entityManagerEvent->getSourceObject()->getEditorComponent()->getIsContainer())
+      {
+        $this->componentContainerIds[$entityManagerEvent->getSourceObject()->getId()] = $entityManagerEvent->getObject()->getId();
+      }
+      if($sourceContainerId = $entityManagerEvent->getSourceObject()->getContainerId())
+      {
+        $entityManagerEvent->getObject()->setContainerId(AustralTools::getValueByKey($this->componentContainerIds, $sourceContainerId));
+      }
       $entityManagerEvent->getObject()->setComponentValues(new ArrayCollection());
 
       /**
-       * @var ComponentValueInterface $componentValue
+       * @var ComponentValueInterface|EntityInterface $componentValue
        */
       foreach($entityManagerEvent->getSourceObject()->getComponentValues() as $componentValue)
       {
+        /** @var  $duplicateComponentValue */
         $duplicateComponentValue = $entityManagerEvent->getEntityManager()->duplicate($componentValue);
         $duplicateComponentValue->setComponent($entityManagerEvent->getObject());
         $entityManagerEvent->getObject()->addComponentValues($duplicateComponentValue);
