@@ -120,6 +120,11 @@ abstract class ComponentValue extends Entity implements ComponentValueInterface,
    * @ORM\Column(name="image", type="string", length=255, nullable=true)
    * @AustralFile\UploadParameters(configName="default_image")
    * @AustralFile\ImageSize()
+   * @AustralFile\Croppers({
+   *   "desktop",
+   *   "tablet",
+   *   "mobile"
+   *  })
    */
   protected ?string $image = null;
 
