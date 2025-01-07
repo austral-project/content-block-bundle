@@ -402,6 +402,10 @@ class FormListener
                 $this->fileUploader->uploadFile($fieldFileMapping, $object, $uploadedFile);
               }
             }
+            if($editorComponentType->getType() === "image")
+            {
+              $this->fileUploader->generateCrop($fieldFileMapping, $object);
+            }
             if(($deleteFieldnames = $object->getDeleteFiles()) && !$editorComponentType->getParameterByKey("isRequired"))
             {
               foreach($deleteFieldnames as $bool)
