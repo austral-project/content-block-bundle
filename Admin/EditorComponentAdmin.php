@@ -1460,6 +1460,23 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
             )
           ->end();
         }
+        elseif($choiceKey === "group")
+        {
+          $group->add(Field\SwitchField::create("hasChildren", array(
+              'required'      =>  true,
+              "container"     =>  array(
+                "class"         =>  "side-by-side"
+              ),
+              "getter"        =>  function(EditorComponentTypeInterface $editorComponentType) {
+                return $editorComponentType->getParameterByKey("hasChildren", false);
+              },
+              "setter"        =>  function(EditorComponentTypeInterface $editorComponentType, $value) {
+                return $editorComponentType->setParameterByKey("hasChildren", $value);
+              },
+            )
+          )
+          );
+        }
       }
     }
   }

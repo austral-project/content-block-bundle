@@ -55,6 +55,10 @@ class ContentBlockField extends CollectionEmbedField
       );
     }
     parent::__construct($fieldname, $options);
+    if($this->isDefaultTemplate)
+    {
+      $this->options["template"]["path"] = "collection-embed-with-container.html.twig";
+    }
   }
 
   /**

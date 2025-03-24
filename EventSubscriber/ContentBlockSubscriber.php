@@ -11,13 +11,13 @@
 
 namespace Austral\ContentBlockBundle\EventSubscriber;
 
+use App\Entity\Austral\ContentBlockBundle\EditorComponentType;
 use Austral\ContentBlockBundle\Entity\Component;
 use Austral\ContentBlockBundle\Entity\ComponentValue;
 use Austral\ContentBlockBundle\Entity\ComponentValues;
 use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\ContentBlockBundle\Event\ComponentEvent;
 use Austral\ContentBlockBundle\Event\ContentBlockEvent;
-use Austral\ContentBlockBundle\Event\GuidelineEvent;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlocksMapping;
 use Austral\ContentBlockBundle\Services\ContentBlockContainer;
@@ -25,14 +25,11 @@ use Austral\EntityBundle\Entity\EntityInterface;
 use Austral\EntityBundle\EntityManager\EntityManager;
 use Austral\EntityBundle\Mapping\EntityMapping;
 use Austral\EntityBundle\Mapping\Mapping;
-use Austral\EntityBundle\ORM\AustralQueryBuilder;
 use Austral\EntityFileBundle\File\Link\Generator;
 use Austral\SeoBundle\Services\UrlParameterManagement;
 use Austral\ToolsBundle\AustralTools;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Query\QueryException;
-use joshtronic\LoremIpsum;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use function Symfony\Component\String\u;
@@ -154,6 +151,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       $finalComponentsByContainer = array($blockName => array(
         "keyname"             =>  "default",
         "containerKeyname"    =>  "default",
+        "container"           =>  "default",
         "theme"               =>  "",
         "option"              =>  "",
         "layout"              =>  "",
@@ -196,22 +194,48 @@ class ContentBlockSubscriber implements EventSubscriberInterface
                 $keynameTemplate = $componentObject->getThemeKeyname() ?? $componentObject->getKeyname();
                 $blockName = "{$keynameTemplate}-{$componentObject->getId()}";
                 $finalComponentsByContainer[$blockName] = array(
-                  "id"          =>  $componentObject->getId(),
-                  "theme"       =>  $componentObject->getThemeKeyname(),
-                  "option"      =>  $componentObject->getOptionKeyname(),
-                  "layout"      =>  $componentObject->getLayoutKeyname(),
-                  "type"        =>  "default",
-                  "isContainer" =>  true,
+                  "id"                =>  $componentObject->getId(),
+                  "theme"             =>  $componentObject->getThemeKeyname(),
+                  "option"            =>  $componentObject->getOptionKeyname(),
+                  "layout"            =>  $componentObject->getLayoutKeyname(),
+                  "type"              =>  "default",
+                  "isContainer"       =>  true,
+                  "container"         =>  $componentObject->getEditorComponent()->hasContainerChildren() ? "row" : "default",
                   "containerKeyname"  =>  $componentObject->getEditorComponent()->getKeyname(),
-                  "keyname"     =>  $componentObject->getKeyname(),
-                  "children"    =>  array(),
-                  "vars"        =>  $componentEvent->getVars(),
-                  "values"      =>  $this->componentValues($componentObject->getComponentValues()),
+                  "keyname"           =>  $componentObject->getKeyname(),
+                  "children"          =>  array(),
+                  "vars"              =>  $componentEvent->getVars(),
+                  "values"            =>  $this->componentValues($componentObject->getComponentValues()),
                 );
+
+                if($componentObject->getEditorComponent()->hasContainerChildren())
+                {
+                  /** @var EditorComponentType $editorComponentType */
+                  foreach($componentObject->getEditorComponent()->getEditorComponentTypes() as $editorComponentType)
+                  {
+                    if($editorComponentType->getParameterByKey("hasChildren"))
+                    {
+                      $finalComponentsByContainer[$blockName]["children"][$editorComponentType->getId()] = array(
+                        "keyname"   =>  $editorComponentType->getkeyname(),
+                        "container" =>  "col",
+                        "children"  =>  array()
+                      );
+                    }
+                  }
+                }
               }
               else
               {
-                if($currentContainerId && $componentObject->getContainerId() !== $currentContainerId)
+                $componentContainerChildId = null;
+                if($componentContainerId = $componentObject->getContainerId())
+                {
+                  if(str_contains($componentContainerId, "_"))
+                  {
+                    list($componentContainerId, $componentContainerChildId) = explode("_", $componentContainerId);
+                  }
+                }
+
+                if($currentContainerId && $componentContainerId !== $currentContainerId)
                 {
                   $blockDefaultKey++;
                   $blockName = "default-{$blockDefaultKey}";
@@ -220,6 +244,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
                   $finalComponentsByContainer[$blockName] = array(
                     "keyname"             =>  "default",
                     "containerKeyname"    =>  "default",
+                    "container"           =>  "default",
                     "theme"               =>  "",
                     "option"              =>  "",
                     "layout"              =>  "",
@@ -242,8 +267,18 @@ class ContentBlockSubscriber implements EventSubscriberInterface
                   "values"            =>  $this->componentValues($componentObject->getComponentValues()),
                   "vars"              =>  $componentEvent->getVars()
                 );
-                $finalComponentsByContainer[$blockName]['children']["{$componentObject->getPosition()}-{$componentObject->getId()}"] = $componentValues;
-                $finalComponentsByContainerByTypes[$blockName]['children'][$componentObject->getEditorComponent()->getKeyname()][] = $componentValues;
+
+                if($componentContainerChildId)
+                {
+                  $finalComponentsByContainer[$blockName]['children'][$componentContainerChildId]["children"]["{$componentObject->getPosition()}-{$componentObject->getId()}"] = $componentValues;
+                  $finalComponentsByContainerByTypes[$blockName]['children'][$componentContainerChildId]["children"][$componentObject->getEditorComponent()->getKeyname()][] = $componentValues;
+                }
+                else
+                {
+                  $finalComponentsByContainer[$blockName]['children']["{$componentObject->getPosition()}-{$componentObject->getId()}"] = $componentValues;
+                  $finalComponentsByContainerByTypes[$blockName]['children'][$componentObject->getEditorComponent()->getKeyname()][] = $componentValues;
+                }
+
               }
             }
           }
@@ -251,6 +286,8 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       }
       $finalComponents[$containerName] = $finalComponentsByContainer;
       $finalComponentsByTypes[$containerName] = $finalComponentsByContainerByTypes;
+
+      dd($finalComponents);
     }
     $contentBlockEvent->getObject()
       ->setComponentsTemplate($finalComponents)

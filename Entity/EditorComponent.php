@@ -304,6 +304,46 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
   }
 
   /**
+   * @return bool
+   */
+  public function hasContainerChildren(): bool
+  {
+    $hasContainerChildren = false;
+    if($this->isContainer)
+    {
+      /** @var EditorComponentTypeInterface $editorComponentType */
+      foreach ($this->editorComponentTypes as $editorComponentType)
+      {
+        if ($editorComponentType->getParameterByKey("hasChildren", false))
+        {
+          $hasContainerChildren = true;
+        }
+      }
+    }
+    return $hasContainerChildren;
+  }
+
+  /**
+   * @return array
+   */
+  public function getContainerChildren(): array
+  {
+    $containerChildren = array();
+    if($this->isContainer)
+    {
+      /** @var EditorComponentTypeInterface $editorComponentType */
+      foreach ($this->editorComponentTypes as $editorComponentType)
+      {
+        if ($editorComponentType->getParameterByKey("hasChildren", false))
+        {
+          $containerChildren[] = $editorComponentType;
+        }
+      }
+    }
+    return $containerChildren;
+  }
+
+  /**
    * @return Collection
    */
   public function getEditorComponentTypes(): Collection
