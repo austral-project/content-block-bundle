@@ -286,8 +286,6 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       }
       $finalComponents[$containerName] = $finalComponentsByContainer;
       $finalComponentsByTypes[$containerName] = $finalComponentsByContainerByTypes;
-
-      dd($finalComponents);
     }
     $contentBlockEvent->getObject()
       ->setComponentsTemplate($finalComponents)
