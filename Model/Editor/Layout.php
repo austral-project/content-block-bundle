@@ -34,14 +34,19 @@ class Layout extends Entity implements EntityInterface
   protected ?string $keyname = null;
 
   /**
-   * @var int|null
-   */
-  protected ?int $position = null;
-
-  /**
    * @var string|null
    */
   protected ?string $title = null;
+
+  /**
+   * @var bool|null
+   */
+  protected ?bool $isDefault = false;
+
+  /**
+   * @var int|null
+   */
+  protected ?int $position = null;
 
   /**
    * Theme constructor.
@@ -115,6 +120,26 @@ class Layout extends Entity implements EntityInterface
   public function setTitle(?string $title): Layout
   {
     $this->title = $title;
+    return $this;
+  }
+
+  /**
+   * getIsDefault
+   *
+   * @return bool|null
+   */
+  public function getIsDefault(): ?bool
+  {
+    return $this->isDefault;
+  }
+
+  /**
+   * @param bool|null $isDefault
+   * @return $this
+   */
+  public function setIsDefault(?bool $isDefault): Layout
+  {
+    $this->isDefault = $isDefault;
     return $this;
   }
 

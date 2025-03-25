@@ -137,6 +137,10 @@ fields:
     entitled:                   Default enabled
   guidelineValue:
     entitled:                   Guideline test value
+  isDefault:
+    entitled:                   Is default ?
+  hasChildren:
+    entitled:                   Has children ?
 
 component:
   title:

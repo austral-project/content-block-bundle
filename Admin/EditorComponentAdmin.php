@@ -467,7 +467,7 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
                 "class"     =>  "animate"
               ),
               "group"       =>  array(
-                'size'  => GroupFields::SIZE_COL_8
+                'size'  => GroupFields::SIZE_COL_6
               )
             )
           )->setConstraints(array(
@@ -486,7 +486,19 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
               "class"     =>  "animate"
             ),
             "group"       =>  array(
-              'size'  => GroupFields::SIZE_COL_4
+              'size'  => GroupFields::SIZE_COL_3
+            )
+          )))->addConstraint(new Constraints\Length(array(
+                "max" => 255,
+                "maxMessage" => "errors.length.max"
+              )
+            )
+          ),
+        )
+        ->add(
+          (Field\SwitchField::create("isDefault", array(
+            "group"       =>  array(
+              'size'  => GroupFields::SIZE_COL_3
             )
           )))->addConstraint(new Constraints\Length(array(
                 "max" => 255,

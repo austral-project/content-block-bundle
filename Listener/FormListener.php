@@ -914,10 +914,17 @@ class FormListener
       {
         if(!$componentByEditor->getLayoutId())
         {
-          $componentByEditor->setLayoutId($layout->getId());
+          if($layout->getIsDefault())
+          {
+            $componentByEditor->setLayoutId($layout->getId());
+          }
         }
         $selectLayouts[$layout->getTitle()] = $layout->getId();
         $dataViewChoices[$layout->getId()] = "layout-view-choice-{$layout->getKeyname()}";
+      }
+      if(!$componentByEditor->getLayoutId() && ($firstLayout = AustralTools::first($layouts)))
+      {
+        $componentByEditor->setLayoutId($firstLayout->getId());
       }
 
       $attr = array();

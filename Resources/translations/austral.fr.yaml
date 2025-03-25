@@ -143,6 +143,10 @@ fields:
     entitled:                   Guideline valeur de test
   editorComponent:
     entitled:                   Composant
+  isDefault:
+    entitled:                   Par défaut ?
+  hasChildren:
+    entitled:                   Possède des enfants ?
 
 component:
   title:
