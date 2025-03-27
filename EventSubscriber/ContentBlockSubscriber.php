@@ -166,8 +166,49 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       {
         if($componentObject->getComponentType() === "library")
         {
+          $componentContainerChildId = null;
+          if($componentContainerId = $componentObject->getContainerId())
+          {
+            if(str_contains($componentContainerId, "_"))
+            {
+              list($componentContainerId, $componentContainerChildId) = explode("_", $componentContainerId);
+            }
+          }
           /** @var LibraryInterface $library */
           $library = $componentObject->getLibrary();
+
+          if($currentContainerId && $componentContainerId !== $currentContainerId) {
+            $blockDefaultKey++;
+            $blockName = "default-{$blockDefaultKey}";
+            $currentContainerId = null;
+            $libraryHasContainer = false;
+            foreach($library->getComponents() as $libraryContainerName => $libraryComponents)
+            {
+              /** @var Component $libraryComponent */
+              foreach($libraryComponents as $libraryComponent)
+              {
+                if($libraryComponent->getEditorComponent()?->getIsContainer())
+                {
+                  $libraryHasContainer = true;
+                }
+              }
+            }
+            $finalComponentsByContainer[$blockName] = array(
+              "keyname" => "default",
+              "containerKeyname" => "default",
+              "container" => $libraryHasContainer ? "library-with-container" : "library",
+              "theme" => "",
+              "option" => "",
+              "layout" => "",
+              "children" => array()
+            );
+            $finalComponentsByContainerByTypes[$blockName] = array(
+              "keyname" => "default",
+              "containerKeyname" => "default",
+              "children" => array()
+            );
+          }
+
           if($library->getAccessibleInContent() && $library->getIsEnabled())
           {
             $componentValues = array(
@@ -175,8 +216,16 @@ class ContentBlockSubscriber implements EventSubscriberInterface
               "type"              =>  "library",
               "keyname"           =>  $componentObject->getLibrary()->getKeyname(),
             );
-            $finalComponentsByContainer[$blockName]['children']["{$componentObject->getPosition()}-{$componentObject->getId()}"] = $componentValues;
-            $finalComponentsByContainerByTypes[$blockName]['children'][$componentObject->getLibrary()->getKeyname()][] = $componentValues;
+            if($componentContainerChildId)
+            {
+              $finalComponentsByContainer[$blockName]['children'][$componentContainerChildId]["children"]["{$componentObject->getPosition()}-{$componentObject->getId()}"] = $componentValues;
+              $finalComponentsByContainerByTypes[$blockName]['children'][$componentContainerChildId]["children"][$componentObject->getLibrary()->getKeyname()][] = $componentValues;
+            }
+            else
+            {
+              $finalComponentsByContainer[$blockName]['children']["{$componentObject->getPosition()}-{$componentObject->getId()}"] = $componentValues;
+              $finalComponentsByContainerByTypes[$blockName]['children'][$componentObject->getLibrary()->getKeyname()][] = $componentValues;
+            }
           }
         }
         else
@@ -251,9 +300,9 @@ class ContentBlockSubscriber implements EventSubscriberInterface
                     "children"            => array()
                   );
                   $finalComponentsByContainerByTypes[$blockName] = array(
-                    "keyname"   =>  "default",
-                    "containerKeyname"   =>  "default",
-                    "children"  => array()
+                    "keyname"             =>  "default",
+                    "containerKeyname"    =>  "default",
+                    "children"            => array()
                   );
                 }
                 $componentValues = array(

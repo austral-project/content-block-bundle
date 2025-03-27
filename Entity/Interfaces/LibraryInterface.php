@@ -184,6 +184,19 @@ interface LibraryInterface
    */
   public function setImage($image): LibraryInterface;
 
+  /**
+   * getContainerId
+   *
+   * @return string|null
+   */
+  public function getContainerId(): ?string;
+
+  /**
+   * @param string|null $containerId
+   * @return $this
+   */
+  public function setContainerId(?string $containerId): LibraryInterface;
+
 }
 
     

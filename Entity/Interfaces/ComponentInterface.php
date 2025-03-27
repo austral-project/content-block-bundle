@@ -178,6 +178,18 @@ interface ComponentInterface
    */
   public function setLayoutId(?string $layoutId): ComponentInterface;
 
+  /**
+   * @return string|null
+   */
+  public function getContainerId(): ?string;
+
+  /**
+   * @param string|null $containerId
+   *
+   * @return ComponentInterface
+   */
+  public function setContainerId(?string $containerId): ComponentInterface;
+
 }
 
     

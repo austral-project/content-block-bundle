@@ -116,6 +116,12 @@ abstract class Library extends Entity implements LibraryInterface,
   protected ?string $cssClass;
 
   /**
+   * @var string|null
+   * @ORM\Column(name="container_id", type="string", length=255, nullable=true )
+   */
+  protected ?string $containerId = null;
+
+  /**
    * Constructor
    * @throws Exception
    */
@@ -385,6 +391,26 @@ abstract class Library extends Entity implements LibraryInterface,
   public function setImage($image): Library
   {
     $this->getTranslateCurrent()->setImage($image);
+    return $this;
+  }
+
+  /**
+   * getContainerId
+   *
+   * @return string|null
+   */
+  public function getContainerId(): ?string
+  {
+    return $this->containerId;
+  }
+
+  /**
+   * @param string|null $containerId
+   * @return $this
+   */
+  public function setContainerId(?string $containerId): Library
+  {
+    $this->containerId = $containerId;
     return $this;
   }
 

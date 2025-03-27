@@ -697,6 +697,7 @@ class FormListener
             $componentFormMapper->setObject($componentByEditor);
 
             $componentFormMapper->add(Field\SymfonyField::create("id", HiddenType::class, array('entitled' => false)));
+            $componentFormMapper->add(Field\SymfonyField::create("containerId", HiddenType::class, array('entitled'=>false, 'attr'=>array('data-editor-component-container-input-id'=>""))));
             $componentFormMapper->add(Field\SymfonyField::create("position", HiddenType::class, array('entitled' => false, 'attr'=>array('data-collection-sortabled'=>""))));
             $componentFormMapper->addGroup("button")
               ->add(Field\TemplateField::create("button", "@AustralContentBlock/Admin/Library/button.html.twig", array(), array(
