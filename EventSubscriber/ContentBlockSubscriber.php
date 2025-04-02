@@ -179,8 +179,8 @@ class ContentBlockSubscriber implements EventSubscriberInterface
 
           if($currentContainerId && $componentContainerId !== $currentContainerId) {
             $blockDefaultKey++;
-            $blockName = "default-{$blockDefaultKey}";
-            $currentContainerId = null;
+            $blockName = "library-{$blockDefaultKey}";
+            $currentContainerId = $library->getId();
             $libraryHasContainer = false;
             foreach($library->getComponents() as $libraryContainerName => $libraryComponents)
             {
@@ -194,17 +194,17 @@ class ContentBlockSubscriber implements EventSubscriberInterface
               }
             }
             $finalComponentsByContainer[$blockName] = array(
-              "keyname" => "default",
-              "containerKeyname" => "default",
+              "keyname" => "library",
+              "containerKeyname" => "library",
               "container" => $libraryHasContainer ? "library-with-container" : "library",
-              "theme" => "",
+              "theme" => "library",
               "option" => "",
               "layout" => "",
               "children" => array()
             );
             $finalComponentsByContainerByTypes[$blockName] = array(
-              "keyname" => "default",
-              "containerKeyname" => "default",
+              "keyname" => "library",
+              "containerKeyname" => "library",
               "children" => array()
             );
           }
