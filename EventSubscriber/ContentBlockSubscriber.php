@@ -404,7 +404,9 @@ class ContentBlockSubscriber implements EventSubscriberInterface
             list($objectContentBlockName, $entityClass) = explode("::", $entityClass);
           }
           $values[$componentValueObject->getEditorComponentType()->getKeyname()]['objectId'] = "{$entityClass}::{$objectId}";
-          $values[$componentValueObject->getEditorComponentType()->getKeyname()]['object'] = $this->getObjectsByEntityClassAndId($entityClass, $objectId, $objectContentBlockName);
+          $object = $this->getObjectsByEntityClassAndId($entityClass, $objectId, $objectContentBlockName);
+          $values[$componentValueObject->getEditorComponentType()->getKeyname()]['object'] = $object;
+          $values[$componentValueObject->getEditorComponentType()->getKeyname()]['value'] = $object->__toString();
         }
       }
       if($editorComponent->getType() == "movie")
@@ -493,6 +495,10 @@ class ContentBlockSubscriber implements EventSubscriberInterface
             list($entity, $id) = explode($separator, $componentValueObject->getLinkEntityKey());
             $urlParameter = $this->urlParameterManagement->getUrlParameterByObjectClassnameAndId($entity,$id);
             $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]["urlParameter"] = $urlParameter;
+            if(!$values[$componentValueObject->getEditorComponentType()->getKeyname()]["value"])
+            {
+              $values[$componentValueObject->getEditorComponentType()->getKeyname()]["value"] = $urlParameter->getObject()?->__toString();
+            }
           }
         }
         elseif($linkType == "external")
