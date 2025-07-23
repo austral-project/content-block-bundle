@@ -18,6 +18,7 @@ use Austral\ContentBlockBundle\EntityManager\ComponentEntityManager;
 
 use Austral\ToolsBundle\AustralTools;
 
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\Common\EventArgs;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LifecycleEventArgs;
@@ -30,6 +31,9 @@ use Doctrine\ORM\ORMException;
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
+#[AsDoctrineListener(event: 'prePersist', connection: 'default')]
+#[AsDoctrineListener(event: 'preUpdate', connection: 'default')]
+#[AsDoctrineListener(event: 'preFlush', connection: 'default')]
 class DoctrineListener implements EventSubscriber
 {
 

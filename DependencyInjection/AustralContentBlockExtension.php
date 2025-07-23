@@ -29,7 +29,7 @@ class AustralContentBlockExtension extends Extension
    * {@inheritdoc}
    * @throws Exception
    */
-  public function load(array $configs, ContainerBuilder $container)
+  public function load(array $configs, ContainerBuilder $container): void
   {
     $configuration = new Configuration();
     $configs[0]["type_values"] = array_replace_recursive($configuration->blockTypeDefault(), AustralTools::getValueByKey($configs[0], "type_values", array()));
@@ -49,7 +49,7 @@ class AustralContentBlockExtension extends Extension
    *
    * @throws Exception
    */
-  protected function loadConfigToAustralBundle(ContainerBuilder $container, YamlFileLoader $loader)
+  protected function loadConfigToAustralBundle(ContainerBuilder $container, YamlFileLoader $loader): void
   {
     $bundlesConfigPath = $container->getParameter("kernel.project_dir")."/config/bundles.php";
     if(file_exists($bundlesConfigPath))
@@ -73,7 +73,7 @@ class AustralContentBlockExtension extends Extension
   /**
    * @return string
    */
-  public function getNamespace()
+  public function getNamespace(): string
   {
     return 'https://austral.dev/schema/dic/austral_content_block';
   }
