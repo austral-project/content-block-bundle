@@ -406,7 +406,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
           $values[$componentValueObject->getEditorComponentType()->getKeyname()]['objectId'] = "{$entityClass}::{$objectId}";
           $object = $this->getObjectsByEntityClassAndId($entityClass, $objectId, $objectContentBlockName);
           $values[$componentValueObject->getEditorComponentType()->getKeyname()]['object'] = $object;
-          $values[$componentValueObject->getEditorComponentType()->getKeyname()]['value'] = $object->__toString();
+          $values[$componentValueObject->getEditorComponentType()->getKeyname()]['value'] = $object ? $object->__toString() : "";
         }
       }
       if($editorComponent->getType() == "movie")
