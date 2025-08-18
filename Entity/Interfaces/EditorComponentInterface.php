@@ -189,6 +189,19 @@ interface EditorComponentInterface
   public function setIsEnabled(bool $isEnabled): EditorComponentInterface;
 
   /**
+   * getAutoHydrate
+   *
+   * @return bool
+   */
+  public function getAutoHydrate(): bool;
+
+  /**
+   * @param bool $autoHydrate
+   * @return EditorComponentInterface
+   */
+  public function setAutoHydrate(bool $autoHydrate): EditorComponentInterface;
+
+  /**
    * @return bool
    */
   public function getIsContainer(): bool;

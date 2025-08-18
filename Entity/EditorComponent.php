@@ -148,6 +148,12 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
   protected bool $isEnabled = true;
 
   /**
+   * @var boolean
+   * @ORM\Column(name="auto_hydrate", type="boolean", nullable=true, options={"default" : true} )
+   */
+  protected bool $autoHydrate = true;
+
+  /**
    * @var array
    * @ORM\Column(name="restrictions", type="json", nullable=true )
    */
@@ -656,6 +662,26 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
   public function setIsEnabled(bool $isEnabled): EditorComponent
   {
     $this->isEnabled = $isEnabled;
+    return $this;
+  }
+
+  /**
+   * getAutoHydrate
+   *
+   * @return bool
+   */
+  public function getAutoHydrate(): bool
+  {
+    return $this->autoHydrate ?? false;
+  }
+
+  /**
+   * @param bool $autoHydrate
+   * @return EditorComponent
+   */
+  public function setAutoHydrate(bool $autoHydrate): EditorComponent
+  {
+    $this->autoHydrate = $autoHydrate;
     return $this;
   }
 

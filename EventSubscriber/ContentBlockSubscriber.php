@@ -15,6 +15,7 @@ use App\Entity\Austral\ContentBlockBundle\EditorComponentType;
 use Austral\ContentBlockBundle\Entity\Component;
 use Austral\ContentBlockBundle\Entity\ComponentValue;
 use Austral\ContentBlockBundle\Entity\ComponentValues;
+use Austral\ContentBlockBundle\Entity\EditorComponent;
 use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\ContentBlockBundle\Event\ComponentEvent;
 use Austral\ContentBlockBundle\Event\ContentBlockEvent;
@@ -360,41 +361,46 @@ class ContentBlockSubscriber implements EventSubscriberInterface
     /** @var ComponentValue $componentValueObject */
     foreach($componentValues as $componentValueObject)
     {
-      $editorComponent = $componentValueObject->getEditorComponentType();
-      $values[$componentValueObject->getEditorComponentType()->getKeyname()] = array(
+      /** @var EditorComponentType $editorComponentType */
+      $editorComponentType = $componentValueObject->getEditorComponentType();
+
+      /** @var EditorComponent $editorComponent */
+      $editorComponent = $editorComponentType->getEditorComponent();
+
+      $values[$editorComponentType->getKeyname()] = array(
         "id"        =>  $componentValueObject->getId(),
-        "type"      =>  $componentValueObject->getEditorComponentType()->getType(),
+        "type"      =>  $editorComponentType->getType(),
         "classCss"  =>  $componentValueObject->getOptionsByKey("classCss", null)
       );
-      if($editorComponent->getType() == "image" || $editorComponent->getType() == "file")
+      if($editorComponentType->getType() == "image" || $editorComponentType->getType() == "file")
       {
-        $values[$componentValueObject->getEditorComponentType()->getKeyname()] = $componentValueObject;
+        $values[$editorComponentType->getKeyname()] = $componentValueObject;
       }
-      else if ($editorComponent->getType() == "choice") {
-        $values[$componentValueObject->getEditorComponentType()->getKeyname()]['value'] = $componentValueObject->getOptionsByKey("choice");
+      else if ($editorComponentType->getType() == "choice") {
+        $values[$editorComponentType->getKeyname()]['value'] = $componentValueObject->getOptionsByKey("choice");
       }
-      else if ($editorComponent->getType() == "text" && $editorComponent->getParameterByKey("type") === "date") {
-        $values[$componentValueObject->getEditorComponentType()->getKeyname()]['value'] = "";
-        $values[$componentValueObject->getEditorComponentType()->getKeyname()]['date'] = $componentValueObject->getDate();
+      else if ($editorComponentType->getType() == "text" && $editorComponentType->getParameterByKey("type") === "date") {
+        $values[$editorComponentType->getKeyname()]['value'] = "";
+        $values[$editorComponentType->getKeyname()]['date'] = $componentValueObject->getDate();
       }
       else
       {
-        $values[$componentValueObject->getEditorComponentType()->getKeyname()]['value'] = $componentValueObject->getContent();
+        $values[$editorComponentType->getKeyname()]['value'] = $componentValueObject->getContent();
       }
       if($tag = $componentValueObject->getOptionsByKey("tags", null))
       {
-        $values[$componentValueObject->getEditorComponentType()->getKeyname()]['tag'] = $tag;
+        $values[$editorComponentType->getKeyname()]['tag'] = $tag;
       }
-      if($editorComponent->getType() == "textarea")
+      if($editorComponentType->getType() == "textarea")
       {
-        $values[$componentValueObject->getEditorComponentType()->getKeyname()]['isWysiwyg'] = $editorComponent->getParameterByKey("isWysiwyg");
+        $values[$editorComponentType->getKeyname()]['isWysiwyg'] = $editorComponentType->getParameterByKey("isWysiwyg");
       }
-      if($editorComponent->getType() == "object")
+      if($editorComponentType->getType() == "object")
       {
         if($objectId = $componentValueObject->getOptionsByKey("objectId"))
         {
           $objectContentBlockName = null;
-          $entityClass = $editorComponent->getParameterByKey("entityClass");
+          $entityClass = $editorComponentType->getParameterByKey("entityClass");
           if($entityClass === "all")
           {
             list($entityClass, $objectId) = explode("::", $objectId);
@@ -403,15 +409,23 @@ class ContentBlockSubscriber implements EventSubscriberInterface
           {
             list($objectContentBlockName, $entityClass) = explode("::", $entityClass);
           }
-          $values[$componentValueObject->getEditorComponentType()->getKeyname()]['objectId'] = "{$entityClass}::{$objectId}";
-          $object = $this->getObjectsByEntityClassAndId($entityClass, $objectId, $objectContentBlockName);
-          $values[$componentValueObject->getEditorComponentType()->getKeyname()]['object'] = $object;
-          $values[$componentValueObject->getEditorComponentType()->getKeyname()]['value'] = $object ? $object->__toString() : "";
+          $values[$editorComponentType->getKeyname()]['objectId'] = "{$entityClass}::{$objectId}";
+          if($editorComponent->getAutoHydrate())
+          {
+            $object = $this->getObjectsByEntityClassAndId($entityClass, $objectId, $objectContentBlockName);
+            $values[$editorComponentType->getKeyname()]['object'] = $object;
+            $values[$editorComponentType->getKeyname()]['value'] = $object ? $object->__toString() : "";
+          }
+          else
+          {
+            $values[$editorComponentType->getKeyname()]['object'] = null;
+            $values[$editorComponentType->getKeyname()]['value'] = "";
+          }
         }
       }
-      if($editorComponent->getType() == "movie")
+      if($editorComponentType->getType() == "movie")
       {
-        $values[$componentValueObject->getEditorComponentType()->getKeyname()]['isIframe'] = $editorComponent->getParameterByKey("isIframe");
+        $values[$editorComponentType->getKeyname()]['isIframe'] = $editorComponentType->getParameterByKey("isIframe");
         if($videoUrl = $componentValueObject->getContent())
         {
           if(strpos($videoUrl, "youtube") || str_contains($videoUrl, "youtu."))
@@ -466,17 +480,17 @@ class ContentBlockSubscriber implements EventSubscriberInterface
               "url"               =>  $videoUrl
             );
           }
-          $values[$componentValueObject->getEditorComponentType()->getKeyname()]['video'] = $videoInfos;
+          $values[$editorComponentType->getKeyname()]['video'] = $videoInfos;
         }
       }
-      if($editorComponent->getType() == "button")
+      if($editorComponentType->getType() == "button")
       {
-        $values[$componentValueObject->getEditorComponentType()->getKeyname()]["linkPicto"] = $componentValueObject->getLinkPicto();
+        $values[$editorComponentType->getKeyname()]["linkPicto"] = $componentValueObject->getLinkPicto();
       }
       
       if($linkType = $componentValueObject->getLinkType())
       {
-        $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"] = array(
+        $values[$editorComponentType->getKeyname()]["link"] = array(
           "anchor"  =>  $componentValueObject->getOptionsByKey("anchor", null),
           "target"  =>  $componentValueObject->getOptionsByKey("target", null),
           "title"   =>  $componentValueObject->getOptionsByKey("title", null),
@@ -486,7 +500,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         if($linkType == "internal")
         {
           if($this->urlParameterManagement && $componentValueObject->getLinkEntityKey()) {
-            $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['url'] = "#INTERNAL_LINK_{$componentValueObject->getLinkEntityKey()}#";
+            $values[$editorComponentType->getKeyname()]["link"]['url'] = "#INTERNAL_LINK_{$componentValueObject->getLinkEntityKey()}#";
             $separator = ":";
             if(str_contains($componentValueObject->getLinkEntityKey(), "::"))
             {
@@ -494,10 +508,10 @@ class ContentBlockSubscriber implements EventSubscriberInterface
             }
             list($entity, $id) = explode($separator, $componentValueObject->getLinkEntityKey());
             $urlParameter = $this->urlParameterManagement->getUrlParameterByObjectClassnameAndId($entity,$id);
-            $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]["urlParameter"] = $urlParameter;
-            if(!$values[$componentValueObject->getEditorComponentType()->getKeyname()]["value"])
+            $values[$editorComponentType->getKeyname()]["link"]["urlParameter"] = $urlParameter;
+            if(!$values[$editorComponentType->getKeyname()]["value"])
             {
-              $values[$componentValueObject->getEditorComponentType()->getKeyname()]["value"] = $urlParameter->getObject()?->__toString();
+              $values[$editorComponentType->getKeyname()]["value"] = $urlParameter->getObject()?->__toString();
             }
           }
         }
@@ -507,27 +521,27 @@ class ContentBlockSubscriber implements EventSubscriberInterface
           if (!u($componentValueObject->getLinkUrl())->ignoreCase()->startsWith(array("https://", "http://", "javascript:", "%"))) {
             $linkUrl = "//{$linkUrl}";
           }
-          $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['url'] = $linkUrl;
+          $values[$editorComponentType->getKeyname()]["link"]['url'] = $linkUrl;
         }
         elseif($linkType == "file")
         {
           if($this->fileLinkGenerator)
           {
-            $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['url'] = $this->fileLinkGenerator
+            $values[$editorComponentType->getKeyname()]["link"]['url'] = $this->fileLinkGenerator
               ->download($componentValueObject, "file");
           }
-          $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['file'] = $componentValueObject;
+          $values[$editorComponentType->getKeyname()]["link"]['file'] = $componentValueObject;
         }
         elseif($linkType == "phone")
         {
-          $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['url'] = "tel:{$componentValueObject->getLinkPhone()}";
+          $values[$editorComponentType->getKeyname()]["link"]['url'] = "tel:{$componentValueObject->getLinkPhone()}";
         }
         elseif($linkType == "email")
         {
-          $values[$componentValueObject->getEditorComponentType()->getKeyname()]["link"]['url'] = "mailto:{$componentValueObject->getLinkemail()}";
+          $values[$editorComponentType->getKeyname()]["link"]['url'] = "mailto:{$componentValueObject->getLinkemail()}";
         }
       }
-      if($editorComponent->getType() == "list" || $editorComponent->getType() == "group")
+      if($editorComponentType->getType() == "list" || $editorComponentType->getType() == "group")
       {
         if($children = $componentValueObject->getChildren()->toArray())
         {
@@ -535,7 +549,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
           /** @var ComponentValues $child */
           foreach ($children as $child)
           {
-            if($componentValueObject->getEditorComponentType()->getType() == "group")
+            if($editorComponentType->getType() == "group")
             {
               $childrenValues = $this->componentValues($child->getChildren());
             }
@@ -544,7 +558,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
               $childrenValues[$child->getPosition()] = $this->componentValues($child->getChildren());
             }
           }
-          $values[$componentValueObject->getEditorComponentType()->getKeyname()]["children"] = $childrenValues;
+          $values[$editorComponentType->getKeyname()]["children"] = $childrenValues;
         }
       }
     }

@@ -182,6 +182,10 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
             ))
           ))
         ))
+        ->add(Field\ChoiceField::create("autoHydrate", array(
+          "choices.status.no"         =>  false,
+          "choices.status.yes"        =>  true,
+        )))
       ->end()
       ->addFieldset("fieldset.dev.config")
         ->setIsView($this->container->get("security.authorization_checker")->isGranted("ROLE_ROOT"))

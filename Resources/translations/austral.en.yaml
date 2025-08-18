@@ -141,6 +141,8 @@ fields:
     entitled:                   Is default ?
   hasChildren:
     entitled:                   Has children ?
+  autoHydrate:
+    entitled:                   Auto hydrate ?
 
 component:
   title:
