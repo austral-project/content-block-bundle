@@ -79,7 +79,7 @@ class EntityManagerListener
     if(AustralTools::usedImplements(get_class($entityManagerEvent->getObject()), ComponentInterface::class))
     {
 
-      if($entityManagerEvent->getSourceObject()->getEditorComponent()->getIsContainer())
+      if($entityManagerEvent->getSourceObject()->getEditorComponent()?->getIsContainer())
       {
         $this->componentContainerIds[$entityManagerEvent->getSourceObject()->getId()] = $entityManagerEvent->getObject()->getId();
       }
