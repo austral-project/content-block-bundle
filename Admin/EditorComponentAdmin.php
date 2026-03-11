@@ -35,6 +35,7 @@ use Austral\ContentBlockBundle\Mapping\ObjectContentBlocksMapping;
 use Austral\ContentBlockBundle\Model\Editor\Layout;
 use Austral\ContentBlockBundle\Model\Editor\Option;
 use Austral\ContentBlockBundle\Model\Editor\Restriction;
+use Austral\ContentBlockBundle\Model\Editor\Size;
 use Austral\ContentBlockBundle\Model\Editor\Theme;
 use Austral\ContentBlockBundle\Services\ContentBlockContainer;
 
@@ -216,6 +217,10 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
         ->add($this->createCollectionTheme($formAdminEvent))
       ->end()
 
+      ->addFieldset("fieldset.editorComponent.sizes")
+        ->add($this->createCollectionSize($formAdminEvent))
+      ->end()
+
       ->addFieldset("fieldset.editorComponent.options")
         ->add($this->createCollectionOption($formAdminEvent))
       ->end()
@@ -316,7 +321,7 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
                 "class" =>  "animate"
               ),
               "group"       =>  array(
-                'size'  => GroupFields::SIZE_COL_8
+                'size'  => GroupFields::SIZE_COL_5
               )
             )
           )->setConstraints(array(
@@ -334,7 +339,7 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
                 "class" =>  "animate"
               ),
               "group"       =>  array(
-                'size'  => GroupFields::SIZE_COL_4
+                'size'  => GroupFields::SIZE_COL_3
               )
             )
           )->setConstraints(array(
@@ -345,6 +350,20 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
               )
             )
           )
+        )
+        ->add(
+          (Field\SwitchField::create("isDefault", array(
+            "group"       =>  array(
+              'size'  => GroupFields::SIZE_COL_2
+            )
+          ))),
+        )
+        ->add(
+          (Field\SwitchField::create("isEnabled", array(
+            "group"       =>  array(
+              'size'  => GroupFields::SIZE_COL_2
+            )
+          ))),
         )
       ->end()
       ->add(Field\SymfonyField::create("position", HiddenType::class, array("entitled"=>false, "attr"=>array("data-collection-sortabled"=>""))));
@@ -384,18 +403,18 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
    * @return Field\CollectionEmbedField
    * @throws ReflectionException|Exception
    */
-  protected function createCollectionOption(FormAdminEvent $formAdminEvent): Field\CollectionEmbedField
+  protected function createCollectionSize(FormAdminEvent $formAdminEvent): Field\CollectionEmbedField
   {
-    $optionFormMapper = new FormMapper();
-    $option = new Option();
-    $optionFormMapper->setObject($option)
+    $sizeFormMapper = new FormMapper();
+    $size = new Size();
+    $sizeFormMapper->setObject($size)
       ->addGroup("generalInformations")
         ->add(Field\TextField::create("title", array(
               "container"  =>  array(
                 "class" =>  "animate"
               ),
               "group"       =>  array(
-                'size'  => GroupFields::SIZE_COL_8
+                'size'  => GroupFields::SIZE_COL_5
               )
             )
           )->setConstraints(array(
@@ -413,7 +432,7 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
                 "class" =>  "animate"
               ),
               "group"       =>  array(
-                'size'  => GroupFields::SIZE_COL_4
+                'size'  => GroupFields::SIZE_COL_3
               )
             )
           )->addConstraint(new Constraints\Length(array(
@@ -423,6 +442,110 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
             )
           ),
         )
+        ->add(
+          (Field\SwitchField::create("isDefault", array(
+            "group"       =>  array(
+              'size'  => GroupFields::SIZE_COL_2
+            )
+          ))),
+        )
+        ->add(
+          (Field\SwitchField::create("isEnabled", array(
+            "group"       =>  array(
+              'size'  => GroupFields::SIZE_COL_2
+            )
+          )))
+        )
+      ->end()
+      ->add(Field\SymfonyField::create("position", HiddenType::class, array("entitled"=>false, "attr"=>array("data-collection-sortabled"=>""))));
+
+    $formAdminEvent->getFormMapper()->addSubFormMapper("sizes", $sizeFormMapper);
+    /** @var OptionFormType $sizeFormType */
+    $sizeFormType = $this->container->get('austral.content_block.size_form_type')->setFormMapper($sizeFormMapper);
+    return Field\CollectionEmbedField::create("sizes", array(
+        "entitled"            =>  false,
+        "button"              =>  "button.new.size",
+        "collections"         =>  array(
+          "objects"             =>  "sizes"
+        ),
+        "allow"               =>  array(
+          "child"               =>  false,
+          "add"                 =>  true,
+          "delete"              =>  true,
+        ),
+        "entry"               =>  array(
+          "type"                =>  get_class($sizeFormType)
+        ),
+        "prototype"           =>  array(
+          "data"                =>  $size
+        ),
+        "sortable"            =>  array(
+          "value"               =>  "position",
+          "editable"            =>  true
+        ),
+      )
+    );
+  }
+
+  /**
+   * @param FormAdminEvent $formAdminEvent
+   *
+   * @return Field\CollectionEmbedField
+   * @throws ReflectionException|Exception
+   */
+  protected function createCollectionOption(FormAdminEvent $formAdminEvent): Field\CollectionEmbedField
+  {
+    $optionFormMapper = new FormMapper();
+    $option = new Option();
+    $optionFormMapper->setObject($option)
+      ->addGroup("generalInformations")
+        ->add(Field\TextField::create("title", array(
+              "container"  =>  array(
+                "class" =>  "animate"
+              ),
+              "group"       =>  array(
+                'size'  => GroupFields::SIZE_COL_5
+              )
+            )
+          )->setConstraints(array(
+              new Constraints\NotNull(),
+              new Constraints\Length(array(
+                  "max" => 255,
+                  "maxMessage" => "errors.length.max"
+                )
+              )
+            )
+          )
+        )
+        ->add(Field\TextField::create("keyname", array(
+              "container"  =>  array(
+                "class" =>  "animate"
+              ),
+              "group"       =>  array(
+                'size'  => GroupFields::SIZE_COL_3
+              )
+            )
+          )->addConstraint(new Constraints\Length(array(
+                "max" => 255,
+                "maxMessage" => "errors.length.max"
+              )
+            )
+          ),
+        )
+        ->add(
+          (Field\SwitchField::create("isDefault", array(
+            "group"       =>  array(
+              'size'  => GroupFields::SIZE_COL_2
+            )
+          ))),
+        )
+      ->add(
+        (Field\SwitchField::create("isEnabled", array(
+          "group"       =>  array(
+            'size'  => GroupFields::SIZE_COL_2
+          )
+        )))
+      )
       ->end()
       ->add(Field\SymfonyField::create("position", HiddenType::class, array("entitled"=>false, "attr"=>array("data-collection-sortabled"=>""))));
 
@@ -471,7 +594,7 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
                 "class"     =>  "animate"
               ),
               "group"       =>  array(
-                'size'  => GroupFields::SIZE_COL_6
+                'size'  => GroupFields::SIZE_COL_5
               )
             )
           )->setConstraints(array(
@@ -504,12 +627,14 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
             "group"       =>  array(
               'size'  => GroupFields::SIZE_COL_3
             )
-          )))->addConstraint(new Constraints\Length(array(
-                "max" => 255,
-                "maxMessage" => "errors.length.max"
-              )
+          ))),
+        )
+        ->add(
+          (Field\SwitchField::create("isEnabled", array(
+            "group"       =>  array(
+              'size'  => GroupFields::SIZE_COL_2
             )
-          ),
+          )))
         )
       ->end()
       ->add(Field\SymfonyField::create("position", HiddenType::class, array("entitled"=>false, "attr"=>array("data-collection-sortabled"=>""))));

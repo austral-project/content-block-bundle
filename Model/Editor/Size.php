@@ -16,11 +16,11 @@ use Austral\EntityBundle\Entity\EntityInterface;
 use Ramsey\Uuid\Uuid;
 
 /**
- * Austral Option Model.
+ * Austral Size Model.
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
-class Option extends Entity implements EntityInterface
+class Size extends Entity implements EntityInterface
 {
 
   /**
@@ -147,6 +147,7 @@ class Option extends Entity implements EntityInterface
     return $this;
   }
 
+
   /**
    * getIsDefault
    *
@@ -181,11 +182,10 @@ class Option extends Entity implements EntityInterface
    * @param bool|null $isEnabled
    * @return $this
    */
-  public function setIsEnabled(?bool $isEnabled): Option
+  public function setIsEnabled(?bool $isEnabled): self
   {
     $this->isEnabled = $isEnabled;
     return $this;
   }
-
 
 }

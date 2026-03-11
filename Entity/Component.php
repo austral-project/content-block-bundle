@@ -18,6 +18,7 @@ use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentTypeInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\ContentBlockBundle\Model\Editor\Layout;
 use Austral\ContentBlockBundle\Model\Editor\Option;
+use Austral\ContentBlockBundle\Model\Editor\Size;
 use Austral\ContentBlockBundle\Model\Editor\Theme;
 use Austral\EntityBundle\Entity\Entity;
 use Austral\EntityBundle\Entity\EntityInterface;
@@ -88,6 +89,12 @@ abstract class Component extends Entity implements ComponentInterface, EntityInt
 
   /**
    * @var string|null
+   * @ORM\Column(name="size_id", type="string", length=255, nullable=true )
+   */
+  protected ?string $SizeId = null;
+
+  /**
+   * @var string|null
    * @ORM\Column(name="theme_id", type="string", length=255, nullable=true )
    */
   protected ?string $themeId = null;
@@ -141,6 +148,27 @@ abstract class Component extends Entity implements ComponentInterface, EntityInt
   public function getType(): ?string
   {
     return $this->editorComponent->getKeyname();
+  }
+
+  /**
+   * @return Size|null
+   */
+  public function getSize(): ?Size
+  {
+    return $this->editorComponent->getSizeById($this->themeId);
+  }
+
+  /**
+   * @return string|null
+   */
+  public function getSizeKeyname(): ?string
+  {
+    /** @var Size $theme */
+    if($theme = $this->getSize())
+    {
+      return $theme->getKeyname();
+    }
+    return null;
   }
 
   /**
@@ -429,6 +457,26 @@ abstract class Component extends Entity implements ComponentInterface, EntityInt
   public function setPosition(int $position): Component
   {
     $this->position = $position;
+    return $this;
+  }
+
+  /**
+   * getSizeId
+   *
+   * @return string|null
+   */
+  public function getSizeId(): ?string
+  {
+    return $this->SizeId;
+  }
+
+  /**
+   * @param string|null $SizeId
+   * @return $this
+   */
+  public function setSizeId(?string $SizeId): Component
+  {
+    $this->SizeId = $SizeId;
     return $this;
   }
 

@@ -122,8 +122,13 @@ services:
   austral.content_block.option_form_type:
     class:        Austral\ContentBlockBundle\Form\Type\OptionFormType
     arguments:    [ "@security.authorization_checker" ]
+
+  Austral\ContentBlockBundle\Form\Type\SizeFormType:  "@austral.content_block.size_form_type"
+  austral.content_block.size_form_type:
+    class:        Austral\ContentBlockBundle\Form\Type\SizeFormType
+    arguments:    [ "@security.authorization_checker" ]
     tags:
-      - { name: form.type , alias: austral_option_form_type}
+      - { name: form.type , alias: austral_size_form_type}
 
   Austral\ContentBlockBundle\Form\Type\LayoutFormType:  "@austral.content_block.layout_form_type"
   austral.content_block.layout_form_type:

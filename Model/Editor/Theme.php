@@ -44,6 +44,16 @@ class Theme extends Entity implements EntityInterface
   protected ?string $title = null;
 
   /**
+   * @var bool|null
+   */
+  protected ?bool $isDefault = false;
+
+  /**
+   * @var bool|null
+   */
+  protected ?bool $isEnabled = false;
+
+  /**
    * Theme constructor.
    */
   public function __construct()
@@ -68,9 +78,9 @@ class Theme extends Entity implements EntityInterface
   /**
    * @param string $id
    *
-   * @return Theme
+   * @return $this
    */
-  public function setId(string $id): Theme
+  public function setId(string $id): self
   {
     $this->id = $id;
     return $this;
@@ -87,9 +97,9 @@ class Theme extends Entity implements EntityInterface
   /**
    * @param string|null $keyname
    *
-   * @return Theme
+   * @return $this
    */
-  public function setKeyname(?string $keyname): Theme
+  public function setKeyname(?string $keyname): self
   {
     $this->keyname = $this->keynameGenerator($keyname);
     return $this;
@@ -110,9 +120,9 @@ class Theme extends Entity implements EntityInterface
    *
    * @param string|null $title
    *
-   * @return Theme
+   * @return $this
    */
-  public function setTitle(?string $title): Theme
+  public function setTitle(?string $title): self
   {
     $this->title = $title;
     return $this;
@@ -129,11 +139,52 @@ class Theme extends Entity implements EntityInterface
   /**
    * @param int|null $position
    *
-   * @return Theme
+   * @return $this
    */
-  public function setPosition(?int $position): Theme
+  public function setPosition(?int $position): self
   {
     $this->position = $position;
+    return $this;
+  }
+
+
+  /**
+   * getIsDefault
+   *
+   * @return bool|null
+   */
+  public function getIsDefault(): ?bool
+  {
+    return $this->isDefault;
+  }
+
+  /**
+   * @param bool|null $isDefault
+   * @return $this
+   */
+  public function setIsDefault(?bool $isDefault): self
+  {
+    $this->isDefault = $isDefault;
+    return $this;
+  }
+
+  /**
+   * getIsEnabled
+   *
+   * @return bool|null
+   */
+  public function getIsEnabled(): ?bool
+  {
+    return $this->isEnabled;
+  }
+
+  /**
+   * @param bool|null $isEnabled
+   * @return $this
+   */
+  public function setIsEnabled(?bool $isEnabled): self
+  {
+    $this->isEnabled = $isEnabled;
     return $this;
   }
 

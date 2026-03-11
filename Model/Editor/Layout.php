@@ -49,6 +49,11 @@ class Layout extends Entity implements EntityInterface
   protected ?int $position = null;
 
   /**
+   * @var bool|null
+   */
+  protected ?bool $isEnabled = false;
+
+  /**
    * Theme constructor.
    */
   public function __construct()
@@ -73,9 +78,9 @@ class Layout extends Entity implements EntityInterface
   /**
    * @param string $id
    *
-   * @return Layout
+   * @return $this
    */
-  public function setId(string $id): Layout
+  public function setId(string $id): self
   {
     $this->id = $id;
     return $this;
@@ -92,9 +97,9 @@ class Layout extends Entity implements EntityInterface
   /**
    * @param string|null $keyname
    *
-   * @return Layout
+   * @return $this
    */
-  public function setKeyname(?string $keyname): Layout
+  public function setKeyname(?string $keyname): self
   {
     $this->keyname = $this->keynameGenerator($keyname);
     return $this;
@@ -115,9 +120,9 @@ class Layout extends Entity implements EntityInterface
    *
    * @param string|null $title
    *
-   * @return Layout
+   * @return $this
    */
-  public function setTitle(?string $title): Layout
+  public function setTitle(?string $title): self
   {
     $this->title = $title;
     return $this;
@@ -137,7 +142,7 @@ class Layout extends Entity implements EntityInterface
    * @param bool|null $isDefault
    * @return $this
    */
-  public function setIsDefault(?bool $isDefault): Layout
+  public function setIsDefault(?bool $isDefault): self
   {
     $this->isDefault = $isDefault;
     return $this;
@@ -154,11 +159,31 @@ class Layout extends Entity implements EntityInterface
   /**
    * @param int|null $position
    *
-   * @return Layout
+   * @return $this
    */
-  public function setPosition(?int $position): Layout
+  public function setPosition(?int $position): self
   {
     $this->position = $position;
+    return $this;
+  }
+
+  /**
+   * getIsEnabled
+   *
+   * @return bool|null
+   */
+  public function getIsEnabled(): ?bool
+  {
+    return $this->isEnabled;
+  }
+
+  /**
+   * @param bool|null $isEnabled
+   * @return $this
+   */
+  public function setIsEnabled(?bool $isEnabled): self
+  {
+    $this->isEnabled = $isEnabled;
     return $this;
   }
 

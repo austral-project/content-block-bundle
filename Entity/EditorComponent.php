@@ -16,6 +16,7 @@ use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentTypeInterface;
 use Austral\ContentBlockBundle\Model\Editor\Layout;
 use Austral\ContentBlockBundle\Model\Editor\Option;
 use Austral\ContentBlockBundle\Model\Editor\Restriction;
+use Austral\ContentBlockBundle\Model\Editor\Size;
 use Austral\ContentBlockBundle\Model\Editor\Theme;
 use Austral\EntityBundle\Entity\Entity;
 use Austral\EntityBundle\Entity\EntityInterface;
@@ -134,6 +135,12 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
    * @ORM\Column(name="layouts", type="json", nullable=true)
    */
   protected ?array $layouts = array();
+
+  /**
+   * @var array|null
+   * @ORM\Column(name="sizes", type="json", nullable=true)
+   */
+  protected ?array $sizes = array();
 
   /**
    * @var boolean
@@ -597,6 +604,24 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
   }
 
   /**
+   * layoutIsEnabledBYKeyname
+   *
+   * @param string $keyname
+   * @return bool
+   */
+  public function layoutIsEnabledBYKeyname(string $keyname): bool
+  {
+    $layouts = $this->getLayouts();
+    foreach($layouts as $layout)
+    {
+      if($layout->getKeyname() === $keyname) {
+        return $layout->getIsEnabled();
+      }
+    }
+    return false;
+  }
+
+  /**
    * @param string|null $layoutId
    *
    * @return Layout|null
@@ -643,6 +668,52 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
   public function setLayoutViewChoice(bool $layoutViewChoice): EditorComponent
   {
     $this->layoutViewChoice = $layoutViewChoice;
+    return $this;
+  }
+
+  /**
+   * @return array
+   */
+  public function getSizes(): array
+  {
+    $sizes = array();
+    foreach($this->sizes as $sizeValues)
+    {
+      /** @var Size $sizeObject */
+      $sizeObject = unserialize($sizeValues);
+      $sizes[$sizeObject->getId()] = $sizeObject;
+    }
+    return $sizes;
+  }
+
+  /**
+   * @param string|null $sizeId
+   *
+   * @return Size|null
+   */
+  public function getSizeById(?string $sizeId): ?Size
+  {
+    return AustralTools::getValueByKey($this->getSizes(), $sizeId, null);
+  }
+
+  /**
+   * @param array $sizes
+   *
+   * @return EditorComponent
+   */
+  public function setSizes(array $sizes): EditorComponent
+  {
+    $this->sizes = array();
+    /** @var Size $size */
+    foreach ($sizes as $id => $size)
+    {
+      $size->setId($id);
+      if(!$size->getKeyname()) {
+        $size->setKeyname(u($size->getTitle())->snake()->replace("_", "-")->toString());
+      }
+      $this->sizes[$size->getPosition()] = serialize($size);
+    }
+    ksort($this->sizes);
     return $this;
   }
 

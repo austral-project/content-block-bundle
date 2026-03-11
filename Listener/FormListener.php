@@ -24,6 +24,8 @@ use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentTypeInterface;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlocksMapping;
+use Austral\ContentBlockBundle\Model\Editor\Option;
+use Austral\ContentBlockBundle\Model\Editor\Size;
 use Austral\ContentBlockBundle\Services\ContentBlockContainer;
 use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
@@ -829,7 +831,90 @@ class FormListener
   {
     $themes = $editorComponent->getThemes();
     $options = $editorComponent->getOptions();
-    if($themes || $options)
+    $sizes = $editorComponent->getSizes();
+
+    $selectThemes = array();
+    $selectOptions = array();
+    $selectSizes = array();
+
+    $defaultValueTitleTheme = "";
+    $defaultValueTitleOption = "";
+    $defaultValueTitleSize = "";
+
+    if($themes || $options || $sizes)
+    {
+
+      if($themes)
+      {
+        /** @var Theme $theme */
+        foreach($themes as $theme)
+        {
+          if($theme->getIsEnabled())
+          {
+            if($theme->getIsDefault())
+            {
+              $componentByEditor->setThemeId($theme->getId());
+            }
+            if($theme->getKeyname() !== "default" || $theme->getIsDefault())
+            {
+              $selectThemes[$theme->getTitle()] = $theme->getId();
+            }
+            else
+            {
+              $defaultValueTitleTheme = $theme->getTitle();
+            }
+          }
+        }
+
+      }
+      if($sizes)
+      {
+        /** @var Size $size */
+        foreach($sizes as $size)
+        {
+          if($size->getIsEnabled())
+          {
+            if($size->getIsDefault())
+            {
+              $componentByEditor->setSizeId($size->getId());
+            }
+            if($size->getKeyname() !== "default" || $size->getIsDefault())
+            {
+              $selectSizes[$size->getTitle()] = $size->getId();
+            }
+            else
+            {
+              $defaultValueTitleSize = $size->getTitle();
+            }
+          }
+        }
+      }
+      if($options)
+      {
+        /** @var Option $option */
+        foreach($options as $option)
+        {
+          if($option->getIsEnabled())
+          {
+            if($option->getIsDefault())
+            {
+              $componentByEditor->setOptionId($option->getId());
+            }
+            if($option->getKeyname() !== "default" || $option->getIsDefault())
+            {
+              $selectOptions[$option->getTitle()] = $option->getId();
+            }
+            else
+            {
+              $defaultValueTitleOption = $option->getTitle();
+            }
+          }
+        }
+      }
+    }
+
+
+    if($selectThemes || $selectOptions || $selectSizes)
     {
       $groupParamatersId = "group-parameters-{$componentByEditor->getId()}";
       $group = $componentFormMapper->addGroup("content-parameters", null);
@@ -842,23 +927,11 @@ class FormListener
       );
       $group = $group->addGroup("parameters")
         ->setAttr(array('id'=>$groupParamatersId, "data-toggle"=>null));
-      if($themes)
+
+      if($selectThemes)
       {
-        $selectThemes = array();
-        $defaultValueTitle = "";
-        /** @var Theme $theme */
-        foreach($themes as $theme)
-        {
-          if($theme->getKeyname() !== "default")
-          {
-            $selectThemes[$theme->getTitle()] = $theme->getId();
-          }
-          else
-          {
-            $defaultValueTitle = $theme->getTitle();
-          }
-        }
         $group->add(Field\SelectField::create("themeId", $selectThemes, array(
+              "required"    =>  ($defaultValueTitleTheme === ""),
               "container"   =>  array(
                 "class"       =>  "side-by-side"
               ),
@@ -867,29 +940,34 @@ class FormListener
               ),
               "fieldOptions"  =>  array(
                 "choice_translation_domain"   =>  false,
-                "placeholder"  =>  $defaultValueTitle
+                "placeholder"  =>  $defaultValueTitleTheme
               ),
             )
           )
         );
       }
-      if($options)
+      if($selectSizes)
       {
-        $selectOptions = array();
-        $defaultValueTitle = "";
-        /** @var Theme $theme */
-        foreach($options as $option)
-        {
-          if($option->getKeyname() !== "default")
-          {
-            $selectOptions[$option->getTitle()] = $option->getId();
-          }
-          else
-          {
-            $defaultValueTitle = $option->getTitle();
-          }
-        }
+        $group->add(Field\SelectField::create("sizeId", $selectSizes, array(
+              "required"    => ($defaultValueTitleSize === ""),
+              "container"   =>  array(
+                "class"       =>  "side-by-side"
+              ),
+              "group"       =>  array(
+                'size'  => GroupFields::SIZE_COL_6
+              ),
+              "fieldOptions"  =>  array(
+                "choice_translation_domain"   =>  false,
+                "placeholder"  =>  $defaultValueTitleSize
+              ),
+            )
+          )
+        );
+      }
+      if($selectOptions)
+      {
         $group->add(Field\SelectField::create("optionId", $selectOptions, array(
+              "required"    =>  ($defaultValueTitleOption === ""),
               "container"   =>  array(
                 "class"       =>  "side-by-side"
               ),
@@ -898,13 +976,17 @@ class FormListener
               ),
               "fieldOptions"  =>  array(
                 "choice_translation_domain"  =>  false,
-                "placeholder"  =>  $defaultValueTitle
+                "placeholder"  =>  $defaultValueTitleOption
               )
             )
           )
         );
       }
     }
+
+
+
+
 
     if($layouts = $editorComponent->getLayouts())
     {
@@ -913,14 +995,17 @@ class FormListener
       /** @var Layout $layout */
       foreach($layouts as $layout)
       {
-        if(!$componentByEditor->getLayoutId())
+        if($layout->getIsEnabled())
         {
-          if($layout->getIsDefault())
+          if(!$componentByEditor->getLayoutId())
           {
-            $componentByEditor->setLayoutId($layout->getId());
+            if($layout->getIsDefault())
+            {
+              $componentByEditor->setLayoutId($layout->getId());
+            }
           }
+          $selectLayouts[$layout->getTitle()] = $layout->getId();
         }
-        $selectLayouts[$layout->getTitle()] = $layout->getId();
         $dataViewChoices[$layout->getId()] = "layout-view-choice-{$layout->getKeyname()}";
       }
       if(!$componentByEditor->getLayoutId() && ($firstLayout = AustralTools::first($layouts)))
@@ -938,25 +1023,28 @@ class FormListener
         );
       }
 
-      $componentFormMapper->addGroup("layout", null)
-        ->setAttr(array('class'=>"background-white"))
-        ->add(Field\ChoiceField::create("layoutId", $selectLayouts, array(
-              "entitled"    =>  false,
-              "container"   =>  array(
-                "class"       =>  "side-by-side"
+      if($selectLayouts)
+      {
+        $componentFormMapper->addGroup("layout", null)
+          ->setAttr(array('class'=>"background-white"))
+          ->add(Field\ChoiceField::create("layoutId", $selectLayouts, array(
+                "entitled"    =>  false,
+                "container"   =>  array(
+                  "class"       =>  "side-by-side"
+                ),
+                "choice_style"  =>  "light",
+                "required"      =>  true,
+                "group"       =>  array(
+                  'size'  => GroupFields::SIZE_COL_12
+                ),
+                "fieldOptions"  =>  array(
+                  "choice_translation_domain"  =>  false,
+                ),
+                "attr"        =>  $attr
               ),
-              "choice_style"  =>  "light",
-              "required"      =>  true,
-              "group"       =>  array(
-                'size'  => GroupFields::SIZE_COL_12
-              ),
-              "fieldOptions"  =>  array(
-                "choice_translation_domain"  =>  false,
-              ),
-              "attr"        =>  $attr
-            ),
-          )->addConstraint(new Constraints\NotNull())
-        );
+            )->addConstraint(new Constraints\NotNull())
+          );
+      }
     }
   }
 
@@ -1165,15 +1253,29 @@ class FormListener
       }
 
       $layoutChoiceViewKeynameGroupClass = array();
+      $viewElement = true;
       if($layoutChoiceViewKeynames = $editorComponentType->getParameterByKey("layoutChoiceViewKeyname", array()))
       {
+        $viewElement = false;
         $layoutChoiceViewKeynameGroupClass[] = "layout-view-choice";
         foreach ($layoutChoiceViewKeynames as $layoutChoiceViewKeyname)
         {
+          if($editorComponentType->getEditorComponent()->layoutIsEnabledBYKeyname($layoutChoiceViewKeyname))
+          {
+            $viewElement = true;
+          }
+
           $layoutChoiceViewKeynameGroupClass[] = "layout-view-choice-{$layoutChoiceViewKeyname}";
         }
       }
-      $layoutChoiceViewKeynameGroupClass = implode(" ", $layoutChoiceViewKeynameGroupClass);
+      if($viewElement)
+      {
+        $layoutChoiceViewKeynameGroupClass = implode(" ", $layoutChoiceViewKeynameGroupClass);
+      }
+      else
+      {
+        $layoutChoiceViewKeynameGroupClass = "hidden";
+      }
 
       $group = $componentValueFormMapper->addGroup('content-fields' )
         ->setStyle(GroupFields::STYLE_WHITE)

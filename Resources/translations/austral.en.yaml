@@ -33,6 +33,7 @@ fieldset:
     themes:                     Themes
     options:                    Options
     layouts:                    Layouts
+    sizes:                      Sizes
     restrictions:               Restrictions
     usedBy:                     Used by
 
@@ -48,6 +49,7 @@ button:
     library:                    Edit library
   new:
     block:                      Add content block
+    block_master:               Add container
     theme:                      Add theme
     option:                     Add option
     layout:                     Add layout
@@ -75,6 +77,8 @@ fields:
     entitled:                   Option
   layoutId:
     entitled:                   Layout
+  sizeId:
+    entitled:                   Size
   restrictionValue:
     entitled:                   Restrictions
   restrictions:
