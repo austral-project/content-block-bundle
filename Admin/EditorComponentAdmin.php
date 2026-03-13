@@ -1042,7 +1042,7 @@ class EditorComponentAdmin extends Admin implements AdminModuleInterface
    */
   protected function generateEditorComponentTypeForm(string $choiceKey, FormMapper $formMapper, array $choiceParameters)
   {
-    $formMapper->add(Field\SymfonyField::create("parentId", HiddenType::class, array("entitled"=>false)))
+    $formMapper->add(Field\SymfonyField::create("parentId", HiddenType::class, array("entitled"=>false, "attr"=>array("data-collection-sortable-parent-id"=>""))))
       ->add(Field\SymfonyField::create("id", HiddenType::class, array("entitled"=>false)))
       ->add(Field\SymfonyField::create("position", HiddenType::class, array("entitled"=>false, "attr"=>array("data-collection-sortabled"=>""))));
 
