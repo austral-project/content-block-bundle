@@ -91,7 +91,7 @@ abstract class Component extends Entity implements ComponentInterface, EntityInt
    * @var string|null
    * @ORM\Column(name="size_id", type="string", length=255, nullable=true )
    */
-  protected ?string $SizeId = null;
+  protected ?string $sizeId = null;
 
   /**
    * @var string|null
@@ -155,20 +155,21 @@ abstract class Component extends Entity implements ComponentInterface, EntityInt
    */
   public function getSize(): ?Size
   {
-    return $this->editorComponent->getSizeById($this->themeId);
+    return $this->editorComponent->getSizeById($this->sizeId);
   }
 
   /**
+   * @param string|null $default
    * @return string|null
    */
-  public function getSizeKeyname(): ?string
+  public function getSizeKeyname(?string $default = null): ?string
   {
-    /** @var Size $theme */
-    if($theme = $this->getSize())
+    /** @var Size $size */
+    if($size = $this->getSize())
     {
-      return $theme->getKeyname();
+      return $size->getKeyname();
     }
-    return null;
+    return $default;
   }
 
   /**
@@ -180,16 +181,17 @@ abstract class Component extends Entity implements ComponentInterface, EntityInt
   }
 
   /**
+   * @param string|null $default
    * @return string|null
    */
-  public function getThemeKeyname(): ?string
+  public function getThemeKeyname(?string $default = null): ?string
   {
     /** @var Theme $theme */
     if($theme = $this->getTheme())
     {
       return $theme->getKeyname();
     }
-    return null;
+    return $default;
   }
 
   /**
@@ -209,16 +211,17 @@ abstract class Component extends Entity implements ComponentInterface, EntityInt
   }
 
   /**
+   * @param string|null $default
    * @return string|null
    */
-  public function getOptionKeyname(): ?string
+  public function getOptionKeyname(?string $default = null): ?string
   {
     /** @var Option $option */
     if($option = $this->getOption())
     {
       return $option->getKeyname();
     }
-    return null;
+    return $default;
   }
 
   /**
@@ -230,16 +233,17 @@ abstract class Component extends Entity implements ComponentInterface, EntityInt
   }
 
   /**
+   * @param string|null $default
    * @return string|null
    */
-  public function getLayoutKeyname(): ?string
+  public function getLayoutKeyname(?string $default = null): ?string
   {
     /** @var Layout $layout */
     if($layout = $this->getLayout())
     {
       return $layout->getKeyname();
     }
-    return null;
+    return $default;
   }
 
   /**
@@ -467,7 +471,7 @@ abstract class Component extends Entity implements ComponentInterface, EntityInt
    */
   public function getSizeId(): ?string
   {
-    return $this->SizeId;
+    return $this->sizeId;
   }
 
   /**
@@ -476,7 +480,7 @@ abstract class Component extends Entity implements ComponentInterface, EntityInt
    */
   public function setSizeId(?string $SizeId): Component
   {
-    $this->SizeId = $SizeId;
+    $this->sizeId = $SizeId;
     return $this;
   }
 

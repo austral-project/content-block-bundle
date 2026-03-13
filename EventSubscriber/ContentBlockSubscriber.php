@@ -156,6 +156,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         "theme"               =>  "",
         "option"              =>  "",
         "layout"              =>  "",
+        "size"                =>  "",
         "children"            => array()
       ));
       $finalComponentsByContainerByTypes = array($blockName => array(
@@ -201,6 +202,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
               "theme" => "library",
               "option" => "",
               "layout" => "",
+              "size"   =>  "",
               "children" => array()
             );
             $finalComponentsByContainerByTypes[$blockName] = array(
@@ -240,19 +242,28 @@ class ContentBlockSubscriber implements EventSubscriberInterface
             {
               if($componentObject->getEditorComponent()->getIsContainer())
               {
+
+                $templatePath = $componentObject->getEditorComponent()->getTemplatePathOrDefault();
+                if(str_contains($templatePath, "@") === false)
+                {
+                  $templatePath = "{$contentBlockEvent->getRootTemplateDir()}\\{$templatePath}";
+                }
+
                 $currentContainerId = $componentObject->getId();
                 $keynameTemplate = $componentObject->getThemeKeyname() ?? $componentObject->getKeyname();
                 $blockName = "{$keynameTemplate}-{$componentObject->getId()}";
                 $finalComponentsByContainer[$blockName] = array(
                   "id"                =>  $componentObject->getId(),
-                  "theme"             =>  $componentObject->getThemeKeyname(),
-                  "option"            =>  $componentObject->getOptionKeyname(),
-                  "layout"            =>  $componentObject->getLayoutKeyname(),
+                  "theme"             =>  $componentObject->getThemeKeyname("default"),
+                  "option"            =>  $componentObject->getOptionKeyname("default"),
+                  "layout"            =>  $componentObject->getLayoutKeyname("default"),
+                  "size"              =>  $componentObject->getSizeKeyname("default"),
                   "type"              =>  "default",
                   "isContainer"       =>  true,
                   "container"         =>  $componentObject->getEditorComponent()->hasContainerChildren() ? "row" : "default",
                   "containerKeyname"  =>  $componentObject->getEditorComponent()->getKeyname(),
                   "keyname"           =>  $componentObject->getKeyname(),
+                  "templatePath"      =>  $templatePath,
                   "children"          =>  array(),
                   "vars"              =>  $componentEvent->getVars(),
                   "values"            =>  $this->componentValues($componentObject->getComponentValues()),
@@ -298,6 +309,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
                     "theme"               =>  "",
                     "option"              =>  "",
                     "layout"              =>  "",
+                    "size"                =>  "",
                     "children"            => array()
                   );
                   $finalComponentsByContainerByTypes[$blockName] = array(
@@ -306,14 +318,21 @@ class ContentBlockSubscriber implements EventSubscriberInterface
                     "children"            => array()
                   );
                 }
+
+                $templatePath = $componentObject->getEditorComponent()->getTemplatePathOrDefault();
+                if(str_contains($templatePath, "@") === false)
+                {
+                  $templatePath = "{$contentBlockEvent->getRootTemplateDir()}\\{$templatePath}";
+                }
                 $componentValues = array(
                   "id"                =>  $componentObject->getId(),
                   "keyname"           =>  $componentObject->getEditorComponent()->getKeyname(),
                   "type"              =>  "default",
-                  "theme"             =>  $componentObject->getThemeKeyname(),
-                  "option"            =>  $componentObject->getOptionKeyname(),
-                  "layout"            =>  $componentObject->getLayoutKeyname(),
-                  "templatePath"      =>  "{$contentBlockEvent->getRootTemplateDir()}\\{$componentObject->getEditorComponent()->getTemplatePathOrDefault()}",
+                  "theme"             =>  $componentObject->getThemeKeyname("default"),
+                  "option"            =>  $componentObject->getOptionKeyname("default"),
+                  "layout"            =>  $componentObject->getLayoutKeyname("default"),
+                  "size"              =>  $componentObject->getSizeKeyname("default"),
+                  "templatePath"      =>  $templatePath,
                   "values"            =>  $this->componentValues($componentObject->getComponentValues()),
                   "vars"              =>  $componentEvent->getVars()
                 );
