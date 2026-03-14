@@ -31,6 +31,7 @@ class Configuration implements ConfigurationInterface
     $rootNode = $treeBuilder->getRootNode();
     $node = $rootNode->children();
 
+    $node->booleanNode('restriction_container')->defaultFalse()->end();
     $node->arrayNode("type_values")
         ->arrayPrototype()
           ->children()

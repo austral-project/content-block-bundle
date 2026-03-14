@@ -69,7 +69,7 @@ class ContentBlockField extends CollectionEmbedField
     parent::configureOptions($resolver);
     $resolver->setDefaults(array(
       "hydrate_auto"            =>  array(),
-      "restriction_container"   =>  true,
+      "restriction_container"   =>  false,
     ));
     $resolver->setAllowedTypes('hydrate_auto', array("array", "null"));
     $resolver->setAllowedTypes('restriction_container', array("boolean"));

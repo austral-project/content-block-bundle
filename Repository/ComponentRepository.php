@@ -136,7 +136,8 @@ class ComponentRepository extends EntityRepository
         "objectId"        =>  $objectId,
         "objectClassname" =>  $classname
       ));
-    $queryBuilder->orderBy("root.position", "ASC");
+    $queryBuilder->orderBy("root.containerId", "ASC");
+    $queryBuilder->addOrderBy("root.position", "ASC");
     $queryBuilder->indexBy("root", "root.id");
     $query = $queryBuilder->getQuery();
     try {

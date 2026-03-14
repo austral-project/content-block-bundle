@@ -12,6 +12,7 @@
 namespace Austral\ContentBlockBundle\EventSubscriber;
 
 use App\Entity\Austral\ContentBlockBundle\EditorComponentType;
+use Austral\ContentBlockBundle\Configuration\ContentBlockConfiguration;
 use Austral\ContentBlockBundle\Entity\Component;
 use Austral\ContentBlockBundle\Entity\ComponentValue;
 use Austral\ContentBlockBundle\Entity\ComponentValues;
@@ -52,6 +53,11 @@ class ContentBlockSubscriber implements EventSubscriberInterface
    * @var ContentBlockContainer
    */
   protected ContentBlockContainer $contentBlockContainer;
+
+  /**
+   * @var ContentBlockConfiguration
+   */
+  protected ContentBlockConfiguration $contentBlockConfiguration;
   
   /**
    * @var Mapping
@@ -80,6 +86,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
    * @param EventDispatcherInterface $dispatcher
    * @param Mapping $mapping
    * @param EntityManager $entityManager
+   * @param ContentBlockConfiguration $contentBlockConfiguration
    * @param Generator|null $fileLinkGenerator
    * @param UrlParameterManagement|null $urlParameterManagement
    */
@@ -87,6 +94,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
     EventDispatcherInterface $dispatcher,
     Mapping $mapping,
     EntityManager $entityManager,
+    ContentBlockConfiguration $contentBlockConfiguration,
     ?Generator $fileLinkGenerator,
     ?UrlParameterManagement $urlParameterManagement = null
   )
@@ -97,6 +105,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
     $this->contentBlockContainer = $contentBlockContainer;
     $this->fileLinkGenerator = $fileLinkGenerator;
     $this->urlParameterManagement = $urlParameterManagement;
+    $this->contentBlockConfiguration = $contentBlockConfiguration;
   }
 
   /**
@@ -120,6 +129,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
   public function componentsInit(ContentBlockEvent $contentBlockEvent)
   {
     $this->contentBlockContainer->initComponentByObject($contentBlockEvent->getObject(), false);
+
     /** @var Component $componentObject */
     foreach($contentBlockEvent->getObject()->getComponents() as $componentObjects)
     {
@@ -138,6 +148,190 @@ class ContentBlockSubscriber implements EventSubscriberInterface
    * @throws \Exception
    */
   public function componentsHydrate(ContentBlockEvent $contentBlockEvent)
+  {
+    if($this->contentBlockConfiguration->get("restriction_container"))
+    {
+      $this->componentsHydrateWithRestriction($contentBlockEvent);
+    }
+    else
+    {
+      $this->componentsHydrateOld($contentBlockEvent);
+    }
+  }
+
+
+  /**
+   * @param ContentBlockEvent $contentBlockEvent
+   *
+   * @throws \Exception
+   */
+  protected function componentsHydrateWithRestriction(ContentBlockEvent $contentBlockEvent)
+  {
+    $finalComponents = array();
+    $finalComponentsByTypes = array();
+
+    /** @var Component $componentObject */
+    foreach($contentBlockEvent->getObject()->getComponents() as $containerName => $componentObjects)
+    {
+      foreach($componentObjects as $componentObject)
+      {
+        if($componentObject->getEditorComponent()->getIsContainer())
+        {
+          $componentEvent = new ComponentEvent($contentBlockEvent->getObject(), $componentObject);
+          $componentEvent->setIsGuideline($contentBlockEvent->getIsGuidelineBuild());
+          $this->dispatcher->dispatch($componentEvent, ComponentEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_HYDRATE);
+          if(!$componentEvent->getIsDisabled() && $componentObject->getEditorComponent()->getIsEnabled())
+          {
+            $templatePath = $componentObject->getEditorComponent()->getTemplatePathOrDefault();
+            if(str_contains($templatePath, "@") === false)
+            {
+              $templatePath = "{$contentBlockEvent->getRootTemplateDir()}\\{$templatePath}";
+            }
+            $containerBuild = array(
+              "id"                =>  $componentObject->getId(),
+              "theme"             =>  $componentObject->getThemeKeyname("default"),
+              "option"            =>  $componentObject->getOptionKeyname("default"),
+              "layout"            =>  $componentObject->getLayoutKeyname("default"),
+              "size"              =>  $componentObject->getSizeKeyname("default"),
+              "type"              =>  "default",
+              "isContainer"       =>  true,
+              "container"         =>  $componentObject->getEditorComponent()->hasContainerChildren() ? "row" : "default",
+              "containerKeyname"  =>  $componentObject->getEditorComponent()->getKeyname(),
+              "keyname"           =>  $componentObject->getKeyname(),
+              "templatePath"      =>  $templatePath,
+              "children"          =>  array(),
+              "vars"              =>  $componentEvent->getVars(),
+              "values"            =>  $this->componentValues($componentObject->getComponentValues()),
+            );
+            if($componentObject->getEditorComponent()->hasContainerChildren())
+            {
+              /** @var EditorComponentType $editorComponentType */
+              foreach($componentObject->getEditorComponent()->getEditorComponentTypes() as $editorComponentType)
+              {
+                if($editorComponentType->getParameterByKey("hasChildren"))
+                {
+                  $containerBuild["children"][$editorComponentType->getId()] = array(
+                    "keyname"   =>  $editorComponentType->getkeyname(),
+                    "container" =>  "col",
+                    "children"  =>  array()
+                  );
+                }
+              }
+            }
+            $finalComponents[$containerName][$componentObject->getId()] = $containerBuild;
+            $finalComponentsByTypes[$containerName][$componentObject->getId()]["object"] = $componentObject;
+          }
+        }
+      }
+    }
+    /** @var Component $componentObject */
+    foreach($contentBlockEvent->getObject()->getComponents() as $containerName => $componentObjects)
+    {
+      foreach ($componentObjects as $componentObject)
+      {
+        if($componentObject->getComponentType() === "library")
+        {
+          $componentContainerChildId = null;
+          if($componentContainerId = $componentObject->getContainerId())
+          {
+            if(str_contains($componentContainerId, "_"))
+            {
+              list($componentContainerId, $componentContainerChildId) = explode("_", $componentContainerId);
+            }
+          }
+
+          /** @var LibraryInterface $library */
+          $library = $componentObject->getLibrary();
+          if($componentContainerId &&
+            array_key_exists($containerName, $finalComponents) &&
+            array_key_exists($componentContainerId, $finalComponents[$containerName]) &&
+            $library->getAccessibleInContent() &&
+            $library->getIsEnabled()
+          )
+          {
+            $componentValues = array(
+              "id"                =>  $componentObject->getId(),
+              "type"              =>  "library",
+              "keyname"           =>  $componentObject->getLibrary()->getKeyname(),
+            );
+          }
+          if($componentContainerChildId)
+          {
+            $finalComponents[$containerName][$componentContainerId]['children'][$componentContainerChildId]["children"]["{$componentObject->getPosition()}-{$componentObject->getId()}"] = $componentValues;
+            $finalComponentsByTypes[$containerName][$componentContainerId]['children'][$componentContainerChildId]["children"][$componentObject->getEditorComponent()->getKeyname()][] = $componentValues;
+          }
+          else
+          {
+            $finalComponents[$containerName][$componentContainerId]['children']["{$componentObject->getPosition()}-{$componentObject->getId()}"] = $componentValues;
+            $finalComponentsByTypes[$containerName][$componentContainerId]['children'][$componentObject->getEditorComponent()->getKeyname()][] = $componentValues;
+          }
+
+        }
+        elseif (!$componentObject->getEditorComponent()->getIsContainer())
+        {
+          $componentEvent = new ComponentEvent($contentBlockEvent->getObject(), $componentObject);
+          $componentEvent->setIsGuideline($contentBlockEvent->getIsGuidelineBuild());
+          $this->dispatcher->dispatch($componentEvent, ComponentEvent::EVENT_AUSTRAL_CONTENT_BLOCK_COMPONENT_HYDRATE);
+          if(!$componentEvent->getIsDisabled() && $componentObject->getEditorComponent()->getIsEnabled())
+          {
+            $componentContainerChildId = null;
+            if($componentContainerId = $componentObject->getContainerId())
+            {
+              if(str_contains($componentContainerId, "_"))
+              {
+                list($componentContainerId, $componentContainerChildId) = explode("_", $componentContainerId);
+              }
+            }
+
+            if($componentContainerId && array_key_exists($containerName, $finalComponents) && array_key_exists($componentContainerId, $finalComponents[$containerName]))
+            {
+              $templatePath = $componentObject->getEditorComponent()->getTemplatePathOrDefault();
+              if(str_contains($templatePath, "@") === false)
+              {
+                $templatePath = "{$contentBlockEvent->getRootTemplateDir()}\\{$templatePath}";
+              }
+
+              $componentValues = array(
+                "id"                =>  $componentObject->getId(),
+                "keyname"           =>  $componentObject->getEditorComponent()->getKeyname(),
+                "type"              =>  "default",
+                "theme"             =>  $componentObject->getThemeKeyname("default"),
+                "option"            =>  $componentObject->getOptionKeyname("default"),
+                "layout"            =>  $componentObject->getLayoutKeyname("default"),
+                "size"              =>  $componentObject->getSizeKeyname("default"),
+                "templatePath"      =>  $templatePath,
+                "values"            =>  $this->componentValues($componentObject->getComponentValues()),
+                "vars"              =>  $componentEvent->getVars()
+              );
+
+              if($componentContainerChildId)
+              {
+                $finalComponents[$containerName][$componentContainerId]['children'][$componentContainerChildId]["children"]["{$componentObject->getPosition()}-{$componentObject->getId()}"] = $componentValues;
+                $finalComponentsByTypes[$containerName][$componentContainerId]['children'][$componentContainerChildId]["children"][$componentObject->getEditorComponent()->getKeyname()][] = $componentValues;
+              }
+              else
+              {
+                $finalComponents[$containerName][$componentContainerId]['children']["{$componentObject->getPosition()}-{$componentObject->getId()}"] = $componentValues;
+                $finalComponentsByTypes[$containerName][$componentContainerId]['children'][$componentObject->getEditorComponent()->getKeyname()][] = $componentValues;
+              }
+            }
+          }
+        }
+      }
+    }
+    $contentBlockEvent->getObject()
+      ->setComponentsTemplate($finalComponents)
+      ->setComponentsTemplateByTypes($finalComponentsByTypes);
+
+  }
+
+
+  /**
+   * @param ContentBlockEvent $contentBlockEvent
+   *
+   * @throws \Exception
+   */
+  protected function componentsHydrateOld(ContentBlockEvent $contentBlockEvent)
   {
     $finalComponents = array();
     $finalComponentsByTypes = array();
@@ -164,6 +358,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
         "containerKeyname"   =>  "default",
         "children"  => array()
       ));
+
       foreach($componentObjects as $componentObject)
       {
         if($componentObject->getComponentType() === "library")
