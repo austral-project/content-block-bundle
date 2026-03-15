@@ -175,7 +175,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
     {
       foreach($componentObjects as $componentObject)
       {
-        if($componentObject->getEditorComponent()->getIsContainer())
+        if($componentObject->getComponentType() !== "library" && $componentObject->getEditorComponent()->getIsContainer())
         {
           $componentEvent = new ComponentEvent($contentBlockEvent->getObject(), $componentObject);
           $componentEvent->setIsGuideline($contentBlockEvent->getIsGuidelineBuild());
@@ -249,21 +249,23 @@ class ContentBlockSubscriber implements EventSubscriberInterface
             $library->getIsEnabled()
           )
           {
+            $templatePath = $componentObject->getLibrary()->getTemplatePath();
             $componentValues = array(
               "id"                =>  $componentObject->getId(),
               "type"              =>  "library",
               "keyname"           =>  $componentObject->getLibrary()->getKeyname(),
+              "templatePath"      =>  $templatePath,
             );
           }
           if($componentContainerChildId)
           {
             $finalComponents[$containerName][$componentContainerId]['children'][$componentContainerChildId]["children"]["{$componentObject->getPosition()}-{$componentObject->getId()}"] = $componentValues;
-            $finalComponentsByTypes[$containerName][$componentContainerId]['children'][$componentContainerChildId]["children"][$componentObject->getEditorComponent()->getKeyname()][] = $componentValues;
+            $finalComponentsByTypes[$containerName][$componentContainerId]['children'][$componentContainerChildId]["children"][$componentObject->getLibrary()->getKeyname()][] = $componentValues;
           }
           else
           {
             $finalComponents[$containerName][$componentContainerId]['children']["{$componentObject->getPosition()}-{$componentObject->getId()}"] = $componentValues;
-            $finalComponentsByTypes[$containerName][$componentContainerId]['children'][$componentObject->getEditorComponent()->getKeyname()][] = $componentValues;
+            $finalComponentsByTypes[$containerName][$componentContainerId]['children'][$componentObject->getLibrary()->getKeyname()][] = $componentValues;
           }
 
         }

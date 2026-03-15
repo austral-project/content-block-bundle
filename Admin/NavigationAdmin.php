@@ -64,7 +64,7 @@ class NavigationAdmin extends Admin implements AdminModuleInterface
    */
   public function configureFormMapper(FormAdminEvent $formAdminEvent)
   {
-    $librairyForm = new LibraryForm($this->container, $formAdminEvent->getFormMapper());
+    $librairyForm = new LibraryForm($this->container, $formAdminEvent->getFormMapper(), "navigation");
     $librairyForm->form();
   }
 

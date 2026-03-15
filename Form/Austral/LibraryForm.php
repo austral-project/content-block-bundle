@@ -74,6 +74,14 @@ class LibraryForm
    */
   public function form()
   {
+    $library = $this->formMapper->getObject();
+    if($this->formType === "navigation")
+    {
+      $library->setIsNavigationMenu(true);
+      $library->setAccessibleInContent(false);
+    }
+
+
     $this->formMapper->addFieldset("fieldset.right")
       ->setPositionName(Fieldset::POSITION_RIGHT)
       ->add(Field\ChoiceField::create("isEnabled", array(
@@ -108,10 +116,17 @@ class LibraryForm
       $this->formMapper->addFieldset("fieldset.editorComponent.restrictions")
         ->add($this->createCollectionRestrictions())
       ->end();
+      $this->formMapper->addFieldset("fieldset.contentBlock")
+        ->add(ContentBlockField::create("master", array(
+          'restriction_container'   =>  $this->container->get('austral.content_block.config')->get("restriction_container"),
+        )))
+        ->end();
     }
-    $this->formMapper->addFieldset("fieldset.contentBlock")
-      ->add(ContentBlockField::create())
-    ->end();
+    else
+    {
+      $this->formMapper->addFieldset("fieldset.contentBlock")
+        ->end();
+    }
 
     if($this->formType !== "navigation")
     {
@@ -131,6 +146,7 @@ class LibraryForm
   {
     /** @var LibraryInterface $library */
     $library = $this->formMapper->getObject();
+
     $allComponentsUsed = $this->container->get("austral.entity_manager.component")->selectArrayComponentsByLibrary($library);
 
     /** @var ContentBlockContainer $contentBlockContainer */
