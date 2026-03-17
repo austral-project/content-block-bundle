@@ -124,7 +124,20 @@ class LibraryForm
     }
     else
     {
-      $this->formMapper->addFieldset("fieldset.contentBlock")
+      $contentBlockFieldset = $this->formMapper->addFieldset("fieldset.contentBlock");
+      $navigationConfig = $this->container->get('austral.content_block.config')->getConfig("navigation", array());
+      if(array_key_exists("theme", $navigationConfig) && count($navigationConfig["theme"]) > 0)
+      {
+        $choices = array();
+        foreach($navigationConfig["theme"] as $value => $label)
+        {
+          $choices[$this->translator->trans($label, array(), $this->formMapper->getTranslateDomain())] = $value;
+        }
+        $contentBlockFieldset->add(Field\SelectField::create("navigationTheme", $choices));
+      }
+      $contentBlockFieldset->add(ContentBlockField::create("master", array(
+          'restriction_container'   =>  $this->container->get('austral.content_block.config')->get("restriction_container"),
+        )))
         ->end();
     }
 

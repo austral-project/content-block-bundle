@@ -73,6 +73,14 @@ class Configuration implements ConfigurationInterface
 
     ->end();
 
+    $node->arrayNode("navigation")
+      ->children()
+        ->arrayNode("theme")
+        ->scalarPrototype()->end()
+        ->defaultValue($this->navigationThemeValuesDefault())
+      ->end();
+
+
     $this->buildContainerByEntity($node
       ->arrayNode('container_by_entity')
       ->arrayPrototype()
@@ -212,6 +220,16 @@ class Configuration implements ConfigurationInterface
       "H5"    =>  "h5",
       "H6"    =>  "h6",
       "span"  =>  "span"
+    );
+  }
+
+  /**
+   * @return array
+   */
+  public function navigationThemeValuesDefault(): array
+  {
+    return array(
+      "classic"    =>  "choices.navigation.themes.classic",
     );
   }
 

@@ -28,6 +28,10 @@ austral_content_block:
       picto:              "austral-picto-image"
       allow_child:        false
 
+  navigation:
+    themes:
+      classic:            "choices.navigation.themes.classic"
+
   title_tag_values:
     h2:                 "h2"
     h3:                 "h3"

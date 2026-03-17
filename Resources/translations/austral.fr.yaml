@@ -153,6 +153,8 @@ fields:
     entitled:                   Possède des enfants ?
   autoHydrate:
     entitled:                   Hydrate automatiquement ?
+  navigationTheme:
+    entitled:                   Thème du menu de navigation
 
 component:
   title:
@@ -161,6 +163,9 @@ component:
       value:                    Valeur du lien
 
 choices:
+  navigation:
+    themes:
+      classic:                  Classique
   editor_component:
     category:
       default:                  "Default"

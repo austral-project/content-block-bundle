@@ -707,11 +707,12 @@ class ContentBlockSubscriber implements EventSubscriberInterface
       if($linkType = $componentValueObject->getLinkType())
       {
         $values[$editorComponentType->getKeyname()]["link"] = array(
-          "anchor"  =>  $componentValueObject->getOptionsByKey("anchor", null),
-          "target"  =>  $componentValueObject->getOptionsByKey("target", null),
-          "title"   =>  $componentValueObject->getOptionsByKey("title", null),
-          "url"     =>  $linkType == "internal" ? "" : $componentValueObject->getLinkUrl(),
-          "type"    =>  $linkType,
+          "anchor"    =>  $componentValueObject->getOptionsByKey("anchor", null),
+          "target"    =>  $componentValueObject->getOptionsByKey("target", null),
+          "title"     =>  $componentValueObject->getOptionsByKey("title", null),
+          "url"       =>  $linkType == "internal" ? "" : $componentValueObject->getLinkUrl(),
+          "type"      =>  $linkType,
+          "isCurrent" => false
         );
         if($linkType == "internal")
         {
@@ -725,6 +726,11 @@ class ContentBlockSubscriber implements EventSubscriberInterface
             list($entity, $id) = explode($separator, $componentValueObject->getLinkEntityKey());
             $urlParameter = $this->urlParameterManagement->getUrlParameterByObjectClassnameAndId($entity,$id);
             $values[$editorComponentType->getKeyname()]["link"]["urlParameter"] = $urlParameter;
+
+            if($urlParameter->getIsCurrent())
+            {
+              $values[$editorComponentType->getKeyname()]["isCurrent"] = true;
+            }
             if(!$values[$editorComponentType->getKeyname()]["value"])
             {
               $values[$editorComponentType->getKeyname()]["value"] = $urlParameter->getObject()?->__toString();

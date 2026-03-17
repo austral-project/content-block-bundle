@@ -117,6 +117,12 @@ abstract class Library extends Entity implements LibraryInterface,
 
   /**
    * @var string|null
+   * @ORM\Column(name="navigation_theme", type="string", length=255, nullable=true )
+   */
+  protected ?string $navigationTheme = null;
+
+  /**
+   * @var string|null
    * @ORM\Column(name="container_id", type="string", length=255, nullable=true )
    */
   protected ?string $containerId = null;
@@ -393,6 +399,27 @@ abstract class Library extends Entity implements LibraryInterface,
     $this->getTranslateCurrent()->setImage($image);
     return $this;
   }
+
+  /**
+   * getNavigationTheme
+   *
+   * @return string|null
+   */
+  public function getNavigationTheme(): ?string
+  {
+    return $this->navigationTheme;
+  }
+
+  /**
+   * @param string|null $navigationTheme
+   * @return $this
+   */
+  public function setNavigationTheme(?string $navigationTheme): Library
+  {
+    $this->navigationTheme = $navigationTheme;
+    return $this;
+  }
+
 
   /**
    * getContainerId
