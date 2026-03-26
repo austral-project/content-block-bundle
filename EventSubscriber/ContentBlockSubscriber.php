@@ -724,16 +724,17 @@ class ContentBlockSubscriber implements EventSubscriberInterface
               $separator = "::";
             }
             list($entity, $id) = explode($separator, $componentValueObject->getLinkEntityKey());
-            $urlParameter = $this->urlParameterManagement->getUrlParameterByObjectClassnameAndId($entity,$id);
-            $values[$editorComponentType->getKeyname()]["link"]["urlParameter"] = $urlParameter;
-
-            if($urlParameter->getIsCurrent())
+            if($urlParameter = $this->urlParameterManagement->getUrlParameterByObjectClassnameAndId($entity,$id))
             {
-              $values[$editorComponentType->getKeyname()]["isCurrent"] = true;
-            }
-            if(!$values[$editorComponentType->getKeyname()]["value"])
-            {
-              $values[$editorComponentType->getKeyname()]["value"] = $urlParameter->getObject()?->__toString();
+              $values[$editorComponentType->getKeyname()]["link"]["urlParameter"] = $urlParameter;
+              if($urlParameter->getIsCurrent())
+              {
+                $values[$editorComponentType->getKeyname()]["isCurrent"] = true;
+              }
+              if(!$values[$editorComponentType->getKeyname()]["value"])
+              {
+                $values[$editorComponentType->getKeyname()]["value"] = $urlParameter->getObject()?->__toString();
+              }
             }
           }
         }
