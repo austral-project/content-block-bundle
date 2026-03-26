@@ -677,7 +677,8 @@ abstract class EditorComponent extends Entity implements EditorComponentInterfac
   public function getSizes(): array
   {
     $sizes = array();
-    foreach($this->sizes as $sizeValues)
+    $sizesValues = $this->sizes ?? array();
+    foreach($sizesValues as $sizeValues)
     {
       /** @var Size $sizeObject */
       $sizeObject = unserialize($sizeValues);
