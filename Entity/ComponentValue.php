@@ -22,6 +22,7 @@ use Austral\EntityBundle\Entity\Traits\EntityTimestampableTrait;
 use Austral\EntityFileBundle\Entity\Traits\EntityFileCropperTrait;
 use Austral\EntityFileBundle\Entity\Traits\EntityFileTrait;
 use Austral\EntityFileBundle\Annotation as AustralFile;
+use Austral\EntityBundle\Annotation\AustralEntitySanitize;
 
 use Austral\ToolsBundle\AustralTools;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -106,6 +107,7 @@ abstract class ComponentValue extends Entity implements ComponentValueInterface,
   /**
    * @var string|null
    * @ORM\Column(name="content", type="text", nullable=true)
+   * @AustralEntitySanitize(config="html")
    */
   protected ?string $content = null;
 

@@ -19,6 +19,7 @@
     "austral/tools-bundle":                   "^3.1",
     "austral/entity-bundle":                  "^3.1",
     "austral/form-bundle":                    "^3.1",
+    "symfony/html-sanitizer":                 "^6.4",
 
     "joshtronic/php-loremipsum":              "^1.0"
   },

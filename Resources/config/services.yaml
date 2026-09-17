@@ -4,8 +4,8 @@ services:
     autoconfigure:  true
     public:         true
 
-
 ##### Listener #####
+
   Austral\ContentBlockBundle\Listener\DoctrineListener: "@austral.content_block.doctrine.listener"
   austral.content_block.doctrine.listener:
     class:        Austral\ContentBlockBundle\Listener\DoctrineListener
