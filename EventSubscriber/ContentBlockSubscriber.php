@@ -448,7 +448,7 @@ class ContentBlockSubscriber implements EventSubscriberInterface
 
                 $currentContainerId = $componentObject->getId();
                 $keynameTemplate = $componentObject->getThemeKeyname() ?? $componentObject->getKeyname();
-                $blockName = "{$keynameTemplate}-{$componentObject->getId()}";
+                $blockName = "{$keynameTemplate}";
                 $finalComponentsByContainer[$blockName] = array(
                   "id"                =>  $componentObject->getId(),
                   "theme"             =>  $componentObject->getThemeKeyname("default"),
@@ -493,7 +493,11 @@ class ContentBlockSubscriber implements EventSubscriberInterface
                   }
                 }
 
-                if($currentContainerId && $componentContainerId !== $currentContainerId)
+                if(array_key_exists("component-{$componentContainerId}", $finalComponentsByContainer))
+                {
+                  $blockName = "component-{$componentContainerId}";
+                }
+                elseif($currentContainerId && $componentContainerId !== $currentContainerId)
                 {
                   $blockDefaultKey++;
                   $blockName = "default-{$blockDefaultKey}";
