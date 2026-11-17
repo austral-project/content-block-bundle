@@ -39,7 +39,7 @@ use Austral\ContentBlockBundle\Model\Editor\Size;
 use Austral\ContentBlockBundle\Model\Editor\Theme;
 use Austral\ContentBlockBundle\Services\ContentBlockContainer;
 
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 
 use Austral\EntityBundle\Mapping\EntityMapping;
 use Austral\EntityBundle\ORM\AustralQueryBuilder;

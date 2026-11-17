@@ -10,7 +10,7 @@
 
 namespace Austral\ContentBlockBundle\Entity\Interfaces;
 
-use Austral\EntityBundle\Entity\Interfaces\FileInterface;
+use Austral\Contracts\File\FileInterface;
 use Doctrine\Common\Collections\Collection;
 
 /**

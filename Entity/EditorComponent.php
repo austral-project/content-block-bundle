@@ -19,11 +19,11 @@ use Austral\ContentBlockBundle\Model\Editor\Restriction;
 use Austral\ContentBlockBundle\Model\Editor\Size;
 use Austral\ContentBlockBundle\Model\Editor\Theme;
 use Austral\EntityBundle\Entity\Entity;
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 use Austral\EntityBundle\Entity\Traits\EntityTimestampableTrait;
 use Austral\EntityFileBundle\Annotation as AustralFile;
 
-use Austral\EntityBundle\Entity\Interfaces\FileInterface;
+use Austral\Contracts\File\FileInterface;
 use Austral\EntityFileBundle\Entity\Traits\EntityFileTrait;
 use Austral\ToolsBundle\AustralTools;
 use Doctrine\Common\Collections\ArrayCollection;

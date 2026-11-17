@@ -18,7 +18,7 @@ use Austral\AdminBundle\Admin\Event\ListAdminEvent;
 use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\ContentBlockBundle\Form\Austral\LibraryForm;
 
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 
 use Austral\ListBundle\Column as Column;
 use Austral\ListBundle\DataHydrate\DataHydrateORM;

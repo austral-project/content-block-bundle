@@ -40,7 +40,7 @@ use Austral\ContentBlockBundle\Model\Editor\Layout;
 use Austral\ContentBlockBundle\Model\Editor\Restriction;
 use Austral\ContentBlockBundle\Model\Editor\Theme;
 
-use Austral\EntityBundle\Entity\Interfaces\FileInterface;
+use Austral\Contracts\File\FileInterface;
 use Austral\EntityBundle\Mapping\EntityMapping;
 use Austral\EntityBundle\Mapping\Mapping;
 use Austral\EntityBundle\ORM\AustralQueryBuilder;
@@ -64,7 +64,7 @@ use Symfony\Component\Validator\Constraints as Constraints;
 use Austral\FormBundle\Field as Field;
 
 use Austral\ContentBlockBundle\Form\Type\ComponentValueFormType;
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 use Austral\EntityFileBundle\Configuration\UploadsConfiguration;
 use Austral\EntityFileBundle\Exception\FormUploadException;
 use Austral\EntityFileBundle\File\Link\Generator;

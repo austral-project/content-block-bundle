@@ -12,7 +12,7 @@
 namespace Austral\ContentBlockBundle\Model\Editor;
 
 use Austral\EntityBundle\Entity\Entity;
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 use Ramsey\Uuid\Uuid;
 
 /**

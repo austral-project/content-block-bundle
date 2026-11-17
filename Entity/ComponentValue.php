@@ -16,13 +16,13 @@ use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValueInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValuesInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentTypeInterface;
 use Austral\EntityBundle\Entity\Entity;
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 use Austral\EntityBundle\Entity\Traits\EntityTimestampableTrait;
 
 use Austral\EntityFileBundle\Entity\Traits\EntityFileCropperTrait;
 use Austral\EntityFileBundle\Entity\Traits\EntityFileTrait;
 use Austral\EntityFileBundle\Annotation as AustralFile;
-use Austral\EntityBundle\Annotation\AustralEntitySanitize;
+use Austral\EntityBundle\Attribute\AustralEntitySanitize;
 
 use Austral\ToolsBundle\AustralTools;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -107,8 +107,8 @@ abstract class ComponentValue extends Entity implements ComponentValueInterface,
   /**
    * @var string|null
    * @ORM\Column(name="content", type="text", nullable=true)
-   * @AustralEntitySanitize(config="html")
    */
+  #[AustralEntitySanitize("html")]
   protected ?string $content = null;
 
   /**

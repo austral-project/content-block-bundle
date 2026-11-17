@@ -15,7 +15,7 @@ use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValuesInterface;
 
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentTypeInterface;
 use Austral\EntityBundle\Entity\Entity;
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 use Austral\EntityBundle\Entity\Traits\EntityTimestampableTrait;
 
 use Doctrine\Common\Collections\ArrayCollection;

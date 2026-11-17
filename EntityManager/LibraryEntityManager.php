@@ -14,7 +14,7 @@ use Austral\ContentBlockBundle\Repository\LibraryRepository;
 use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 
 use Austral\EntityBundle\EntityManager\EntityManager;
-use Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface;
+use Austral\Contracts\Translate\TranslateMasterInterface;
 use Doctrine\ORM\Query\QueryException;
 
 /**

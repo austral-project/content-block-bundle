@@ -23,7 +23,7 @@ use Austral\ContentBlockBundle\Event\ContentBlockEvent;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlocksMapping;
 use Austral\ContentBlockBundle\Services\ContentBlockContainer;
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 use Austral\EntityBundle\EntityManager\EntityManager;
 use Austral\EntityBundle\Mapping\EntityMapping;
 use Austral\EntityBundle\Mapping\Mapping;

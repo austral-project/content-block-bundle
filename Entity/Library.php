@@ -15,12 +15,12 @@ use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 
 use Austral\ContentBlockBundle\Model\Editor\Restriction;
 use Austral\EntityBundle\Entity\Entity;
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 use Austral\EntityBundle\Entity\Traits\EntityTimestampableTrait;
 
-use Austral\EntityBundle\Entity\Interfaces\FileInterface;
+use Austral\Contracts\File\FileInterface;
 use Austral\EntityFileBundle\Entity\Traits\EntityFileTrait;
-use Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface;
+use Austral\Contracts\Translate\TranslateMasterInterface;
 use Austral\EntityTranslateBundle\Entity\Traits\EntityTranslateMasterComponentsTrait;
 use Austral\EntityTranslateBundle\Entity\Traits\EntityTranslateMasterTrait;
 use Austral\EntityTranslateBundle\Annotation\Translate;

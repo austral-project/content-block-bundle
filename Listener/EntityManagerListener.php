@@ -10,8 +10,8 @@
 
 namespace Austral\ContentBlockBundle\Listener;
 
-use Austral\ContentBlockBundle\Annotation\ObjectContentBlock;
-use Austral\ContentBlockBundle\Annotation\ObjectContentBlocks;
+use Austral\ContentBlockBundle\Attribute\ObjectContentBlock;
+use Austral\ContentBlockBundle\Attribute\ObjectContentBlocks;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValueInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentValuesInterface;
@@ -19,10 +19,10 @@ use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentInterface;
 use Austral\ContentBlockBundle\Entity\Interfaces\EditorComponentTypeInterface;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlocksMapping;
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Austral\ContentBlockBundle\EntityManager\ComponentEntityManager;
-use Austral\EntityBundle\EntityAnnotation\EntityAnnotations;
+use Austral\EntityBundle\EntityAttributes\EntityAttributes;
 use Austral\EntityBundle\Event\EntityManagerEvent;
 use Austral\EntityBundle\Event\EntityMappingEvent;
 use Austral\EntityBundle\Mapping\EntityMapping;
@@ -171,16 +171,16 @@ class EntityManagerListener
    * @return void
    * @throws \Exception
    */
-  public function mapping(EntityMappingEvent $entityAnnotationEvent)
+  public function mapping(EntityMappingEvent $entityAnnotationEvent): void
   {
-    $initialiseEntitesAnnotations = $entityAnnotationEvent->getEntitiesAnnotations();
+    $initialiseEntitesAnnotations = $entityAnnotationEvent->getEntitiesAttributes();
     /**
-     * @var EntityAnnotations $entityAnnotation
+     * @var EntityAttributes $entityAnnotation
      */
     foreach($initialiseEntitesAnnotations->all() as $entityAnnotation)
     {
 
-      if(array_key_exists(ObjectContentBlocks::class, $entityAnnotation->getClassAnnotations()))
+      if(array_key_exists(ObjectContentBlocks::class, $entityAnnotation->getClassAttributes()))
       {
         if(!$entityMapping = $entityAnnotationEvent->getMapping()->getEntityMapping($entityAnnotation->getClassname()))
         {
@@ -189,7 +189,7 @@ class EntityManagerListener
 
         $objectContentBlocksMapping = array();
         /** @var ObjectContentBlock $objectContentBlock */
-        foreach($entityAnnotation->getClassAnnotations()[ObjectContentBlocks::class]->objectContentBlocks as $objectContentBlock)
+        foreach($entityAnnotation->getClassAttributes()[ObjectContentBlocks::class]->objectContentBlocks as $objectContentBlock)
         {
           $objectContentBlockMapping = new ObjectContentBlockMapping(
             $objectContentBlock->name,
@@ -204,17 +204,17 @@ class EntityManagerListener
         $entityMapping->addEntityClassMapping($objectContentBlocksMapping);
         $entityAnnotationEvent->getMapping()->addEntityMapping($entityAnnotation->getClassname(), $entityMapping);
       }
-      elseif(array_key_exists(ObjectContentBlock::class, $entityAnnotation->getClassAnnotations()))
+      elseif(array_key_exists(ObjectContentBlock::class, $entityAnnotation->getClassAttributes()))
       {
         if(!$entityMapping = $entityAnnotationEvent->getMapping()->getEntityMapping($entityAnnotation->getClassname()))
         {
           $entityMapping = new EntityMapping($entityAnnotation->getClassname(), $entityAnnotation->getSlugger());
         }
         $objectContentBlockMapping = new ObjectContentBlockMapping(
-          $entityAnnotation->getClassAnnotations()[ObjectContentBlock::class]->name,
-          $entityAnnotation->getClassAnnotations()[ObjectContentBlock::class]->orderBy,
-          $entityAnnotation->getClassAnnotations()[ObjectContentBlock::class]->orderType,
-          $entityAnnotation->getClassAnnotations()[ObjectContentBlock::class]->repositoryFunction,
+          $entityAnnotation->getClassAttributes()[ObjectContentBlock::class]->name,
+          $entityAnnotation->getClassAttributes()[ObjectContentBlock::class]->orderBy,
+          $entityAnnotation->getClassAttributes()[ObjectContentBlock::class]->orderType,
+          $entityAnnotation->getClassAttributes()[ObjectContentBlock::class]->repositoryFunction,
         );
         $entityMapping->addEntityClassMapping($objectContentBlockMapping);
         $entityAnnotationEvent->getMapping()->addEntityMapping($entityAnnotation->getClassname(), $entityMapping);

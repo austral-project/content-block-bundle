@@ -28,7 +28,7 @@ use Austral\FormBundle\Mapper\FormMapper;
 
 use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 
 use Austral\ListBundle\Column as Column;
 use Austral\ListBundle\Column\Action;

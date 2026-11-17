@@ -17,7 +17,7 @@ use Austral\ContentBlockBundle\Entity\Traits\EntityComponentsTrait;
 use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 
 use Austral\EntityBundle\Entity\Entity;
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 use Austral\EntityBundle\Entity\Traits\EntityTimestampableTrait;
 
 use Austral\HttpBundle\Entity\Traits\FilterByDomainTrait;

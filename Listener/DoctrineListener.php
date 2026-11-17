@@ -11,7 +11,7 @@
 namespace Austral\ContentBlockBundle\Listener;
 
 use Austral\ContentBlockBundle\Entity\Interfaces\ComponentInterface;
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
 use Austral\ContentBlockBundle\Entity\Traits\EntityComponentsTrait;
 use Austral\ContentBlockBundle\EntityManager\ComponentEntityManager;

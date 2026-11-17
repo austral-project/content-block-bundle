@@ -14,7 +14,7 @@ use Austral\ContentBlockBundle\Entity\Interfaces\LibraryInterface;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlockMapping;
 use Austral\ContentBlockBundle\Mapping\ObjectContentBlocksMapping;
 use Austral\EntityBundle\Entity\Interfaces\ComponentsInterface;
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 use Austral\EntityBundle\Mapping\Mapping;
 use Austral\EntityBundle\ORM\AustralQueryBuilder;
 use Austral\ToolsBundle\AustralTools;
@@ -181,7 +181,7 @@ Class ContentBlockContainer
       if($object instanceof ComponentsInterface)
       {
         $objectKey = "{$object->getClassname()}:{$object->getId()}";
-        if(AustralTools::usedImplements(get_class($object), "Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface"))
+        if(AustralTools::usedImplements(get_class($object), "Austral\Contracts\Translate\TranslateMasterInterface"))
         {
           $object = $object->getTranslateCurrent();
         }
@@ -271,7 +271,7 @@ Class ContentBlockContainer
         {
           $this->objectsByEntity[$entityName][$object->getId()] = $object;
           $this->objectsByEntityWithTranslate[$entityName][$object->getId()] = $object;
-          if(AustralTools::usedImplements($object, "Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface"))
+          if(AustralTools::usedImplements($object, "Austral\Contracts\Translate\TranslateMasterInterface"))
           {
             foreach ($object->getTranslates() as $translate)
             {
@@ -388,7 +388,7 @@ Class ContentBlockContainer
   public function initComponentByObject(EntityInterface $object, bool $updated = true): static
   {
     $this->debug->stopWatchStart("content_block_container.init_component_by_object", $this->debugContainer);
-    if(AustralTools::usedImplements(get_class($object), "Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface"))
+    if(AustralTools::usedImplements(get_class($object), "Austral\Contracts\Translate\TranslateMasterInterface"))
     {
       $object = $object->getTranslateCurrent();
     }
