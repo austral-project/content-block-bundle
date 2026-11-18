@@ -2,9 +2,9 @@
 
 [![Version](https://img.shields.io/packagist/v/austral/content-block-bundle?label=version)](https://packagist.org/packages/austral/content-block-bundle)
 [![CI](https://github.com/austral-project/content-block-bundle/actions/workflows/ci.yml/badge.svg?branch=4.x)](https://github.com/austral-project/content-block-bundle/actions/workflows/ci.yml)
-[![PHP](https://img.shields.io/packagist/dependency-v/austral/content-block-bundle/php)](https://packagist.org/packages/austral/content-block-bundle)
+[![PHP](https://img.shields.io/packagist/dependency-v/austral/content-block-bundle/php?version=4.x-dev)](https://packagist.org/packages/austral/content-block-bundle)
 [![Symfony](https://img.shields.io/badge/symfony-7.4-black)](https://symfony.com/releases/7.4)
-[![License](https://img.shields.io/packagist/l/austral/content-block-bundle)](LICENSE)
+[![License](https://img.shields.io/github/license/austral-project/content-block-bundle)](LICENSE)
 
 Create content blocks to add to the website
 
